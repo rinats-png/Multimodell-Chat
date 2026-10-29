@@ -1,3 +1,4 @@
+import { approxTokens } from "./models";
 import type { ChatMessage, RoomAgent } from "./types";
 
 export interface AgentPromptMessage {
@@ -15,6 +16,16 @@ export interface BuildAgentMessagesOptions {
   agents?: RoomAgent[];
   /** Komprimiertes Langzeitgedächtnis älterer Nachrichten. */
   runningSummary?: string;
+  /** Harte Obergrenze für den Kontext (geschätzte Tokens) – älteste Nachrichten fallen zuerst weg. */
+  maxInputTokens?: number;
+}
+
+/** Standard-Obergrenze für den Input eines einzelnen Modellaufrufs (Kosten-Bremse, BF-03). */
+export const DEFAULT_MAX_INPUT_TOKENS = 12_000;
+
+/** Geschätzte Input-Tokens eines fertigen Prompts. */
+export function estimatePromptTokens(prompt: AgentPrompt): number {
+  return approxTokens(prompt.system) + prompt.messages.reduce((sum, m) => sum + approxTokens(m.content) + 4, 0);
 }
 
 export const GROUP_CHAT_RULES = [
@@ -83,7 +94,17 @@ export function buildAgentMessages(
   slidingWindowSize: number,
   options: BuildAgentMessagesOptions = {},
 ): AgentPrompt {
-  const windowed = applySlidingWindow(roomMessages, slidingWindowSize);
+  const maxInputTokens = options.maxInputTokens ?? DEFAULT_MAX_INPUT_TOKENS;
+  let windowed = applySlidingWindow(roomMessages, slidingWindowSize);
+  let prompt = mapToPrompt(targetAgent, windowed, options);
+  while (windowed.length > 1 && estimatePromptTokens(prompt) > maxInputTokens) {
+    windowed = windowed.slice(1);
+    prompt = mapToPrompt(targetAgent, windowed, options);
+  }
+  return prompt;
+}
+
+function mapToPrompt(targetAgent: RoomAgent, windowed: ChatMessage[], options: BuildAgentMessagesOptions): AgentPrompt {
   const merged: AgentPromptMessage[] = [];
 
   for (const message of windowed) {

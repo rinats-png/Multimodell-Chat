@@ -1,107 +1,65 @@
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { effectiveCustomKey } from "./ai/provider";
+import { rateLimit, type RateLimitResult } from "./rate-limit";
 import type { UserProfile } from "./types";
 
 export { checkPromptInjection, type InjectionCheckResult } from "./prompt-firewall";
-
-// ---------------------------------------------------------------------------
-// Sliding-Window Rate-Limiter (Upstash Redis oder In-Memory)
-// ---------------------------------------------------------------------------
-
-export interface RateLimitResult {
-  allowed: boolean;
-  remaining: number;
-  /** Millisekunden bis wieder eine Anfrage möglich ist. */
-  retryAfterMs: number;
-}
-
-const WINDOW_MS = 60_000;
-const memoryWindows = new Map<string, number[]>();
-
-function memoryRateLimit(key: string, limit: number): RateLimitResult {
-  const now = Date.now();
-  const timestamps = (memoryWindows.get(key) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (timestamps.length >= limit) {
-    memoryWindows.set(key, timestamps);
-    const oldest = timestamps[0] ?? now;
-    return { allowed: false, remaining: 0, retryAfterMs: WINDOW_MS - (now - oldest) };
-  }
-  timestamps.push(now);
-  memoryWindows.set(key, timestamps);
-  return { allowed: true, remaining: limit - timestamps.length, retryAfterMs: 0 };
-}
-
-const upstashLimiters = new Map<number, Ratelimit>();
-
-function getUpstashLimiter(limit: number): Ratelimit | null {
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return null;
-  let limiter = upstashLimiters.get(limit);
-  if (!limiter) {
-    limiter = new Ratelimit({
-      redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(limit, "60 s"),
-      prefix: `mmchat:rl:${limit}`,
-    });
-    upstashLimiters.set(limit, limiter);
-  }
-  return limiter;
-}
-
-export async function checkRateLimit(userId: string, limitPerMin: number): Promise<RateLimitResult> {
-  const limiter = getUpstashLimiter(limitPerMin);
-  if (!limiter) return memoryRateLimit(userId, limitPerMin);
-  const result = await limiter.limit(userId);
-  return {
-    allowed: result.success,
-    remaining: result.remaining,
-    retryAfterMs: result.success ? 0 : Math.max(0, result.reset - Date.now()),
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Token-Kontingent
-// ---------------------------------------------------------------------------
 
 export interface QuotaCheckResult {
   allowed: boolean;
   remainingTokens: number;
 }
 
-/** Mit eigenem OpenRouter-Key (BYOK) zahlt der User selbst – kein Deckel. */
-export function checkTokenQuota(profile: UserProfile): QuotaCheckResult {
-  if (profile.custom_openrouter_key) {
+/**
+ * Prüft, ob der geschätzte Verbrauch eines Aufrufs noch ins Monatskontingent passt (BF-03).
+ * Mit eigenem OpenRouter-Key (BYOK) zahlt der User selbst – kein Deckel.
+ */
+export function checkTokenQuota(profile: UserProfile, estimatedTokens = 1): QuotaCheckResult {
+  if (effectiveCustomKey(profile)) {
     return { allowed: true, remainingTokens: Number.POSITIVE_INFINITY };
   }
-  const remainingTokens = profile.monthly_token_limit - profile.tokens_used_this_month;
-  return { allowed: remainingTokens > 0, remainingTokens: Math.max(0, remainingTokens) };
+  const remainingTokens = Math.max(0, profile.monthly_token_limit - profile.tokens_used_this_month);
+  return { allowed: remainingTokens >= Math.max(1, estimatedTokens), remainingTokens };
 }
+
+export type UsageGuardCode = "rate_limited" | "quota_exceeded" | "prompt_injection" | "model_not_allowed" | "busy";
 
 export class UsageGuardError extends Error {
   constructor(
-    public readonly code: "rate_limited" | "quota_exceeded" | "prompt_injection",
+    public readonly code: UsageGuardCode,
     message: string,
     public readonly status: number,
+    public readonly retryAfterMs = 0,
   ) {
     super(message);
   }
 }
 
-/** Vor jedem einzelnen Modell-Aufruf: Rate-Limit + Kontingent. */
-export async function assertCanCallModel(profile: UserProfile): Promise<void> {
-  const quota = checkTokenQuota(profile);
+export function rateLimitMessage(limit: number, result: RateLimitResult): string {
+  return `Zu viele Anfragen – Limit von ${limit} pro Minute erreicht. Bitte in ${Math.ceil(result.retryAfterMs / 1000)} s erneut versuchen.`;
+}
+
+export function assertQuota(profile: UserProfile, estimatedTokens: number): void {
+  const quota = checkTokenQuota(profile, estimatedTokens);
   if (!quota.allowed) {
     throw new UsageGuardError(
       "quota_exceeded",
-      "Dein monatliches Token-Kontingent ist aufgebraucht. Upgrade deinen Tarif oder hinterlege einen eigenen OpenRouter-Key.",
+      quota.remainingTokens > 0
+        ? `Dein restliches Kontingent (${quota.remainingTokens} Tokens) reicht für diese Antwort nicht aus (≈ ${estimatedTokens} Tokens). Verkleinere das Sliding Window oder upgrade deinen Tarif.`
+        : "Dein monatliches Token-Kontingent ist aufgebraucht. Upgrade deinen Tarif oder hinterlege einen eigenen OpenRouter-Key.",
       402,
     );
   }
-  const rate = await checkRateLimit(profile.id, profile.rate_limit_per_min);
+}
+
+/**
+ * Vor jeder Agenten-Antwort: Kontingent (inkl. Schätzung) + Minutenlimit des Tarifs.
+ * Router- und Summary-Aufrufe zählen nicht gegen das Minutenlimit (BF-25), nur gegen
+ * das Kontingent – sie sind über das Rundenlimit begrenzt.
+ */
+export async function assertCanCallModel(profile: UserProfile, estimatedTokens: number): Promise<void> {
+  assertQuota(profile, estimatedTokens);
+  const rate = await rateLimit("model", profile.id, profile.rate_limit_per_min);
   if (!rate.allowed) {
-    throw new UsageGuardError(
-      "rate_limited",
-      `429 Too Many Requests – Limit von ${profile.rate_limit_per_min} Anfragen/Minute erreicht. Bitte in ${Math.ceil(rate.retryAfterMs / 1000)} s erneut versuchen.`,
-      429,
-    );
+    throw new UsageGuardError("rate_limited", rateLimitMessage(profile.rate_limit_per_min, rate), 429, rate.retryAfterMs);
   }
 }

@@ -32,8 +32,9 @@ export function createDemoModel(modelId: string, responseText: string, promptTex
         async start(controller) {
           controller.enqueue({ type: "stream-start", warnings: [] });
           controller.enqueue({ type: "text-start", id: "t0" });
+          const delay = Number(process.env.DEMO_STREAM_DELAY_MS ?? 18);
           for (const chunk of chunks) {
-            await new Promise((resolve) => setTimeout(resolve, 18));
+            await new Promise((resolve) => setTimeout(resolve, delay));
             controller.enqueue({ type: "text-delta", id: "t0", delta: chunk });
           }
           controller.enqueue({ type: "text-end", id: "t0" });

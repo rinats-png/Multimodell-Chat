@@ -1,13 +1,14 @@
 "use client";
 
 import clsx from "clsx";
-import { CreditCard, LogOut, MessagesSquare, Plus, Sparkles, Trash2 } from "lucide-react";
+import { CreditCard, LogOut, MessagesSquare, Plus, Sparkles, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { formatCompact } from "@/lib/format";
 import { PLANS } from "@/lib/plans";
 import type { ChatRoom, PublicProfile } from "@/lib/types";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import { Meter } from "@/components/ui/Meter";
 
 interface SidebarProps {
@@ -17,20 +18,26 @@ interface SidebarProps {
   email: string | null;
   isDemoStore: boolean;
   active?: "chat" | "billing";
+  /** Mobile: Seitenleiste als Schublade geöffnet */
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
-export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, active = "chat" }: SidebarProps) {
+export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, active = "chat", mobileOpen = false, onMobileClose }: SidebarProps) {
   const router = useRouter();
   const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const plan = PLANS[profile.subscription_tier];
 
   async function createRoom() {
     setCreating(true);
+    setError(null);
     try {
       const res = await fetch("/api/rooms", { method: "POST" });
-      if (!res.ok) throw new Error((await res.json()).error);
-      const { room } = (await res.json()) as { room: ChatRoom };
-      router.push(`/chat/${room.id}`);
+      const data = (await res.json().catch(() => ({}))) as { room?: ChatRoom; error?: string };
+      if (!res.ok || !data.room) return setError(data.error ?? "Debatte konnte nicht angelegt werden");
+      onMobileClose?.();
+      router.push(`/chat/${data.room.id}`);
       router.refresh();
     } finally {
       setCreating(false);
@@ -45,14 +52,22 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
   }
 
   async function signOut() {
-    const { createSupabaseBrowserClient } = await import("@/lib/supabase/client");
-    await createSupabaseBrowserClient().auth.signOut();
+    await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
     router.refresh();
   }
 
   return (
-    <aside className="flex h-full w-[264px] shrink-0 flex-col border-r border-line bg-surface">
+    <>
+    {mobileOpen && <div className="fixed inset-0 z-30 bg-black/60 md:hidden" onClick={onMobileClose} aria-hidden />}
+    <aside
+      aria-label="Navigation"
+      className={clsx(
+        "z-40 flex h-full w-[264px] shrink-0 flex-col border-r border-line bg-surface",
+        "fixed inset-y-0 left-0 transition-transform md:static md:translate-x-0",
+        mobileOpen ? "translate-x-0" : "-translate-x-full",
+      )}
+    >
       <div className="flex items-center gap-2.5 px-4 pb-3 pt-4">
         <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-openai via-google to-anthropic">
           <MessagesSquare className="size-4 text-white" />
@@ -61,6 +76,11 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
           <div className="text-[14px] font-semibold">Multimodell</div>
           <div className="text-[11px] text-muted">KI-Gruppendebatten</div>
         </div>
+        {onMobileClose && (
+          <button onClick={onMobileClose} className="ml-auto rounded-md p-1 text-muted hover:text-ink md:hidden" aria-label="Navigation schließen">
+            <X className="size-4" />
+          </button>
+        )}
       </div>
 
       <div className="px-3">
@@ -72,6 +92,11 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
           <Plus className="size-4" />
           Neue Debatte
         </button>
+        {error && (
+          <p role="alert" className="mt-2 text-[12px] text-red-400">
+            {error}
+          </p>
+        )}
       </div>
 
       <nav className="mt-4 px-2">
@@ -103,7 +128,7 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
             </Link>
             <button
               onClick={() => deleteRoom(room.id)}
-              className="absolute right-1.5 top-1/2 hidden -translate-y-1/2 rounded p-1 text-muted hover:text-red-400 group-hover:block"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-1 text-muted opacity-100 hover:text-red-400 focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100"
               aria-label={`${room.title} löschen`}
             >
               <Trash2 className="size-3.5" />
@@ -138,6 +163,7 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
         )}
       </div>
 
+      <LegalLinks className="px-4 pb-2" />
       <div className="flex items-center gap-2.5 border-t border-line px-4 py-3">
         <span className="flex size-7 items-center justify-center rounded-full bg-surface-3 text-[11px] font-semibold text-ink-2">
           {(email ?? "?").slice(0, 2).toUpperCase()}
@@ -153,5 +179,6 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
         )}
       </div>
     </aside>
+    </>
   );
 }

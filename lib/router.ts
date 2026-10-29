@@ -2,6 +2,7 @@ import { generateObject, generateText } from "ai";
 import { z } from "zod";
 import { buildTranscript } from "./context-builder";
 import { getLanguageModel, ROUTER_MODEL, SUMMARY_MODEL } from "./ai/provider";
+import { logError } from "./log";
 import type { ChatMessage, RoomAgent } from "./types";
 
 export const USER_TURN = "USER";
@@ -69,6 +70,7 @@ export async function routeNextSpeaker(
   agents: RoomAgent[],
   apiKey: string,
   turnIndex: number,
+  signal?: AbortSignal,
 ): Promise<RouterDecision> {
   const recent = messages.slice(-ROUTER_CONTEXT_SIZE);
   const roster = agents.map((a) => `- id: ${a.id} | ${a.display_name} – ${a.role_title}`).join("\n");
@@ -78,12 +80,14 @@ export async function routeNextSpeaker(
       model: getLanguageModel(ROUTER_MODEL, apiKey),
       schema: routerSchema,
       temperature: 0,
+      maxOutputTokens: 120,
+      abortSignal: signal,
       system:
         "Du bist der Moderator eines Gruppenchats zwischen einem Menschen und mehreren KIs. " +
         "Wähle anhand der letzten Nachrichten, welche KI fachlich als Nächstes am meisten beitragen kann. " +
         "Wähle nie dieselbe KI, die gerade gesprochen hat. " +
         `Gib "${USER_TURN}" zurück, wenn die Frage beantwortet ist und der Mensch entscheiden sollte.`,
-      prompt: `Verfügbare KIs:\n${roster}\n\nLetzte Nachrichten:\n${buildTranscript(recent)}`,
+      prompt: `Verfügbare KIs:\n${roster}\n\nLetzte Nachrichten:\n${buildTranscript(recent.map(truncateMessage))}`,
     });
     const valid = object.nextSpeakerId === USER_TURN || agents.some((a) => a.id === object.nextSpeakerId);
     if (!valid) return heuristicRoute(messages, agents, turnIndex);
@@ -94,9 +98,21 @@ export async function routeNextSpeaker(
       outputTokens: usage.outputTokens ?? 0,
     };
   } catch (error) {
-    console.error("[router] fallback auf Heuristik:", error);
+    if (signal?.aborted) throw error;
+    logError("router.fallback", error, { model: ROUTER_MODEL });
     return heuristicRoute(messages, agents, turnIndex);
   }
+}
+
+/** Router & Summary sehen jede Nachricht höchstens in dieser Länge (Kosten-Bremse, BF-29). */
+const MAX_CHARS_PER_MESSAGE = 1_500;
+/** Höchstens so viele herausgefallene Nachrichten gehen in einen Summary-Aufruf. */
+export const MAX_SUMMARY_INPUT_MESSAGES = 30;
+export const SUMMARY_MAX_OUTPUT_TOKENS = 300;
+const MAX_SUMMARY_CHARS = 1_500;
+
+function truncateMessage(m: ChatMessage): ChatMessage {
+  return m.content.length > MAX_CHARS_PER_MESSAGE ? { ...m, content: `${m.content.slice(0, MAX_CHARS_PER_MESSAGE)} …` } : m;
 }
 
 export interface SummaryResult {
@@ -108,9 +124,11 @@ export interface SummaryResult {
 /** Fasst Nachrichten, die aus dem Sliding Window fallen, mit dem bisherigen Gedächtnis zusammen. */
 export async function summarizeDroppedMessages(
   previousSummary: string,
-  dropped: ChatMessage[],
+  droppedAll: ChatMessage[],
   apiKey: string | null,
+  signal?: AbortSignal,
 ): Promise<SummaryResult> {
+  const dropped = droppedAll.slice(-MAX_SUMMARY_INPUT_MESSAGES).map(truncateMessage);
   if (!apiKey) {
     const lines = dropped.slice(-3).map((m) => `${m.sender_name}: ${m.content.replace(/\s+/g, " ").slice(0, 90)}…`);
     return { summary: [previousSummary, ...lines].filter(Boolean).join(" ").slice(-900), inputTokens: 0, outputTokens: 0 };
@@ -118,10 +136,16 @@ export async function summarizeDroppedMessages(
   const { text, usage } = await generateText({
     model: getLanguageModel(SUMMARY_MODEL, apiKey),
     temperature: 0.2,
+    maxOutputTokens: SUMMARY_MAX_OUTPUT_TOKENS,
+    abortSignal: signal,
     system:
       "Du komprimierst Gruppenchat-Verläufe. Fasse in maximal 3 Sätzen zusammen: Kernfrage, wichtigste Positionen " +
       "(mit Namen der Sprecher) und offene Streitpunkte. Keine Einleitung.",
-    prompt: `Bisherige Zusammenfassung:\n${previousSummary || "(leer)"}\n\nNeue ältere Nachrichten:\n${buildTranscript(dropped)}`,
+    prompt: `Bisherige Zusammenfassung:\n${previousSummary.slice(0, MAX_SUMMARY_CHARS) || "(leer)"}\n\nNeue ältere Nachrichten:\n${buildTranscript(dropped)}`,
   });
-  return { summary: text.trim(), inputTokens: usage.inputTokens ?? 0, outputTokens: usage.outputTokens ?? 0 };
+  return {
+    summary: text.trim().slice(0, MAX_SUMMARY_CHARS),
+    inputTokens: usage.inputTokens ?? 0,
+    outputTokens: usage.outputTokens ?? 0,
+  };
 }

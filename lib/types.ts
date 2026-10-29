@@ -73,7 +73,7 @@ export type OrchestrateEvent =
   | { type: "router"; agentId: string | null; reason: string }
   | { type: "turn-start"; tempId: string; agentId: string }
   | { type: "delta"; tempId: string; text: string }
-  | { type: "turn-end"; tempId: string; message: ChatMessage }
+  | { type: "turn-end"; tempId: string; message: ChatMessage | null }
   | { type: "summary"; summary: string; summarizedCount: number }
   | { type: "usage"; profile: PublicProfile }
   | { type: "error"; code: string; message: string }

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { handleApi, jsonError } from "@/lib/api";
+import { handleApi, HttpError, limitMutations, readJson } from "@/lib/api";
+import { isEncryptionConfigured } from "@/lib/crypto";
+import { PLANS } from "@/lib/plans";
 import { getSession, toPublicProfile } from "@/lib/session";
 import { profilePatchSchema } from "@/lib/validation";
 
@@ -10,14 +12,18 @@ export async function GET() {
   });
 }
 
-/** BYOK: eigenen OpenRouter-Key setzen oder entfernen (nur Workspace-Tarif). */
+/** BYOK: eigenen OpenRouter-Key setzen oder entfernen (nur Workspace-Tarif, verschlüsselt gespeichert). */
 export async function PATCH(request: Request) {
   return handleApi(async () => {
-    const { store } = await getSession();
-    const { custom_openrouter_key } = profilePatchSchema.parse(await request.json());
+    const { store, userId } = await getSession();
+    await limitMutations(userId);
+    const { custom_openrouter_key } = await readJson(request, profilePatchSchema);
     const profile = await store.getProfile();
-    if (custom_openrouter_key && profile.subscription_tier !== "team") {
-      return jsonError("Eigene API-Keys sind im Workspace/BYOK-Tarif verfügbar.", 402, "plan_limit");
+    if (custom_openrouter_key && !PLANS[profile.subscription_tier].byok) {
+      throw new HttpError(402, "plan_limit", "Eigene API-Keys sind im Workspace/BYOK-Tarif verfügbar.");
+    }
+    if (custom_openrouter_key && !isEncryptionConfigured()) {
+      throw new HttpError(503, "not_configured", "Eigene Keys können gerade nicht sicher gespeichert werden.");
     }
     return NextResponse.json({ profile: toPublicProfile(await store.setCustomKey(custom_openrouter_key)) });
   });

@@ -1,13 +1,35 @@
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import type { LanguageModel } from "ai";
+import { PLANS } from "../plans";
+import type { UserProfile } from "../types";
 
-/** Liefert den zu verwendenden OpenRouter-Key: BYOK hat Vorrang vor dem Plattform-Key. */
-export function resolveApiKey(customKey: string | null | undefined): string | null {
-  return customKey?.trim() || process.env.OPENROUTER_API_KEY?.trim() || null;
+export type KeySource = "byok" | "platform" | "demo";
+
+export interface ResolvedKey {
+  source: KeySource;
+  apiKey: string | null;
 }
 
-export function isDemoMode(customKey: string | null | undefined): boolean {
-  return resolveApiKey(customKey) === null;
+/** Ein BYOK-Wert zählt nur, wenn er nicht leer ist UND der Tarif BYOK erlaubt (BF-24). */
+export function effectiveCustomKey(profile: Pick<UserProfile, "custom_openrouter_key" | "subscription_tier">): string | null {
+  const key = profile.custom_openrouter_key?.trim();
+  if (!key || !PLANS[profile.subscription_tier].byok) return null;
+  return key;
+}
+
+/**
+ * Einzige Stelle, die entscheidet, welcher Schlüssel bezahlt. Kontingentprüfung
+ * und Modellaufruf nutzen dieselbe Funktion, damit sie sich nie widersprechen.
+ */
+export function resolveApiKey(
+  profile: Pick<UserProfile, "custom_openrouter_key" | "subscription_tier">,
+  options: { allowPlatformKey: boolean },
+): ResolvedKey {
+  const custom = effectiveCustomKey(profile);
+  if (custom) return { source: "byok", apiKey: custom };
+  const platform = process.env.OPENROUTER_API_KEY?.trim();
+  if (platform && options.allowPlatformKey) return { source: "platform", apiKey: platform };
+  return { source: "demo", apiKey: null };
 }
 
 export function getLanguageModel(modelId: string, apiKey: string): LanguageModel {
@@ -15,7 +37,8 @@ export function getLanguageModel(modelId: string, apiKey: string): LanguageModel
     apiKey,
     headers: { "X-Title": "Multimodell-Chat" },
   });
-  return openrouter.chat(modelId);
+  // BF-17: Nur Anbieter, die Prompts nicht speichern bzw. nicht zum Training nutzen.
+  return openrouter.chat(modelId, { provider: { data_collection: "deny" } });
 }
 
 export const ROUTER_MODEL = process.env.ROUTER_MODEL || "google/gemini-2.5-flash";

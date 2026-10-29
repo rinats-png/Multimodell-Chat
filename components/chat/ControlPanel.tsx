@@ -2,6 +2,7 @@
 
 import { Brain, Hand, Repeat2 } from "lucide-react";
 import { formatNumber, formatUsd } from "@/lib/format";
+import type { PlanLimits } from "@/lib/plans";
 import type { ChatMessage, ChatRoom, OrchestrationMode, RoomSettingsPatch } from "@/lib/types";
 import { RangeField } from "@/components/ui/RangeField";
 
@@ -9,6 +10,7 @@ interface ControlPanelProps {
   room: ChatRoom;
   messages: ChatMessage[];
   onChange: (patch: RoomSettingsPatch) => void;
+  limits: PlanLimits;
 }
 
 const MODES: { value: OrchestrationMode; title: string; description: string; icon: typeof Brain }[] = [
@@ -32,7 +34,7 @@ const MODES: { value: OrchestrationMode; title: string; description: string; ico
   },
 ];
 
-export function ControlPanel({ room, messages, onChange }: ControlPanelProps) {
+export function ControlPanel({ room, messages, onChange, limits }: ControlPanelProps) {
   const totals = messages.reduce(
     (acc, m) => ({
       input: acc.input + m.input_tokens,
@@ -72,18 +74,18 @@ export function ControlPanel({ room, messages, onChange }: ControlPanelProps) {
         <RangeField
           label="Sliding Window"
           hint="Nur die letzten N Nachrichten werden an jedes Modell geschickt. Ältere landen im Langzeitgedächtnis."
-          value={room.sliding_window_size}
+          value={Math.min(room.sliding_window_size, limits.maxSlidingWindow)}
           min={2}
-          max={40}
+          max={limits.maxSlidingWindow}
           suffix="Nachr."
           onChange={(v) => onChange({ sliding_window_size: v })}
         />
         <RangeField
           label="Max-Auto-Turns"
           hint="Harte Obergrenze für automatische KI-Antworten pro User-Nachricht – verhindert Endlosschleifen."
-          value={room.max_auto_turns}
+          value={Math.min(room.max_auto_turns, limits.maxAutoTurns)}
           min={1}
-          max={10}
+          max={limits.maxAutoTurns}
           suffix="Turns"
           onChange={(v) => onChange({ max_auto_turns: v })}
         />
@@ -108,7 +110,9 @@ export function ControlPanel({ room, messages, onChange }: ControlPanelProps) {
       <section>
         <h3 className="text-[11px] font-medium uppercase tracking-wider text-muted">Langzeitgedächtnis</h3>
         <div className="mt-2 rounded-xl border border-line bg-surface-2 p-3 text-[12.5px] leading-relaxed text-ink-2">
-          {room.running_summary ? (
+          {!limits.runningSummary ? (
+            <p className="text-muted">Das Langzeitgedächtnis ist ab dem Pro-Tarif verfügbar.</p>
+          ) : room.running_summary ? (
             <>
               <p>{room.running_summary}</p>
               <p className="mt-2 text-[11px] text-muted">

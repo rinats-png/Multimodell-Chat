@@ -16,10 +16,22 @@ interface MessageItemProps {
   onInspect?: () => void;
 }
 
+/** Externe Bilder aus Modellantworten werden nicht geladen (Datenabfluss per Prompt-Injection, BF-31). */
+const MARKDOWN_COMPONENTS = {
+  img: ({ alt }: { alt?: string }) => <span className="text-muted">[Bild: {alt || "ohne Beschreibung"}]</span>,
+  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
+    <a href={href} target="_blank" rel="noopener noreferrer nofollow">
+      {children}
+    </a>
+  ),
+};
+
 export function Markdown({ children }: { children: string }) {
   return (
     <div className="prose-chat text-[14.5px] text-ink-2">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{children}</ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>
+        {children}
+      </ReactMarkdown>
     </div>
   );
 }
@@ -41,13 +53,20 @@ export function MessageItem({ message, agent, outsideWindow, onInspect }: Messag
   const modelId = agent?.model_identifier ?? "other/unknown";
   const style = agentStyle(modelId);
   return (
-    <div className={clsx("group flex gap-3", outsideWindow && "opacity-55")}>
+    <article
+      className={clsx("group flex gap-3", outsideWindow && "opacity-55")}
+      data-ai-generated="true"
+      aria-label={`KI-Antwort von ${message.sender_name}`}
+    >
       <AgentAvatar name={message.sender_name} modelId={modelId} className="mt-0.5" />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-2">
           <span className={clsx("text-[13.5px] font-semibold", style.text)}>{message.sender_name}</span>
           {agent && <span className="text-[12px] text-muted">{agent.role_title}</span>}
           <span className="text-[11px] text-muted">· {formatTime(message.created_at)}</span>
+          <span className="rounded border border-line px-1 text-[10px] uppercase tracking-wide text-muted" title="Von KI erzeugt">
+            KI
+          </span>
         </div>
         <div className="mt-1">
           <Markdown>{message.content}</Markdown>
@@ -68,7 +87,7 @@ export function MessageItem({ message, agent, outsideWindow, onInspect }: Messag
           {onInspect && (
             <button
               onClick={onInspect}
-              className="ml-auto inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-[11.5px] opacity-0 transition-opacity hover:bg-surface-3 hover:text-ink group-hover:opacity-100"
+              className="ml-auto inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-[11.5px] transition-opacity hover:bg-surface-3 hover:text-ink focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100"
             >
               <ScanSearch className="size-3.5" />
               API-Prompt
@@ -76,7 +95,7 @@ export function MessageItem({ message, agent, outsideWindow, onInspect }: Messag
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 

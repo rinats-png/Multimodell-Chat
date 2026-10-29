@@ -3,6 +3,9 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
+// Alle Seiten dynamisch rendern: Die CSP nutzt eine Nonce pro Anfrage (siehe middleware.ts).
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Multimodell-Chat – KI-Gruppendebatten",
   description: "Diskutiere gleichzeitig mit ChatGPT, Claude und Gemini in einem gemeinsamen Gruppenchat.",

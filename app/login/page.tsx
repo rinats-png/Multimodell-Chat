@@ -4,11 +4,8 @@ import { LoginForm } from "./LoginForm";
 
 export const dynamic = "force-dynamic";
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ link?: string; reset?: string }> }) {
   if (!isSupabaseConfigured()) redirect("/chat");
-  return (
-    <div className="flex min-h-dvh items-center justify-center px-4">
-      <LoginForm />
-    </div>
-  );
+  const params = await searchParams;
+  return <LoginForm linkInvalid={params.link === "ungueltig"} passwordChanged={params.reset === "ok"} />;
 }

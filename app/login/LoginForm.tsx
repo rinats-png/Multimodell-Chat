@@ -1,63 +1,66 @@
 "use client";
 
-import { MessagesSquare } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@/lib/auth-policy";
+import { AuthCard, inputCls, postJson } from "@/components/auth/AuthCard";
 
-export function LoginForm() {
+interface LoginFormProps {
+  linkInvalid: boolean;
+  passwordChanged: boolean;
+}
+
+export function LoginForm({ linkInvalid, passwordChanged }: LoginFormProps) {
   const router = useRouter();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
+    linkInvalid
+      ? { ok: false, text: "Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an." }
+      : passwordChanged
+        ? { ok: true, text: "Passwort geändert. Bitte melde dich mit dem neuen Passwort an." }
+        : null,
+  );
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setMessage(null);
-    const supabase = createSupabaseBrowserClient();
     try {
       if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        const { ok, data } = await postJson("/api/auth/login", { email, password });
+        if (!ok) return setMessage({ ok: false, text: data.error ?? "Anmeldung fehlgeschlagen" });
         router.push("/chat");
         router.refresh();
       } else {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-        });
-        if (error) throw error;
-        if (data.session) {
+        const { ok, data } = await postJson("/api/auth/signup", { email, password, acceptTerms });
+        if (!ok) return setMessage({ ok: false, text: data.error ?? "Registrierung fehlgeschlagen" });
+        if (data.signedIn) {
           router.push("/chat");
           router.refresh();
         } else {
-          setMessage({ ok: true, text: "Fast geschafft – bestätige deine E-Mail über den Link in deinem Postfach." });
+          setMessage({
+            ok: true,
+            text: "Fast geschafft – falls die Adresse noch nicht registriert ist, bekommst du gleich eine Bestätigungs-E-Mail.",
+          });
         }
       }
-    } catch (err) {
-      setMessage({ ok: false, text: err instanceof Error ? err.message : "Anmeldung fehlgeschlagen" });
     } finally {
       setBusy(false);
     }
   }
 
-  const inputCls =
-    "mt-1 w-full rounded-lg border border-line bg-surface-2 px-3 py-2 text-[14px] outline-none focus:border-accent/60";
-
+  const signup = mode === "signup";
   return (
-    <div className="w-full max-w-sm">
-      <div className="flex flex-col items-center text-center">
-        <div className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-openai via-google to-anthropic">
-          <MessagesSquare className="size-5 text-white" />
-        </div>
-        <h1 className="mt-4 text-xl font-semibold">{mode === "signin" ? "Willkommen zurück" : "Konto erstellen"}</h1>
-        <p className="mt-1 text-[13px] text-muted">Debattiere mit ChatGPT, Claude und Gemini in einem Raum.</p>
-      </div>
-      <form onSubmit={submit} className="mt-8 space-y-3 rounded-2xl border border-line bg-surface p-5">
+    <AuthCard
+      title={signup ? "Konto erstellen" : "Willkommen zurück"}
+      subtitle="Debattiere mit ChatGPT, Claude und Gemini in einem Raum."
+    >
+      <form onSubmit={submit} className="mt-8 space-y-3 rounded-2xl border border-line bg-surface p-5" noValidate={false}>
         <label className="block text-[12.5px] text-muted">
           E-Mail
           <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
@@ -67,28 +70,61 @@ export function LoginForm() {
           <input
             type="password"
             required
-            minLength={8}
-            autoComplete={mode === "signin" ? "current-password" : "new-password"}
+            minLength={signup ? PASSWORD_MIN_LENGTH : 1}
+            maxLength={PASSWORD_MAX_LENGTH}
+            autoComplete={signup ? "new-password" : "current-password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className={inputCls}
+            aria-describedby={signup ? "pw-hint" : undefined}
           />
+          {signup && (
+            <span id="pw-hint" className="mt-1 block text-[11.5px]">
+              Mindestens {PASSWORD_MIN_LENGTH} Zeichen. Tipp: ein Satz aus mehreren Wörtern, gern mit Passwort-Manager.
+            </span>
+          )}
         </label>
-        {message && <p className={`text-[12.5px] ${message.ok ? "text-openai" : "text-red-400"}`}>{message.text}</p>}
+        {signup && (
+          <label className="flex items-start gap-2 text-[12.5px] text-ink-2">
+            <input type="checkbox" required checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} className="mt-0.5 accent-[var(--color-accent)]" />
+            <span>
+              Ich habe die <Link href="/datenschutz" className="text-accent-strong underline">Datenschutzerklärung</Link> gelesen und weiß,
+              dass meine Chat-Inhalte zur Beantwortung an KI-Anbieter übermittelt werden.
+            </span>
+          </label>
+        )}
+        {message && (
+          <p role={message.ok ? "status" : "alert"} className={`text-[12.5px] ${message.ok ? "text-openai" : "text-red-400"}`}>
+            {message.text}
+          </p>
+        )}
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || (signup && !acceptTerms)}
           className="w-full rounded-lg bg-ink py-2 text-[13.5px] font-semibold text-canvas hover:bg-ink-2 disabled:opacity-60"
         >
-          {busy ? "Bitte warten…" : mode === "signin" ? "Anmelden" : "Registrieren"}
+          {busy ? "Bitte warten…" : signup ? "Registrieren" : "Anmelden"}
         </button>
+        {!signup && (
+          <p className="text-center text-[12.5px]">
+            <Link href="/passwort-vergessen" className="text-muted hover:text-ink-2 hover:underline">
+              Passwort vergessen?
+            </Link>
+          </p>
+        )}
       </form>
       <p className="mt-4 text-center text-[13px] text-muted">
-        {mode === "signin" ? "Noch kein Konto?" : "Schon registriert?"}{" "}
-        <button onClick={() => setMode(mode === "signin" ? "signup" : "signin")} className="text-accent-strong hover:underline">
-          {mode === "signin" ? "Kostenlos starten" : "Anmelden"}
+        {signup ? "Schon registriert?" : "Noch kein Konto?"}{" "}
+        <button
+          onClick={() => {
+            setMode(signup ? "signin" : "signup");
+            setMessage(null);
+          }}
+          className="text-accent-strong hover:underline"
+        >
+          {signup ? "Anmelden" : "Kostenlos starten"}
         </button>
       </p>
-    </div>
+    </AuthCard>
   );
 }

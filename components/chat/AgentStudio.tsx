@@ -3,7 +3,6 @@
 import clsx from "clsx";
 import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { MODEL_CATALOG } from "@/lib/models";
 import type { AgentPatch, RoomAgent } from "@/lib/types";
 import { AgentAvatar } from "@/components/ui/AgentAvatar";
 
@@ -12,17 +11,26 @@ interface AgentStudioProps {
   onUpdate: (agentId: string, patch: AgentPatch) => Promise<void>;
   onCreate: () => Promise<void>;
   onDelete: (agentId: string) => Promise<void>;
+  modelCatalog: { id: string; label: string }[];
+  freeModelChoice: boolean;
+  maxActiveAgents: number;
 }
 
-export function AgentStudio({ agents, onUpdate, onCreate, onDelete }: AgentStudioProps) {
+export function AgentStudio({ agents, onUpdate, onCreate, onDelete, modelCatalog, freeModelChoice, maxActiveAgents }: AgentStudioProps) {
   const [openId, setOpenId] = useState<string | null>(null);
+  const [toggleError, setToggleError] = useState<string | null>(null);
 
   return (
     <div className="space-y-2 p-4">
       <p className="pb-1 text-[12px] leading-relaxed text-muted">
         Rollen und System-Prompts gelten ab dem nächsten Turn. Die Gruppenchat-Regeln (kein Namens-Präfix, keine
-        Schmeichelei) werden automatisch angehängt.
+        Schmeichelei) werden automatisch angehängt. In deinem Tarif antworten bis zu {maxActiveAgents} aktive Agenten.
       </p>
+      {toggleError && (
+        <p role="alert" className="text-[12px] text-red-400">
+          {toggleError}
+        </p>
+      )}
       {agents.map((agent) => (
         <AgentCard
           key={agent.id}
@@ -30,7 +38,17 @@ export function AgentStudio({ agents, onUpdate, onCreate, onDelete }: AgentStudi
           open={openId === agent.id}
           onToggle={() => setOpenId(openId === agent.id ? null : agent.id)}
           onUpdate={(patch) => onUpdate(agent.id, patch)}
+          onToggleActive={async () => {
+            setToggleError(null);
+            try {
+              await onUpdate(agent.id, { is_active: !agent.is_active });
+            } catch (e) {
+              setToggleError(e instanceof Error ? e.message : "Änderung fehlgeschlagen");
+            }
+          }}
           onDelete={() => onDelete(agent.id)}
+          modelCatalog={modelCatalog}
+          freeModelChoice={freeModelChoice}
         />
       ))}
       <button
@@ -49,10 +67,13 @@ interface AgentCardProps {
   open: boolean;
   onToggle: () => void;
   onUpdate: (patch: AgentPatch) => Promise<void>;
+  onToggleActive: () => Promise<void>;
   onDelete: () => Promise<void>;
+  modelCatalog: { id: string; label: string }[];
+  freeModelChoice: boolean;
 }
 
-function AgentCard({ agent, open, onToggle, onUpdate, onDelete }: AgentCardProps) {
+function AgentCard({ agent, open, onToggle, onUpdate, onToggleActive, onDelete, modelCatalog, freeModelChoice }: AgentCardProps) {
   const [draft, setDraft] = useState({
     display_name: agent.display_name,
     role_title: agent.role_title,
@@ -97,7 +118,7 @@ function AgentCard({ agent, open, onToggle, onUpdate, onDelete }: AgentCardProps
           role="switch"
           aria-checked={agent.is_active}
           aria-label={`${agent.display_name} ${agent.is_active ? "deaktivieren" : "aktivieren"}`}
-          onClick={() => onUpdate({ is_active: !agent.is_active })}
+          onClick={onToggleActive}
           className={clsx(
             "relative h-5 w-9 shrink-0 rounded-full transition-colors",
             agent.is_active ? "bg-accent" : "bg-surface-3 ring-1 ring-line-strong",
@@ -121,12 +142,29 @@ function AgentCard({ agent, open, onToggle, onUpdate, onDelete }: AgentCardProps
             </label>
             <label className="text-[11.5px] text-muted">
               Modell
-              <input
-                className={inputCls}
-                list="model-catalog"
-                value={draft.model_identifier}
-                onChange={(e) => setDraft({ ...draft, model_identifier: e.target.value })}
-              />
+              {freeModelChoice ? (
+                <input
+                  className={inputCls}
+                  list={`model-catalog-${agent.id}`}
+                  value={draft.model_identifier}
+                  onChange={(e) => setDraft({ ...draft, model_identifier: e.target.value })}
+                />
+              ) : (
+                <select
+                  className={inputCls}
+                  value={draft.model_identifier}
+                  onChange={(e) => setDraft({ ...draft, model_identifier: e.target.value })}
+                >
+                  {!modelCatalog.some((m) => m.id === draft.model_identifier) && (
+                    <option value={draft.model_identifier}>{draft.model_identifier} (nur mit eigenem Key)</option>
+                  )}
+                  {modelCatalog.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+              )}
             </label>
           </div>
           <label className="block text-[11.5px] text-muted">
@@ -161,8 +199,8 @@ function AgentCard({ agent, open, onToggle, onUpdate, onDelete }: AgentCardProps
           </div>
         </div>
       )}
-      <datalist id="model-catalog">
-        {MODEL_CATALOG.map((m) => (
+      <datalist id={`model-catalog-${agent.id}`}>
+        {modelCatalog.map((m) => (
           <option key={m.id} value={m.id}>
             {m.label}
           </option>

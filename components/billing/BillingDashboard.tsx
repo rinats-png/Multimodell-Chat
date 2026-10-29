@@ -7,15 +7,18 @@ import { useState } from "react";
 import { formatCompact, formatNumber, formatUsd } from "@/lib/format";
 import { PLAN_ORDER, PLANS } from "@/lib/plans";
 import type { PublicProfile, SubscriptionTier } from "@/lib/types";
+import { AccountSection } from "@/components/account/AccountSection";
 import { Meter } from "@/components/ui/Meter";
 
 interface BillingDashboardProps {
   profile: PublicProfile;
   totals: { input: number; output: number; cost: number; replies: number };
   isDemoStore: boolean;
+  billingConfigured: boolean;
+  checkoutState: "success" | "cancelled" | null;
 }
 
-export function BillingDashboard({ profile: initialProfile, totals, isDemoStore }: BillingDashboardProps) {
+export function BillingDashboard({ profile: initialProfile, totals, isDemoStore, billingConfigured, checkoutState }: BillingDashboardProps) {
   const router = useRouter();
   const [profile, setProfile] = useState(initialProfile);
   const [busyTier, setBusyTier] = useState<SubscriptionTier | null>(null);
@@ -23,7 +26,16 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore 
   const plan = PLANS[profile.subscription_tier];
   const remaining = Math.max(0, profile.monthly_token_limit - profile.tokens_used_this_month);
 
+  async function openPortal() {
+    setError(null);
+    const res = await fetch("/api/billing/portal", { method: "POST" });
+    const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+    if (!res.ok || !data.url) return setError(data.error ?? "Abo-Verwaltung nicht verfügbar");
+    window.location.href = data.url;
+  }
+
   async function choosePlan(tier: SubscriptionTier) {
+    if (!isDemoStore && tier === "free") return openPortal();
     setBusyTier(tier);
     setError(null);
     try {
@@ -50,6 +62,16 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <h1 className="text-2xl font-semibold tracking-tight">Tarif & Verbrauch</h1>
+      {checkoutState === "success" && (
+        <p role="status" className="mt-3 rounded-lg border border-openai/30 bg-openai/10 px-3 py-2 text-[13px] text-openai">
+          Danke! Die Zahlung wird bestätigt – dein Tarif wird in wenigen Sekunden freigeschaltet. Lade die Seite gleich neu.
+        </p>
+      )}
+      {checkoutState === "cancelled" && (
+        <p role="status" className="mt-3 rounded-lg border border-line bg-surface px-3 py-2 text-[13px] text-muted">
+          Der Bezahlvorgang wurde abgebrochen. Es wurde nichts berechnet.
+        </p>
+      )}
       <p className="mt-1 text-[14px] text-muted">
         Abrechnungszeitraum seit {new Date(profile.usage_period_start).toLocaleDateString("de-DE")} · Reset am Monatsanfang
       </p>
@@ -140,14 +162,25 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore 
             );
           })}
         </div>
-        {isDemoStore && (
+        {isDemoStore ? (
           <p className="mt-3 text-center text-[12px] text-muted">
-            Demo-Workspace: Tarifwechsel werden sofort ohne Zahlung übernommen.
+            Demo-Workspace: Tarifwechsel werden lokal sofort ohne Zahlung übernommen.
           </p>
+        ) : (
+          <div className="mt-4 flex flex-col items-center gap-1 text-[12px] text-muted">
+            {!billingConfigured && <p>Die Bezahlung ist noch nicht eingerichtet.</p>}
+            {billingConfigured && profile.subscription_tier !== "free" && (
+              <button onClick={openPortal} className="text-accent-strong hover:underline">
+                Abo verwalten oder kündigen
+              </button>
+            )}
+            <p>Preise inkl. gesetzlicher MwSt. Monatlich kündbar.</p>
+          </div>
         )}
       </section>
 
       <ByokForm profile={profile} onSaved={setProfile} />
+      <AccountSection isDemoStore={isDemoStore} />
     </div>
   );
 }

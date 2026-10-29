@@ -1,10 +1,11 @@
 "use client";
 
 import clsx from "clsx";
-import { Brain, Eraser, Hand, PanelRight, Repeat2, ScanSearch, TriangleAlert, X } from "lucide-react";
+import { Brain, Eraser, Hand, Info, Menu, PanelRight, Repeat2, ScanSearch, TriangleAlert, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { applySlidingWindow } from "@/lib/context-builder";
+import type { PlanLimits } from "@/lib/plans";
 import type {
   AgentPatch,
   ChatMessage,
@@ -33,6 +34,10 @@ interface ChatWorkspaceProps {
   email: string | null;
   isDemoStore: boolean;
   isDemoModel: boolean;
+  limits: PlanLimits;
+  modelCatalog: { id: string; label: string }[];
+  /** Mit eigenem Key darf jede Modell-ID eingetragen werden. */
+  freeModelChoice: boolean;
 }
 
 interface RouterNoteItem {
@@ -71,7 +76,8 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
   const [streaming, setStreaming] = useState<StreamingTurn | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [panel, setPanel] = useState<"controls" | "agents" | null>("controls");
+  const [panel, setPanel] = useState<"controls" | "agents" | null>(null);
+  const [navOpen, setNavOpen] = useState(false);
   const [inspector, setInspector] = useState<InspectorTarget | null>(null);
   const [editingTitle, setEditingTitle] = useState(false);
 
@@ -108,10 +114,12 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
       case "delta":
         setStreaming((prev) => (prev && prev.tempId === event.tempId ? { ...prev, text: prev.text + event.text } : prev));
         break;
-      case "turn-end":
+      case "turn-end": {
         setStreaming(null);
-        setMessages((prev) => [...prev, event.message]);
+        const message = event.message;
+        if (message) setMessages((prev) => [...prev, message]);
         break;
+      }
       case "summary":
         setRoom((prev) => ({ ...prev, running_summary: event.summary, summarized_message_count: event.summarizedCount }));
         break;
@@ -140,7 +148,10 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
       });
       if (!res.ok || !res.body) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(data.error ?? `Fehler ${res.status}`);
+        const retry = res.headers.get("Retry-After");
+        throw new Error(
+          (data.error ?? `Fehler ${res.status}`) + (res.status === 429 && retry && !data.error?.includes(" s ") ? ` (erneut in ${retry} s)` : ""),
+        );
       }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -178,8 +189,11 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(merged),
       });
-      if (!res.ok) setError(((await res.json()) as { error: string }).error);
-      else if (merged.title) router.refresh();
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setError(data.error ?? "Einstellung konnte nicht gespeichert werden");
+        setRoom(props.initialRoom);
+      } else if (merged.title) router.refresh();
     }, 350);
   }
 
@@ -227,6 +241,11 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
     setRoom((prev) => ({ ...prev, running_summary: "", summarized_message_count: 0 }));
   }
 
+  // Auf breiten Bildschirmen startet das Seitenpanel geöffnet, sonst als Schublade bei Bedarf.
+  useEffect(() => {
+    if (window.matchMedia("(min-width: 1280px)").matches) setPanel("controls");
+  }, []);
+
   // ---- Render ---------------------------------------------------------------
 
   const activeAgents = agents.filter((a) => a.is_active);
@@ -263,10 +282,15 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         profile={profile}
         email={props.email}
         isDemoStore={props.isDemoStore}
+        mobileOpen={navOpen}
+        onMobileClose={() => setNavOpen(false)}
       />
 
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-line px-4">
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line px-2 sm:gap-3 sm:px-4">
+          <IconButton label="Navigation öffnen" onClick={() => setNavOpen(true)} className="md:hidden">
+            <Menu className="size-4" />
+          </IconButton>
           {editingTitle ? (
             <input
               autoFocus
@@ -312,7 +336,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
             <IconButton label="Verlauf leeren" onClick={clearHistory} disabled={running || messages.length === 0}>
               <Eraser className="size-4" />
             </IconButton>
-            <IconButton label="Seitenpanel" onClick={() => setPanel(panel ? null : "controls")} active={panel !== null}>
+            <IconButton label="Steuerung & Agenten-Studio" onClick={() => setPanel(panel ? null : "controls")} active={panel !== null}>
               <PanelRight className="size-4" />
             </IconButton>
           </div>
@@ -358,9 +382,13 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         />
       </main>
 
+      {panel && <div className="fixed inset-0 z-30 bg-black/60 xl:hidden" onClick={() => setPanel(null)} aria-hidden />}
       {panel && (
-        <aside className="hidden w-[340px] shrink-0 flex-col border-l border-line bg-surface xl:flex">
-          <div className="flex h-14 shrink-0 items-center border-b border-line px-3">
+        <aside
+          aria-label="Steuerung und Agenten-Studio"
+          className="fixed inset-y-0 right-0 z-40 flex w-[min(340px,100vw)] shrink-0 flex-col border-l border-line bg-surface xl:static xl:z-auto"
+        >
+          <div className="flex h-14 shrink-0 items-center justify-between border-b border-line px-3">
             <Segmented
               ariaLabel="Panel"
               size="sm"
@@ -371,12 +399,23 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
               ]}
               onChange={setPanel}
             />
+            <IconButton label="Panel schließen" onClick={() => setPanel(null)} className="xl:hidden">
+              <X className="size-4" />
+            </IconButton>
           </div>
           <div className="flex-1 overflow-y-auto">
             {panel === "controls" ? (
-              <ControlPanel room={room} messages={messages} onChange={updateRoom} />
+              <ControlPanel room={room} messages={messages} onChange={updateRoom} limits={props.limits} />
             ) : (
-              <AgentStudio agents={agents} onUpdate={updateAgent} onCreate={createAgent} onDelete={deleteAgent} />
+              <AgentStudio
+                agents={agents}
+                onUpdate={updateAgent}
+                onCreate={createAgent}
+                onDelete={deleteAgent}
+                modelCatalog={props.modelCatalog}
+                freeModelChoice={props.freeModelChoice}
+                maxActiveAgents={props.limits.maxActiveAgents}
+              />
             )}
           </div>
         </aside>
@@ -399,6 +438,7 @@ function IconButton(props: {
   children: React.ReactNode;
   disabled?: boolean;
   active?: boolean;
+  className?: string;
 }) {
   return (
     <button
@@ -409,6 +449,7 @@ function IconButton(props: {
       className={clsx(
         "rounded-lg p-2 text-muted hover:bg-surface-2 hover:text-ink disabled:opacity-40",
         props.active && "bg-surface-2 text-ink",
+        props.className,
       )}
     >
       {props.children}
@@ -440,7 +481,17 @@ function EmptyState({ agents, onPick }: { agents: RoomAgent[]; onPick: (prompt: 
           </div>
         ))}
       </div>
-      <div className="mt-6 flex w-full max-w-2xl flex-col gap-1.5">
+      <p className="mt-6 flex max-w-2xl items-start gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-left text-[12.5px] text-muted">
+        <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+        <span>
+          Alle Antworten stammen von KI-Modellen. Deine Nachrichten gehen zur Beantwortung über OpenRouter an die jeweiligen
+          Modellanbieter (OpenAI, Anthropic, Google u. a.). Bitte keine sensiblen Daten eingeben.{" "}
+          <a href="/datenschutz" className="underline">
+            Mehr erfahren
+          </a>
+        </span>
+      </p>
+      <div className="mt-4 flex w-full max-w-2xl flex-col gap-1.5">
         {STARTER_PROMPTS.map((p) => (
           <button
             key={p}

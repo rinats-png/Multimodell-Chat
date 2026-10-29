@@ -1,3 +1,4 @@
+import { encryptSecret, decryptSecret } from "../crypto";
 import { DEFAULT_AGENTS } from "../default-agents";
 import { PLANS } from "../plans";
 import type { ChatMessage, ChatRoom, RoomAgent, UserProfile } from "../types";
@@ -19,25 +20,32 @@ function monthStart(): string {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString().slice(0, 10);
 }
 
+function freshDb(): MemoryDb {
+  return {
+    profile: {
+      id: DEMO_USER_ID,
+      subscription_tier: "free",
+      monthly_token_limit: PLANS.free.monthlyTokenLimit,
+      tokens_used_this_month: 0,
+      usage_period_start: monthStart(),
+      rate_limit_per_min: PLANS.free.rateLimitPerMin,
+      custom_openrouter_key: null,
+      created_at: new Date().toISOString(),
+    },
+    rooms: new Map(),
+    agents: new Map(),
+    messages: new Map(),
+  };
+}
+
 function db(): MemoryDb {
-  if (!globalForDb.__mmchatMemoryDb) {
-    globalForDb.__mmchatMemoryDb = {
-      profile: {
-        id: DEMO_USER_ID,
-        subscription_tier: "free",
-        monthly_token_limit: PLANS.free.monthlyTokenLimit,
-        tokens_used_this_month: 0,
-        usage_period_start: monthStart(),
-        rate_limit_per_min: PLANS.free.rateLimitPerMin,
-        custom_openrouter_key: null,
-        created_at: new Date().toISOString(),
-      },
-      rooms: new Map(),
-      agents: new Map(),
-      messages: new Map(),
-    };
-  }
+  globalForDb.__mmchatMemoryDb ??= freshDb();
   return globalForDb.__mmchatMemoryDb;
+}
+
+/** Nur für Tests und „Konto löschen“ im Demo-Workspace. */
+export function resetMemoryDb(): void {
+  globalForDb.__mmchatMemoryDb = freshDb();
 }
 
 function must<T>(value: T | undefined, what: string): T {
@@ -45,7 +53,11 @@ function must<T>(value: T | undefined, what: string): T {
   return value;
 }
 
-/** In-Memory-Store für den lokalen Demo-Betrieb ohne Supabase. */
+function decryptedProfile(p: UserProfile): UserProfile {
+  return { ...p, custom_openrouter_key: decryptSecret(p.custom_openrouter_key) };
+}
+
+/** In-Memory-Store für den lokalen Demo-Betrieb ohne Supabase (ein Demo-Nutzer). */
 export const memoryStore: DataStore = {
   async getProfile() {
     const p = db().profile;
@@ -53,11 +65,11 @@ export const memoryStore: DataStore = {
       p.tokens_used_this_month = 0;
       p.usage_period_start = monthStart();
     }
-    return { ...p };
+    return decryptedProfile(p);
   },
   async setCustomKey(key) {
-    db().profile.custom_openrouter_key = key;
-    return { ...db().profile };
+    db().profile.custom_openrouter_key = key ? encryptSecret(key) : null;
+    return decryptedProfile(db().profile);
   },
   async setTier(tier) {
     const p = db().profile;
@@ -65,14 +77,14 @@ export const memoryStore: DataStore = {
     p.monthly_token_limit = PLANS[tier].monthlyTokenLimit;
     p.rate_limit_per_min = PLANS[tier].rateLimitPerMin;
     if (!PLANS[tier].byok) p.custom_openrouter_key = null;
-    return { ...p };
+    return decryptedProfile(p);
   },
   async incrementTokens(tokens) {
     db().profile.tokens_used_this_month += Math.max(0, Math.round(tokens));
   },
 
   async listRooms() {
-    return [...db().rooms.values()].sort((a, b) => b.created_at.localeCompare(a.created_at));
+    return [...db().rooms.values()].sort((a, b) => b.created_at.localeCompare(a.created_at)).map((r) => ({ ...r }));
   },
   async getRoom(roomId) {
     const room = db().rooms.get(roomId);
@@ -115,7 +127,14 @@ export const memoryStore: DataStore = {
   },
 
   async listAgents(roomId) {
-    return [...db().agents.values()].filter((a) => a.room_id === roomId).sort((a, b) => a.sort_order - b.sort_order);
+    return [...db().agents.values()]
+      .filter((a) => a.room_id === roomId)
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map((a) => ({ ...a }));
+  },
+  async getAgent(agentId) {
+    const agent = db().agents.get(agentId);
+    return agent ? { ...agent } : null;
   },
   async createAgent(agent) {
     const created: RoomAgent = { ...agent, id: crypto.randomUUID() };
@@ -123,24 +142,27 @@ export const memoryStore: DataStore = {
     return { ...created };
   },
   async updateAgent(agentId, patch) {
-    const agent = must(db().agents.get(agentId), "Agent");
+    const agent = db().agents.get(agentId);
+    if (!agent) return null;
     Object.assign(agent, patch);
     return { ...agent };
   },
   async deleteAgent(agentId) {
-    db().agents.delete(agentId);
+    if (!db().agents.delete(agentId)) return false;
     for (const m of db().messages.values()) if (m.agent_id === agentId) m.agent_id = null;
+    return true;
   },
 
   async listMessages(roomId) {
     return [...db().messages.values()]
       .filter((m) => m.room_id === roomId)
-      .sort((a, b) => a.created_at.localeCompare(b.created_at));
+      .sort((a, b) => a.created_at.localeCompare(b.created_at))
+      .map((m) => ({ ...m }));
   },
   async insertMessage(message) {
+    must(db().rooms.get(message.room_id), "Raum");
     // Monoton steigende Zeitstempel, damit die Sortierung stabil bleibt.
-    const all = [...db().messages.values()];
-    const lastTs = all.reduce((max, m) => (m.created_at > max ? m.created_at : max), "");
+    const lastTs = [...db().messages.values()].reduce((max, m) => (m.created_at > max ? m.created_at : max), "");
     let ts = new Date().toISOString();
     if (ts <= lastTs) ts = new Date(new Date(lastTs).getTime() + 1).toISOString();
     const created: ChatMessage = { ...message, id: crypto.randomUUID(), created_at: ts };
@@ -155,5 +177,31 @@ export const memoryStore: DataStore = {
       room.running_summary = "";
       room.summarized_message_count = 0;
     }
+  },
+
+  async getUsageTotals() {
+    return [...db().messages.values()].reduce(
+      (acc, m) => ({
+        input: acc.input + m.input_tokens,
+        output: acc.output + m.output_tokens,
+        cost: acc.cost + m.estimated_cost_usd,
+        replies: acc.replies + (m.sender_type === "agent" ? 1 : 0),
+      }),
+      { input: 0, output: 0, cost: 0, replies: 0 },
+    );
+  },
+  async exportAccount() {
+    const { custom_openrouter_key, ...profile } = db().profile;
+    const rooms = await this.listRooms();
+    return {
+      exported_at: new Date().toISOString(),
+      profile: { ...profile, has_custom_key: Boolean(custom_openrouter_key) },
+      rooms: await Promise.all(
+        rooms.map(async (room) => ({ ...room, agents: await this.listAgents(room.id), messages: await this.listMessages(room.id) })),
+      ),
+    };
+  },
+  async deleteAccount() {
+    resetMemoryDb();
   },
 };

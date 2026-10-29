@@ -10,7 +10,24 @@ import type {
   UserProfile,
 } from "../types";
 
-/** Datenzugriff – implementiert für Supabase (Produktion) und In-Memory (Demo). */
+export interface UsageTotals {
+  input: number;
+  output: number;
+  cost: number;
+  replies: number;
+}
+
+export interface AccountExport {
+  exported_at: string;
+  profile: Omit<UserProfile, "custom_openrouter_key"> & { has_custom_key: boolean };
+  rooms: (ChatRoom & { agents: RoomAgent[]; messages: ChatMessage[] })[];
+}
+
+/**
+ * Datenzugriff – implementiert für Supabase (Produktion) und In-Memory (Demo).
+ * Jede Instanz ist an genau einen angemeldeten Nutzer gebunden.
+ * `custom_openrouter_key` ist im Rückgabewert immer entschlüsselt (oder null).
+ */
 export interface DataStore {
   getProfile(): Promise<UserProfile>;
   setCustomKey(key: string | null): Promise<UserProfile>;
@@ -26,11 +43,20 @@ export interface DataStore {
   deleteRoom(roomId: string): Promise<void>;
 
   listAgents(roomId: string): Promise<RoomAgent[]>;
+  /** null, wenn der Agent nicht existiert oder nicht dem Nutzer gehört. */
+  getAgent(agentId: string): Promise<RoomAgent | null>;
   createAgent(agent: NewRoomAgent): Promise<RoomAgent>;
-  updateAgent(agentId: string, patch: AgentPatch): Promise<RoomAgent>;
-  deleteAgent(agentId: string): Promise<void>;
+  /** null, wenn der Agent nicht existiert oder nicht dem Nutzer gehört. */
+  updateAgent(agentId: string, patch: AgentPatch): Promise<RoomAgent | null>;
+  /** false, wenn der Agent nicht existiert oder nicht dem Nutzer gehört. */
+  deleteAgent(agentId: string): Promise<boolean>;
 
   listMessages(roomId: string): Promise<ChatMessage[]>;
   insertMessage(message: NewChatMessage): Promise<ChatMessage>;
   clearMessages(roomId: string): Promise<void>;
+
+  getUsageTotals(): Promise<UsageTotals>;
+  exportAccount(): Promise<AccountExport>;
+  /** Löscht das Konto inklusive aller Räume, Agenten und Nachrichten. */
+  deleteAccount(): Promise<void>;
 }

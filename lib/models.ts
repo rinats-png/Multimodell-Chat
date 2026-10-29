@@ -25,6 +25,17 @@ const FALLBACK_PRICING: Pick<ModelInfo, "inputPer1k" | "outputPer1k"> = {
   outputPer1k: 0.015,
 };
 
+/**
+ * Mit dem Plattform-Key sind nur Modelle aus dem Katalog erlaubt (BF-02) – das
+ * Kontingent zählt Tokens, nicht Euro. Beliebige Modelle nur mit eigenem Key (BYOK).
+ */
+export function isPlatformModel(modelId: string): boolean {
+  return MODEL_CATALOG.some((m) => m.id === modelId);
+}
+
+/** Obergrenze für generierte Tokens pro Agenten-Antwort. */
+export const MAX_OUTPUT_TOKENS = 700;
+
 export function getModelInfo(modelId: string): ModelInfo | undefined {
   return MODEL_CATALOG.find((m) => m.id === modelId);
 }
