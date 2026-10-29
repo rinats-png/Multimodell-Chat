@@ -58,3 +58,34 @@ Für die Prüfung wurde der Code von Commit `022f44c` gelesen. Grundlage waren `
 - Backups/PITR, Wiederherstellungstest, Monitoring und Alarme.
 - GitHub Secret Scanning / Push Protection sowie 2FA auf den Betreiberzugängen.
 - Laufzeitverhalten insgesamt: Die App wurde nicht gestartet. Alle Aussagen zu Abbruch, Rate-Limit und Streaming stammen aus der Code-Analyse (Stand Next 15.5.28, `ai` 5.x, `@supabase/ssr` 0.12.7 aus `node_modules`).
+
+## Bearbeitung (durch die erste KI, 2026-10-29)
+
+| Nr | Ergebnis | Umsetzung / Begründung |
+|---|---|---|
+| ZP-01 | übernommen | BF-24 → TASK-004: Column-Grants (Clients können den Key weder schreiben noch lesen), CHECK `v1:` (Verschlüsselungsformat statt Klartext-Regex, da gespeichert wird nur Chiffretext), `effectiveCustomKey` für Kontingent und Aufruf gemeinsam; T-SEC-04, T-SEC-19 |
+| ZP-02 | übernommen | BF-04 auf kritisch; TASK-002 (Buchung im Abbruch-/Fehlerpfad, Schätzung aus Prompt + gestreamtem Text); T-SEC-02 |
+| ZP-03 | übernommen | BF-12 auf hoch, Aussage korrigiert; Migration 0002 (Grants, Längen-CHECKs), Tarifgrenzen beim Aufruf; T-SEC-09, T-SEC-19, T-SEC-21 |
+| ZP-04 | übernommen | TASK-003/005: Vorab-Schätzung, Budget 12k Tokens, Rundensperre; T-SEC-05, T-SEC-07, T-SEC-08 |
+| ZP-05 | teilweise übernommen | Allowlist umgesetzt (T-SEC-03); Kontingent bleibt in Tokens (Vorgabe Masterprompt) → E-006 |
+| ZP-06 | übernommen | TASK-001: fail closed, Demo ohne Plattform-Key in Produktion, Tarifwechsel nur lokal; T-SEC-01, T-SEC-27. Hinweis zu Build-Zeit-Einbettung in README dokumentiert |
+| ZP-07 | übernommen | TASK-005: Konto + IP, 429 + Retry-After vor dem Stream, Upstash Pflicht, Mutationslimit, Sicherheitslog; T-SEC-06 |
+| ZP-08 | übernommen | BF-25: Minutenlimit zählt nur Agenten-Antworten; Router/Summary über Kontingent und Rundenlimit |
+| ZP-09 | übernommen | TASK-006: CSP mit Nonce, Header, Origin-Prüfung, 100 KB; T-SEC-11, T-SEC-12, T-SEC-15. `Content-Type`-Zwang nicht umgesetzt – Origin-Prüfung + SameSite decken CSRF ab |
+| ZP-10 | übernommen | TASK-015/016: 69 Vitest-Tests, RLS-Tests gegen PostgreSQL, CI mit Audit und gitleaks |
+| ZP-11 | übernommen | TASK-010/011: Export, Löschung, Impressum, Datenschutz, KI-Hinweis, `data_collection: deny` |
+| ZP-12 | übernommen | TASK-012: Stripe-Checkout mit Nutzer-ID, signierter idempotenter Webhook, Portal, Downgrade setzt Limits und Key zurück; T-SEC-25 |
+| ZP-13 | übernommen | TASK-007: Fehler mit Referenz-ID, ungültiges JSON → 400 |
+| ZP-14 | übernommen | TASK-007: UUID-Prüfung, 404 auch bei DELETE ohne Treffer; T-SEC-13 |
+| ZP-15 | übernommen | TASK-008: Auth komplett serverseitig, Cookies HttpOnly/Secure/SameSite, 30 Tage; T-SEC-26 |
+| ZP-16 | übernommen | siehe ZP-01, AES-256-GCM (T-SEC-10) |
+| ZP-17 | übernommen | TASK-009: Reset, Länge 15, einheitliche Meldungen; Dashboard-Einstellungen als TASK-021 |
+| ZP-18 | übernommen | TASK-003: Tarifgrenzen in `lib/plans.ts`, beim Speichern und beim Aufruf geprüft |
+| ZP-19 | übernommen | TASK-003: Summary-Eingabe/Ausgabe begrenzt, Signal, kein Summary nach Abbruch, Zähler geklemmt, Fehler nur geloggt. Optimistic Locking entfällt durch Rundensperre pro Konto |
+| ZP-20 | übernommen | TASK-013: Schubladen, Fokus-Management im Dialog, Aktionen per Tastatur sichtbar |
+| ZP-21 | teilweise übernommen | zod 4.6.7; Rest → E-005; Dependabot |
+| ZP-22 | übernommen | TASK-007: `lib/log.ts` ohne Bodies; Sicherheitslog; T-SEC-29 |
+| ZP-23 | übernommen | TASK-006: externe Bilder nicht gerendert + CSP `img-src`; T-SEC-28 |
+| ZP-24 | übernommen | als Hinweisfunktion eingestuft (F-09 „Kann“), Regelnamen nicht mehr ausgegeben; E-008 |
+| ZP-25 | teilweise übernommen | Summen per View; Räume auf 100 begrenzt; Nachrichten-Paginierung → Parkplatz |
+| ZP-26 | übernommen | B1 korrigiert (Kopf, §4, BF-12, BF-15), ZP-Zuordnung ergänzt |
