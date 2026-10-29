@@ -1,0 +1,173 @@
+"use client";
+
+import clsx from "clsx";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { MODEL_CATALOG } from "@/lib/models";
+import type { AgentPatch, RoomAgent } from "@/lib/types";
+import { AgentAvatar } from "@/components/ui/AgentAvatar";
+
+interface AgentStudioProps {
+  agents: RoomAgent[];
+  onUpdate: (agentId: string, patch: AgentPatch) => Promise<void>;
+  onCreate: () => Promise<void>;
+  onDelete: (agentId: string) => Promise<void>;
+}
+
+export function AgentStudio({ agents, onUpdate, onCreate, onDelete }: AgentStudioProps) {
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  return (
+    <div className="space-y-2 p-4">
+      <p className="pb-1 text-[12px] leading-relaxed text-muted">
+        Rollen und System-Prompts gelten ab dem nächsten Turn. Die Gruppenchat-Regeln (kein Namens-Präfix, keine
+        Schmeichelei) werden automatisch angehängt.
+      </p>
+      {agents.map((agent) => (
+        <AgentCard
+          key={agent.id}
+          agent={agent}
+          open={openId === agent.id}
+          onToggle={() => setOpenId(openId === agent.id ? null : agent.id)}
+          onUpdate={(patch) => onUpdate(agent.id, patch)}
+          onDelete={() => onDelete(agent.id)}
+        />
+      ))}
+      <button
+        onClick={onCreate}
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong py-2.5 text-[13px] text-ink-2 hover:bg-surface-2"
+      >
+        <Plus className="size-4" />
+        Agent hinzufügen
+      </button>
+    </div>
+  );
+}
+
+interface AgentCardProps {
+  agent: RoomAgent;
+  open: boolean;
+  onToggle: () => void;
+  onUpdate: (patch: AgentPatch) => Promise<void>;
+  onDelete: () => Promise<void>;
+}
+
+function AgentCard({ agent, open, onToggle, onUpdate, onDelete }: AgentCardProps) {
+  const [draft, setDraft] = useState({
+    display_name: agent.display_name,
+    role_title: agent.role_title,
+    model_identifier: agent.model_identifier,
+    system_prompt: agent.system_prompt,
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const dirty =
+    draft.display_name !== agent.display_name ||
+    draft.role_title !== agent.role_title ||
+    draft.model_identifier !== agent.model_identifier ||
+    draft.system_prompt !== agent.system_prompt;
+
+  async function save() {
+    setSaving(true);
+    setError(null);
+    try {
+      await onUpdate(draft);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Speichern fehlgeschlagen");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inputCls =
+    "mt-1 w-full rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[13px] text-ink outline-none focus:border-accent/60";
+
+  return (
+    <div className={clsx("rounded-xl border bg-surface-2", open ? "border-line-strong" : "border-line")}>
+      <div className="flex items-center gap-2.5 p-2.5">
+        <button onClick={onToggle} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
+          <AgentAvatar name={agent.display_name} modelId={agent.model_identifier} />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[13px] font-medium text-ink">{agent.display_name}</span>
+            <span className="block truncate text-[11.5px] text-muted">{agent.role_title}</span>
+          </span>
+          <ChevronDown className={clsx("size-4 shrink-0 text-muted transition-transform", open && "rotate-180")} />
+        </button>
+        <button
+          role="switch"
+          aria-checked={agent.is_active}
+          aria-label={`${agent.display_name} ${agent.is_active ? "deaktivieren" : "aktivieren"}`}
+          onClick={() => onUpdate({ is_active: !agent.is_active })}
+          className={clsx(
+            "relative h-5 w-9 shrink-0 rounded-full transition-colors",
+            agent.is_active ? "bg-accent" : "bg-surface-3 ring-1 ring-line-strong",
+          )}
+        >
+          <span
+            className={clsx(
+              "absolute top-0.5 size-4 rounded-full bg-white transition-all",
+              agent.is_active ? "left-[18px]" : "left-0.5",
+            )}
+          />
+        </button>
+      </div>
+
+      {open && (
+        <div className="space-y-3 border-t border-line p-3">
+          <div className="grid grid-cols-2 gap-2">
+            <label className="text-[11.5px] text-muted">
+              Name
+              <input className={inputCls} value={draft.display_name} onChange={(e) => setDraft({ ...draft, display_name: e.target.value })} />
+            </label>
+            <label className="text-[11.5px] text-muted">
+              Modell
+              <input
+                className={inputCls}
+                list="model-catalog"
+                value={draft.model_identifier}
+                onChange={(e) => setDraft({ ...draft, model_identifier: e.target.value })}
+              />
+            </label>
+          </div>
+          <label className="block text-[11.5px] text-muted">
+            Rolle
+            <input className={inputCls} value={draft.role_title} onChange={(e) => setDraft({ ...draft, role_title: e.target.value })} />
+          </label>
+          <label className="block text-[11.5px] text-muted">
+            System-Prompt
+            <textarea
+              rows={7}
+              className={clsx(inputCls, "resize-y font-mono text-[12px] leading-relaxed")}
+              value={draft.system_prompt}
+              onChange={(e) => setDraft({ ...draft, system_prompt: e.target.value })}
+            />
+          </label>
+          {error && <p className="text-[12px] text-red-400">{error}</p>}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => confirm(`${agent.display_name} aus dem Raum entfernen?`) && onDelete()}
+              className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] text-muted hover:text-red-400"
+            >
+              <Trash2 className="size-3.5" />
+              Entfernen
+            </button>
+            <button
+              onClick={save}
+              disabled={!dirty || saving}
+              className="rounded-lg bg-ink px-3 py-1.5 text-[12px] font-semibold text-canvas disabled:bg-surface-3 disabled:text-muted"
+            >
+              {saving ? "Speichert…" : "Speichern"}
+            </button>
+          </div>
+        </div>
+      )}
+      <datalist id="model-catalog">
+        {MODEL_CATALOG.map((m) => (
+          <option key={m.id} value={m.id}>
+            {m.label}
+          </option>
+        ))}
+      </datalist>
+    </div>
+  );
+}

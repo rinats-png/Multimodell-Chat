@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-canvas: #0a0a0c;
+  --color-surface: #111114;
+  --color-surface-2: #17171b;
+  --color-surface-3: #1e1e23;
+  --color-line: #26262c;
+  --color-line-strong: #34343c;
+  --color-ink: #ededf0;
+  --color-ink-2: #b4b4bd;
+  --color-muted: #7d7d88;
+  --color-accent: #8b7cf6;
+  --color-accent-strong: #a597ff;
+
+  --color-openai: #10a37f;
+  --color-anthropic: #d97757;
+  --color-google: #4f8ff7;
+  --color-other: #c084fc;
+}
+
+html,
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  color-scheme: dark;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+.prose-chat {
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.prose-chat p + p,
+.prose-chat ul + p,
+.prose-chat ol + p,
+.prose-chat p + ul,
+.prose-chat p + ol {
+  margin-top: 0.6rem;
+}
+.prose-chat ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.prose-chat ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+.prose-chat li + li {
+  margin-top: 0.2rem;
+}
+.prose-chat strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.prose-chat code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  padding: 0.05rem 0.3rem;
+}
+.prose-chat pre {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  margin: 0.6rem 0;
+}
+.prose-chat pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.prose-chat a {
+  color: var(--color-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-chat h1,
+.prose-chat h2,
+.prose-chat h3 {
+  font-weight: 600;
+  margin: 0.8rem 0 0.3rem;
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.streaming-caret::after {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  background: currentColor;
+  animation: caret-blink 1s steps(1) infinite;
+}
