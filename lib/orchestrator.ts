@@ -139,6 +139,7 @@ export function userFacingModelError(error: unknown, key: ResolvedKey): string {
   const status = APICallError.isInstance(error) ? error.statusCode : undefined;
   if (key.source === "byok" && (status === 401 || status === 403)) return "Dein OpenRouter-Key wurde abgelehnt. Prüfe ihn unter „Tarif & Verbrauch“.";
   if (key.source === "byok" && status === 402) return "Dein OpenRouter-Guthaben reicht für diese Anfrage nicht aus.";
+  if (status === 404) return "Für dieses Modell ist gerade kein Anbieter verfügbar, der deine Daten nicht speichert. Wähle im Agenten-Studio ein anderes Modell.";
   if (status === 429) return "Der KI-Anbieter ist gerade ausgelastet. Bitte versuche es in einer Minute erneut.";
   return "Das Modell konnte gerade nicht antworten. Bitte versuche es später erneut.";
 }

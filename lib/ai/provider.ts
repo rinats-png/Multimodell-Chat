@@ -37,8 +37,10 @@ export function getLanguageModel(modelId: string, apiKey: string): LanguageModel
     apiKey,
     headers: { "X-Title": "Multimodell-Chat" },
   });
-  // BF-17: Nur Anbieter, die Prompts nicht speichern bzw. nicht zum Training nutzen.
-  return openrouter.chat(modelId, { provider: { data_collection: "deny" } });
+  // BF-17: Nur Anbieter, die Prompts nicht speichern bzw. nicht zum Training nutzen [Q-003].
+  // Findet OpenRouter dafür keinen Anbieter, schlägt die Anfrage fehl (404) – siehe userFacingModelError.
+  const dataCollection = process.env.OPENROUTER_DATA_COLLECTION === "allow" ? "allow" : "deny";
+  return openrouter.chat(modelId, { provider: { data_collection: dataCollection } });
 }
 
 export const ROUTER_MODEL = process.env.ROUTER_MODEL || "google/gemini-2.5-flash";

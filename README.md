@@ -1,63 +1,57 @@
-# Multimodell-Chat – KI-Gruppendebatten (Stufe-3-SaaS)
+# Multimodell-Chat – KI-Gruppendebatten (SaaS)
 
 Ein Mensch diskutiert in einem gemeinsamen Raum gleichzeitig mit **ChatGPT (GPT-4o)**, **Claude 3.5 Sonnet** und **Gemini 2.5 Pro**. Jede KI vertritt eine eigene Fachrolle und widerspricht konstruktiv, statt nur zuzustimmen.
 
-**Stack:** Next.js 15 (App Router, TypeScript) · Tailwind CSS 4 · Lucide · Vercel AI SDK 5 + OpenRouter · Supabase (Postgres, Auth, RLS) · Upstash Redis (optional)
-
-## Schnellstart
-
-```bash
-npm install
-cp .env.example .env.local   # optional – ohne Keys läuft alles im Demo-Modus
-npm run dev                  # http://localhost:3000
-```
-
-Ohne Umgebungsvariablen startet die App komplett lokal:
-
-- **Demo-Store:** In-Memory-Daten mit einem Demo-User (kein Login).
-- **Demo-Modell:** simulierte, rollentypische Antworten über ein lokales `LanguageModelV2`. Streaming, Token-Ledger, Rate-Limit, Router und Zusammenfassung laufen dabei durch dieselbe Pipeline wie im Produktivbetrieb.
-
-| Variable | Wirkung |
-| --- | --- |
-| `OPENROUTER_API_KEY` | echte Modelle über OpenRouter |
-| `ROUTER_MODEL` / `SUMMARY_MODEL` | Moderator-Router (Standard `google/gemini-2.5-flash`) und Langzeitgedächtnis (`openai/gpt-4o-mini`) |
-| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase-Auth und Persistenz (aktiviert Login) |
-| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | verteiltes Rate-Limiting (sonst In-Memory Sliding Window) |
-| `NEXT_PUBLIC_CHECKOUT_URL_PRO` / `_TEAM` | Checkout-Links (z. B. Stripe Payment Links) für Upgrades |
-
-### Supabase einrichten
-
-1. Projekt anlegen und `supabase/migrations/0001_init.sql` im SQL-Editor ausführen.
-2. URL und Anon-Key in `.env.local` eintragen.
-3. Unter *Authentication → URL Configuration* `http(s)://<host>/auth/callback` als Redirect-URL erlauben.
-
-Das Schema enthält Row-Level-Security für alle Tabellen. User dürfen Tarif, Limits und Verbrauch **nicht** selbst ändern (Column-Grants), nur ihren BYOK-Key. Der Verbrauch wird atomar über die RPC `increment_token_usage` gebucht und monatlich zurückgesetzt. Den Tarif setzt dein Billing-Webhook mit dem Service-Role-Key (`subscription_tier`, `monthly_token_limit`, `rate_limit_per_min`).
-
-## Architektur
-
-| Modul | Datei |
-| --- | --- |
-| Context-Transcript-Formatter (Perspektiven-Umkehr, Sliding Window, Anti-Sycophancy-Regeln) | `lib/context-builder.ts` |
-| Orchestrierungs-Engine (Router / Round-Robin / Manuell & @Mentions, Streaming, Ledger) | `lib/orchestrator.ts`, `app/api/orchestrate/route.ts` |
-| KI-Moderator-Router (`generateObject` + Zod) & Running Summary | `lib/router.ts` |
-| Usage-Guard: Token-Kontingent, Sliding-Window-Rate-Limiter, Prompt-Firewall | `lib/usage-guard.ts`, `lib/prompt-firewall.ts` |
-| Modell-Tarife & Kostenkalkulation | `lib/models.ts` |
-| SaaS-Tarife (Starter 0 €, Pro 29 €, Workspace/BYOK 79 €) | `lib/plans.ts` |
-| Datenzugriff (Supabase mit RLS / In-Memory-Demo) | `lib/store/*` |
-
-`POST /api/orchestrate` streamt NDJSON-Events (`user-message`, `router`, `turn-start`, `delta`, `turn-end`, `summary`, `usage`, `error`, `done`). Vor **jedem** Modellaufruf prüft der Server Rate-Limit und Kontingent. Nach jedem Aufruf liest er `usage.inputTokens`/`outputTokens` aus, berechnet die Kosten in USD, schreibt sie in `messages` und bucht sie auf das Profil.
-
-Wenn Nachrichten aus dem Sliding Window fallen, fasst ein Mini-Modell sie in 3 Sätzen zusammen (`chat_rooms.running_summary`). Diese Zusammenfassung wird an jeden System-Prompt angehängt.
-
-## UI
+**Stack:** Next.js 15 (App Router, TypeScript) · Tailwind CSS 4 · Vercel AI SDK 5 + OpenRouter · Supabase (Postgres, Auth, RLS) · Upstash Redis · Stripe
 
 ![Gruppenchat](docs/screenshot-chat.png)
 
-Das Layout orientiert sich an Referenzen aus Mobbin: Sidebar mit Räumen und Nutzungskarte nach dem Vorbild von ChatGPT, Mistral Le Chat und Zapier Central, Nachrichten-Header und Aktions-Chips wie bei Zapier Central, Pricing-Karten wie bei Jasper.
+## Schnellstart (lokal, ohne Konten)
 
-- Gruppenchat mit Echtzeit-Streaming, farbcodierten Modell-Avataren, Token- und Kosten-Chips pro Nachricht und sichtbarer Sliding-Window-Grenze
-- Composer mit @Mention-Autocomplete, „Lass X antworten“-Buttons und Live-Prompt-Firewall
-- Steuerungspanel (Modus, Sliding Window, Max-Auto-Turns, Ledger, Langzeitgedächtnis)
-- Agenten-Studio (Name, Rolle, Modell, System-Prompt, aktiv/inaktiv, hinzufügen und entfernen)
-- API-Prompt-Inspector: zeigt den exakten `system`/`user`/`assistant`-Payload pro Agent
-- Tarif- und Limit-Dashboard mit BYOK-Formular
+```bash
+npm install
+npm run dev          # http://localhost:3000
+```
+
+Ohne Umgebungsvariablen läuft ein **Demo-Workspace**: In-Memory-Daten, ein Demo-Nutzer, simulierte Antworten über ein lokales Modell. Streaming, Ledger, Limits, Router und Gedächtnis laufen dabei durch dieselbe Pipeline wie im Produktivbetrieb. Mit `OPENROUTER_API_KEY` in `.env.local` antworten lokal echte Modelle.
+
+> **Produktion fällt geschlossen aus:** Mit `NODE_ENV=production` startet die App nur, wenn Supabase (inkl. `SUPABASE_SERVICE_ROLE_KEY`), Upstash und die Betreiberangaben (`OPERATOR_*`) gesetzt sind. Eine öffentliche Vorschau ohne Supabase ist nur mit `ALLOW_DEMO_MODE=true` möglich und nutzt dann nie den Plattform-Key.
+
+## Produktiv einrichten
+
+1. **Supabase** (Pro-Plan empfohlen, Region EU): Migrationen ausführen (`supabase db push` oder der Reihe nach im SQL-Editor: `supabase/migrations/0001_init.sql`, `0002_hardening.sql`, `0003_billing.sql`).
+   Im Dashboard: „Confirm email“ an, Mindestlänge 15, „Leaked password protection“ an, Email-OTP-Ablauf 1800 s, Session-Time-box 90 Tage, Redirect-URL `https://<domain>/auth/callback`.
+2. **Upstash Redis** anlegen (Pflicht in Produktion für instanzübergreifende Limits).
+3. **OpenRouter**: Key anlegen, Credit-Limit setzen, unter Privacy „data collection“ verbieten.
+4. **Stripe**: zwei Abo-Preise (Pro, Workspace) und einen Webhook auf `https://<domain>/api/billing/webhook` mit den Events `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`. Kundenportal aktivieren.
+5. Variablen aus `.env.example` in Vercel setzen (geheime Werte nie mit `NEXT_PUBLIC_`). `BYOK_ENCRYPTION_KEY` mit `openssl rand -base64 32` erzeugen.
+
+## Befehle
+
+| Befehl | Zweck |
+|---|---|
+| `npm run dev` / `build` / `start` | Entwicklung / Produktions-Build / Start |
+| `npm run typecheck` | TypeScript |
+| `npm test` | Vitest: Unit, Integration, Route-Handler, Middleware, Auth, Webhook |
+| `npm run test:rls` | RLS- und Rechte-Tests gegen PostgreSQL (temporärer Cluster oder `DATABASE_URL`) |
+| `node scripts/smoke-browser.cjs` | Browser-Smoke-Test (Playwright) gegen einen laufenden Server |
+
+CI (`.github/workflows/ci.yml`): Typecheck, Tests, Build, `npm audit`, RLS-Tests mit PostgreSQL-Service, gitleaks.
+
+## Architektur & Sicherheit
+
+Die App wurde mit [idea-to-app](https://github.com/rinats-png/idea-to-app) im Modus „Bestehende App“ analysiert, unabhängig zweitgeprüft und saniert. Alle Unterlagen liegen in [`docs/idea-to-app/`](docs/idea-to-app/):
+
+- [`B1-ist-analyse.md`](docs/idea-to-app/B1-ist-analyse.md): Befunde BF-01 … BF-32 mit Schweregrad
+- [`14-sicherheit.md`](docs/idea-to-app/14-sicherheit.md): Bedrohungsmodell, Rate-Limits, Schlüsselliste, Projektwerte
+- [`19-tests.md`](docs/idea-to-app/19-tests.md): Akzeptanzkriterien, Rückverfolgungsmatrix, Sicherheitstests
+- [`21-roadmap.md`](docs/idea-to-app/21-roadmap.md): erledigte und offene Aufgaben
+- [`handoff/AGENTS.md`](docs/idea-to-app/handoff/AGENTS.md): verbindliche Regeln für Coding-Tools
+
+| Modul | Datei |
+|---|---|
+| Context-Formatter (Perspektiven-Umkehr, Sliding Window, Token-Budget) | `lib/context-builder.ts` |
+| Orchestrierung (Router / Round-Robin / Manuell, Streaming, Buchung auch bei Abbruch) | `lib/orchestrator.ts`, `app/api/orchestrate/route.ts` |
+| Usage-Guard (Kontingent, Rate-Limits, Sperren) | `lib/usage-guard.ts`, `lib/rate-limit.ts` |
+| Tarife | `lib/plans.ts` |
+| Sicherheit (CSP/Nonce, Header, Origin, Krypto, Logs) | `middleware.ts`, `lib/security-headers.ts`, `lib/crypto.ts`, `lib/log.ts` |
