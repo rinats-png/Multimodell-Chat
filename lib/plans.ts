@@ -72,7 +72,7 @@ export const PLANS: Record<SubscriptionTier, PlanDefinition> = {
     monthlyTokenLimit: 2_500_000,
     rateLimitPerMin: 60,
     byok: true,
-    limits: { maxActiveAgents: 8, maxAutoTurns: 10, maxSlidingWindow: 40, maxRooms: 500, runningSummary: true },
+    limits: { maxActiveAgents: 8, maxAutoTurns: 10, maxSlidingWindow: 40, maxRooms: 100, runningSummary: true },
     tagline: "Eigener OpenRouter-Key, volle Kostenkontrolle.",
     features: [
       "2,5 Mio. Tokens pro Monat inklusive",
