@@ -1,0 +1,15 @@
+# gitleaks-Konfiguration: Standardregeln + Ausnahme für eindeutig erfundene Testwerte.
+# Echte Schlüssel gehören nie ins Repository (Regel 1.1). Neue Ausnahmen nur für
+# offensichtliche Platzhalter und mit Begründung im Commit.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Erfundene Testwerte in tests/ und Doku (keine echten Schlüssel)"
+regexes = [
+  '''sk-or-(v1-)?(abcdefghijklmnop|geheim-1234567890|platform-key-1234567890|klartext)''',
+  '''whsec_(test_secret|falsch)''',
+  '''sk_test_x\b''',
+  '''dev-only-salt''',
+]
