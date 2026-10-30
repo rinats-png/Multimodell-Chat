@@ -30,6 +30,7 @@
 | AK-F04-1 | @Mention übersteuert jeden Modus | TEST-F04-1 | Integration |
 | AK-F04-2 | Manuell ohne Mention: keine KI-Antwort, Hinweis | TEST-F04-2 | Integration |
 | AK-F04-3 | Router: höchstens Max-Auto-Turns, jede Wahl begründet | TEST-F04-3 | Integration |
+| AK-F04-4 | Der Moderator wählt nie dieselbe KI zweimal in Folge | TEST-F04-4 | Unit (`tests/router.test.ts`) |
 
 ### F-05 Kontext-Formatter
 | ID | Kriterium | Test | Ebene |
@@ -102,7 +103,7 @@
 | F-01 | Muss | AK-F01-1 … AK-F01-4 | TEST-F01-1 … TEST-F01-4, T-SEC-23, T-SEC-24, T-SEC-26 | TASK-008, TASK-009 |
 | F-02 | Muss | AK-F02-1, AK-F02-2 | TEST-F02-1, TEST-F02-2 | TASK-003 |
 | F-03 | Muss | AK-F03-1, AK-F03-2 | TEST-F03-1, TEST-F03-2, T-SEC-02 | TASK-002 |
-| F-04 | Muss | AK-F04-1 … AK-F04-3 | TEST-F04-1 … TEST-F04-3 | TASK-003 |
+| F-04 | Muss | AK-F04-1 … AK-F04-4 | TEST-F04-1 … TEST-F04-4 | TASK-003 |
 | F-05 | Muss | AK-F05-1 … AK-F05-3 | TEST-F05-1 … TEST-F05-3, T-SEC-08 | TASK-003 |
 | F-06 | Muss | AK-F06-1, AK-F06-2 | TEST-F06-1, TEST-F06-2 | TASK-003 |
 | F-07 | Muss | AK-F07-1 | TEST-F07-1, T-SEC-04, T-SEC-05 | TASK-002, TASK-003, TASK-004 |

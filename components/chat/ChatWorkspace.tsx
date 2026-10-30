@@ -83,8 +83,9 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
 
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const messagesRef = useRef(messages);
-  messagesRef.current = messages;
+  // Anzahl Nachrichten synchron mitzählen: Moderator-Hinweise kommen im selben Stream direkt nach
+  // einem turn-end, bevor React neu gerendert hat – der State wäre dann noch veraltet.
+  const messageCount = useRef(messages.length);
   const settingsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingPatch = useRef<RoomSettingsPatch>({});
 
@@ -100,12 +101,13 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
   function handleEvent(event: OrchestrateEvent) {
     switch (event.type) {
       case "user-message":
+        messageCount.current += 1;
         setMessages((prev) => [...prev, event.message]);
         break;
       case "router":
         setNotes((prev) => [
           ...prev,
-          { id: crypto.randomUUID(), position: messagesRef.current.length, agentId: event.agentId, reason: event.reason },
+          { id: crypto.randomUUID(), position: messageCount.current, agentId: event.agentId, reason: event.reason },
         ]);
         break;
       case "turn-start":
@@ -117,7 +119,10 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
       case "turn-end": {
         setStreaming(null);
         const message = event.message;
-        if (message) setMessages((prev) => [...prev, message]);
+        if (message) {
+          messageCount.current += 1;
+          setMessages((prev) => [...prev, message]);
+        }
         break;
       }
       case "summary":
@@ -236,6 +241,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
     if (!confirm("Gesamten Verlauf dieser Debatte löschen? Der Token-Verbrauch bleibt bestehen.")) return;
     const res = await fetch(`/api/rooms/${room.id}/messages`, { method: "DELETE" });
     if (!res.ok) return setError("Verlauf konnte nicht gelöscht werden");
+    messageCount.current = 0;
     setMessages([]);
     setNotes([]);
     setRoom((prev) => ({ ...prev, running_summary: "", summarized_message_count: 0 }));

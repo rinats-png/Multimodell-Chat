@@ -6,6 +6,8 @@ Ein Mensch diskutiert in einem gemeinsamen Raum gleichzeitig mit **ChatGPT (GPT-
 
 ![Gruppenchat](docs/screenshot-chat.png)
 
+Alle Screens (Desktop und Mobil): [`docs/mockups/`](docs/mockups/) – Galerie in `docs/mockups/index.html`.
+
 ## Schnellstart (lokal, ohne Konten)
 
 ```bash

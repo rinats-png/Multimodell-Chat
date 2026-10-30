@@ -59,8 +59,10 @@ export function heuristicRoute(messages: ChatMessage[], agents: RoomAgent[], tur
   // Niemals denselben Agenten zweimal in Folge wählen.
   if (!agent || (last?.sender_type === "agent" && last.agent_id === agent.id)) {
     const lastIdx = agents.findIndex((a) => a.id === last?.agent_id);
-    agent = agents[(lastIdx + 1 + turnIndex) % agents.length];
-    reason = reason || "Nächste Perspektive in der Runde";
+    // Nach einer KI-Antwort: die nächste KI in der Reihenfolge; nach dem Menschen: reihum je Turn.
+    agent = agents[(lastIdx >= 0 ? lastIdx + 1 : turnIndex) % agents.length];
+    // Die Themen-Begründung gehört zur ursprünglich gewählten KI – beim Ausweichen neutral begründen.
+    reason = "Nächste Perspektive in der Runde";
   }
   return { nextSpeakerId: agent?.id ?? null, reason, inputTokens: 0, outputTokens: 0 };
 }
