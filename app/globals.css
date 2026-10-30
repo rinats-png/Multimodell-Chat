@@ -2,11 +2,11 @@
 
 /*
  * Designkonzept „Lounge & Glut“ – ein großer Glasrahmen schwebt vor einer futuristischen Szene
- * (Tron × Blade Runner 2049, Lichtbahnen in Bernstein; public/bg/tron-dark.webp, dust-light.webp). Orange Glut hinter den Karten,
+ * (hell: public/bg/tron-light.webp, dunkel: Tron-Gitter aus TronBackdrop). Leuchtfarbe hinter den Karten,
  * schwebende Icon-Leiste links, Kennzahl-Pillen oben. Referenz: „Glassy Dashboard“ (code.xr) + Mobbin.
- * Hell: „Morgenlicht“ – Sand, Leinen, Terrakotta. Dunkel: „Glut“ – warmes Anthrazit, Orange.
- * Vorgaben: kein Lila/Pink/Rosa/Blau, keine übersättigten Farben, kein reines Schwarz.
- * Umschaltung: Systemeinstellung, überschreibbar per <html data-theme="light|dark"> (components/ui/ThemeToggle.tsx).
+ * Hell: „Morgenlicht“ – Sand, Leinen, Terrakotta. Dunkel: „Eis“ (Standard) und „Zinn“, Tron-Gitter als Hintergrund.
+ * Kein reines Schwarz. Die Leuchtfarben im Dunkeln sind bewusst kräftig (Entscheidung des Projektinhabers).
+ * Umschaltung: Systemeinstellung, überschreibbar per <html data-theme="light|eis|zinn"> (components/ui/ThemeToggle.tsx).
  */
 @theme {
   /* Kantiger: Tron-Formsprache statt weicher Rundungen */
@@ -49,6 +49,7 @@
 
 :root {
   color-scheme: light;
+  --backdrop-grid: 0;
   --bg-image: url("/bg/tron-light.webp");
   --bg-shade:
     linear-gradient(90deg, rgb(235 229 221 / 0.55), rgb(235 229 221 / 0.25) 55%, rgb(235 229 221 / 0.3)),
@@ -85,130 +86,188 @@
   --pre-bg: rgb(255 255 255 / 0.6);
 }
 
-/* Dunkel – Glut (einmal für die Systemeinstellung, einmal für die feste Wahl) */
+/*
+ * Dunkel – zwei Farbwelten im Tron-Glas-Stil
+ *   Eis  (Standard bei dunkler Systemeinstellung): Eisblau, Bernstein, Weiß
+ *   Zinn (per Auswahl): Silber, Bernstein, Weiß
+ * Der Hintergrund ist das Tron-Gitter (components/shell/TronBackdrop.tsx), erkennbar an --backdrop-grid: 1.
+ */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not([data-theme="light"]):not([data-theme="zinn"]) {
     color-scheme: dark;
-    --color-canvas: #252220;
-    --color-canvas-2: #201e1c;
-    --color-surface: #2e2b28;
-    --color-surface-2: #363230;
-    --color-surface-3: #403b37;
-    --color-line: #48423d;
-    --color-line-strong: #5e5650;
-    --color-ink: #f4efea;
-    --color-ink-2: #ddd5cd;
-    --color-muted: #c0b5ab;
-    --color-accent: #f08c4e;
-    --color-accent-strong: #f7b98f;
-    --color-accent-deep: #c9672e;
-    --color-signal: #a7cf8e;
-    --color-on-accent: #2a1307;
-    --color-danger: #ef8a72;
-    --color-warn: #e8c77d;
-    --color-openai: #abc994;
-    --color-anthropic: #eab98c;
-    --color-google: #d5cdbd;
-    --color-other: #a7cf8e;
-    --color-on-agent: #221b16;
-    --bg-image: url("/bg/tron-dark.webp");
-    --bg-shade:
-      linear-gradient(90deg, rgb(37 34 32 / 0.5), rgb(37 34 32 / 0.25) 55%, rgb(37 34 32 / 0.35)),
-      linear-gradient(180deg, rgb(37 34 32 / 0.35), transparent 30%, transparent 65%, rgb(37 34 32 / 0.55));
-    --grid-line: rgb(255 240 228 / 0.025);
-    --glass-1: rgb(58 53 50 / 0.6);
-    --glass-2: rgb(34 32 30 / 0.62);
-    --glass-strong-1: rgb(62 57 53 / 0.86);
-    --glass-strong-2: rgb(38 35 33 / 0.84);
-    --glass-edge: rgb(255 238 224 / 0.11);
-    --glass-hl: rgb(255 255 255 / 0.07);
-    --glass-drop: rgb(12 10 9 / 0.62);
-    --frame-1: rgb(34 31 29 / 0.6);
-    --frame-2: rgb(24 22 21 / 0.7);
-    --card-1: rgb(50 46 43 / 0.62);
-    --card-2: rgb(32 30 28 / 0.55);
-    --card-edge: rgb(255 238 224 / 0.09);
-    --tron: rgb(255 128 52 / 0.95);
-    --tron-soft: rgb(255 122 47 / 0.36);
-    --tron-glow: rgb(255 110 30 / 0.5);
-    --grid-tron: rgb(255 122 47 / 0.075);
-    --tron: rgb(255 128 52 / 0.95);
-  --tron-soft: rgb(255 122 47 / 0.36);
-  --tron-glow: rgb(255 110 30 / 0.5);
-  --grid-tron: rgb(255 122 47 / 0.075);
-  --glow-1: rgb(240 130 60 / 0.26);
-    --glow-2: rgb(232 150 80 / 0.16);
-    --bar-bg: rgb(37 34 32 / 0.55);
-    --field-bg: rgb(30 28 27 / 0.55);
-    --field-edge: rgb(255 238 224 / 0.14);
-    --ghost-bg: rgb(255 244 235 / 0.06);
-    --ghost-bg-hover: rgb(255 244 235 / 0.11);
-    --ghost-edge: rgb(255 238 224 / 0.14);
-    --btn-from: #f39857;
-    --btn-to: #dc7232;
-    --btn-glow: rgb(240 130 60 / 0.55);
-    --code-bg: rgb(255 244 235 / 0.07);
-    --pre-bg: rgb(30 28 27 / 0.6);
+    --color-canvas: #0a1118;
+    --color-canvas-2: #080e14;
+    --color-surface: #0f1b27;
+    --color-surface-2: #16263a;
+    --color-surface-3: #1d3248;
+    --color-line: #25384b;
+    --color-line-strong: #3a5670;
+    --color-ink: #f0f9ff;
+    --color-ink-2: #d4e4ee;
+    --color-muted: #9db7c9;
+    --color-accent: #bfeaff;
+    --color-accent-strong: #e6f6ff;
+    --color-accent-deep: #5fc4ec;
+    --color-signal: #8fe8c0;
+    --color-on-accent: #06202c;
+    --color-danger: #ff9480;
+    --color-warn: #ffd27a;
+    --color-openai: #9fe3ff;
+    --color-anthropic: #ffd27a;
+    --color-google: #f2f8fc;
+    --color-other: #8fe8c0;
+    --color-on-agent: #06151f;
+    --bg-image: none;
+    --bg-shade: linear-gradient(transparent, transparent);
+    --backdrop-grid: 1;
+    --grid-line: rgb(190 230 255 / 0.02);
+    --glass-1: rgb(40 66 92 / 0.5);
+    --glass-2: rgb(14 28 42 / 0.55);
+    --glass-strong-1: rgb(40 66 92 / 0.82);
+    --glass-strong-2: rgb(14 28 42 / 0.84);
+    --glass-edge: rgb(190 230 255 / 0.2);
+    --glass-hl: rgb(255 255 255 / 0.16);
+    --glass-drop: rgb(0 4 10 / 0.7);
+    --frame-1: rgb(14 28 42 / 0.36);
+    --frame-2: rgb(8 16 26 / 0.46);
+    --card-1: rgb(40 66 92 / 0.46);
+    --card-2: rgb(14 28 42 / 0.46);
+    --card-edge: rgb(190 230 255 / 0.16);
+    --tron: rgb(190 230 255 / 0.92);
+    --tron-soft: rgb(190 230 255 / 0.36);
+    --tron-glow: rgb(159 227 255 / 0.5);
+    --grid-tron: rgb(190 230 255 / 0.07);
+    --glow-1: rgb(159 227 255 / 0.18);
+    --glow-2: rgb(159 227 255 / 0.12);
+    --bar-bg: rgb(8 16 26 / 0.5);
+    --field-bg: rgb(8 16 26 / 0.5);
+    --field-edge: rgb(190 230 255 / 0.22);
+    --ghost-bg: rgb(190 230 255 / 0.06);
+    --ghost-bg-hover: rgb(190 230 255 / 0.12);
+    --ghost-edge: rgb(190 230 255 / 0.2);
+    --btn-from: #e6f6ff;
+    --btn-to: #9fe3ff;
+    --btn-glow: rgb(159 227 255 / 0.55);
+    --code-bg: rgb(190 230 255 / 0.08);
+    --pre-bg: rgb(8 16 26 / 0.6);
   }
 }
+:root[data-theme="eis"],
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-canvas: #252220;
-  --color-canvas-2: #201e1c;
-  --color-surface: #2e2b28;
-  --color-surface-2: #363230;
-  --color-surface-3: #403b37;
-  --color-line: #48423d;
-  --color-line-strong: #5e5650;
-  --color-ink: #f4efea;
-  --color-ink-2: #ddd5cd;
-  --color-muted: #c0b5ab;
-  --color-accent: #f08c4e;
-  --color-accent-strong: #f7b98f;
-  --color-accent-deep: #c9672e;
-  --color-signal: #a7cf8e;
-  --color-on-accent: #2a1307;
-  --color-danger: #ef8a72;
-  --color-warn: #e8c77d;
-  --color-openai: #abc994;
-  --color-anthropic: #eab98c;
-  --color-google: #d5cdbd;
-  --color-other: #a7cf8e;
-  --color-on-agent: #221b16;
-  --bg-image: url("/bg/tron-dark.webp");
-  --bg-shade:
-    linear-gradient(90deg, rgb(37 34 32 / 0.5), rgb(37 34 32 / 0.25) 55%, rgb(37 34 32 / 0.35)),
-    linear-gradient(180deg, rgb(37 34 32 / 0.35), transparent 30%, transparent 65%, rgb(37 34 32 / 0.55));
-  --grid-line: rgb(255 240 228 / 0.025);
-  --glass-1: rgb(58 53 50 / 0.6);
-  --glass-2: rgb(34 32 30 / 0.62);
-  --glass-strong-1: rgb(62 57 53 / 0.86);
-  --glass-strong-2: rgb(38 35 33 / 0.84);
-  --glass-edge: rgb(255 238 224 / 0.11);
-  --glass-hl: rgb(255 255 255 / 0.07);
-  --glass-drop: rgb(12 10 9 / 0.62);
-  --frame-1: rgb(34 31 29 / 0.6);
-  --frame-2: rgb(24 22 21 / 0.7);
-  --card-1: rgb(50 46 43 / 0.62);
-  --card-2: rgb(32 30 28 / 0.55);
-  --card-edge: rgb(255 238 224 / 0.09);
-  --tron: rgb(255 128 52 / 0.95);
-  --tron-soft: rgb(255 122 47 / 0.36);
-  --tron-glow: rgb(255 110 30 / 0.5);
-  --grid-tron: rgb(255 122 47 / 0.075);
-  --glow-1: rgb(240 130 60 / 0.26);
-  --glow-2: rgb(232 150 80 / 0.16);
-  --bar-bg: rgb(37 34 32 / 0.55);
-  --field-bg: rgb(30 28 27 / 0.55);
-  --field-edge: rgb(255 238 224 / 0.14);
-  --ghost-bg: rgb(255 244 235 / 0.06);
-  --ghost-bg-hover: rgb(255 244 235 / 0.11);
-  --ghost-edge: rgb(255 238 224 / 0.14);
-  --btn-from: #f39857;
-  --btn-to: #dc7232;
-  --btn-glow: rgb(240 130 60 / 0.55);
-  --code-bg: rgb(255 244 235 / 0.07);
-  --pre-bg: rgb(30 28 27 / 0.6);
+  --color-canvas: #0a1118;
+  --color-canvas-2: #080e14;
+  --color-surface: #0f1b27;
+  --color-surface-2: #16263a;
+  --color-surface-3: #1d3248;
+  --color-line: #25384b;
+  --color-line-strong: #3a5670;
+  --color-ink: #f0f9ff;
+  --color-ink-2: #d4e4ee;
+  --color-muted: #9db7c9;
+  --color-accent: #bfeaff;
+  --color-accent-strong: #e6f6ff;
+  --color-accent-deep: #5fc4ec;
+  --color-signal: #8fe8c0;
+  --color-on-accent: #06202c;
+  --color-danger: #ff9480;
+  --color-warn: #ffd27a;
+  --color-openai: #9fe3ff;
+  --color-anthropic: #ffd27a;
+  --color-google: #f2f8fc;
+  --color-other: #8fe8c0;
+  --color-on-agent: #06151f;
+  --bg-image: none;
+  --bg-shade: linear-gradient(transparent, transparent);
+  --backdrop-grid: 1;
+  --grid-line: rgb(190 230 255 / 0.02);
+  --glass-1: rgb(40 66 92 / 0.5);
+  --glass-2: rgb(14 28 42 / 0.55);
+  --glass-strong-1: rgb(40 66 92 / 0.82);
+  --glass-strong-2: rgb(14 28 42 / 0.84);
+  --glass-edge: rgb(190 230 255 / 0.2);
+  --glass-hl: rgb(255 255 255 / 0.16);
+  --glass-drop: rgb(0 4 10 / 0.7);
+  --frame-1: rgb(14 28 42 / 0.36);
+  --frame-2: rgb(8 16 26 / 0.46);
+  --card-1: rgb(40 66 92 / 0.46);
+  --card-2: rgb(14 28 42 / 0.46);
+  --card-edge: rgb(190 230 255 / 0.16);
+  --tron: rgb(190 230 255 / 0.92);
+  --tron-soft: rgb(190 230 255 / 0.36);
+  --tron-glow: rgb(159 227 255 / 0.5);
+  --grid-tron: rgb(190 230 255 / 0.07);
+  --glow-1: rgb(159 227 255 / 0.18);
+  --glow-2: rgb(159 227 255 / 0.12);
+  --bar-bg: rgb(8 16 26 / 0.5);
+  --field-bg: rgb(8 16 26 / 0.5);
+  --field-edge: rgb(190 230 255 / 0.22);
+  --ghost-bg: rgb(190 230 255 / 0.06);
+  --ghost-bg-hover: rgb(190 230 255 / 0.12);
+  --ghost-edge: rgb(190 230 255 / 0.2);
+  --btn-from: #e6f6ff;
+  --btn-to: #9fe3ff;
+  --btn-glow: rgb(159 227 255 / 0.55);
+  --code-bg: rgb(190 230 255 / 0.08);
+  --pre-bg: rgb(8 16 26 / 0.6);
+}
+:root[data-theme="zinn"] {
+  color-scheme: dark;
+  --color-canvas: #0a0c0e;
+  --color-canvas-2: #08090b;
+  --color-surface: #14181c;
+  --color-surface-2: #1b2127;
+  --color-surface-3: #232b32;
+  --color-line: #2c353d;
+  --color-line-strong: #46525c;
+  --color-ink: #eef1f4;
+  --color-ink-2: #d2d9df;
+  --color-muted: #98a1aa;
+  --color-accent: #e0e8f0;
+  --color-accent-strong: #f6f9fb;
+  --color-accent-deep: #aab8c4;
+  --color-signal: #9fe3c8;
+  --color-on-accent: #0c1116;
+  --color-danger: #ff9078;
+  --color-warn: #ffcf70;
+  --color-openai: #cfe0ee;
+  --color-anthropic: #ffb84a;
+  --color-google: #ffffff;
+  --color-other: #9fe3c8;
+  --color-on-agent: #0c1116;
+  --bg-image: none;
+  --bg-shade: linear-gradient(transparent, transparent);
+  --backdrop-grid: 1;
+  --grid-line: rgb(207 220 232 / 0.02);
+  --glass-1: rgb(58 66 74 / 0.5);
+  --glass-2: rgb(22 27 32 / 0.55);
+  --glass-strong-1: rgb(58 66 74 / 0.82);
+  --glass-strong-2: rgb(22 27 32 / 0.84);
+  --glass-edge: rgb(207 220 232 / 0.2);
+  --glass-hl: rgb(255 255 255 / 0.16);
+  --glass-drop: rgb(0 4 10 / 0.7);
+  --frame-1: rgb(22 27 32 / 0.36);
+  --frame-2: rgb(12 15 18 / 0.46);
+  --card-1: rgb(58 66 74 / 0.46);
+  --card-2: rgb(22 27 32 / 0.46);
+  --card-edge: rgb(207 220 232 / 0.16);
+  --tron: rgb(207 220 232 / 0.92);
+  --tron-soft: rgb(207 220 232 / 0.36);
+  --tron-glow: rgb(224 232 240 / 0.5);
+  --grid-tron: rgb(207 220 232 / 0.07);
+  --glow-1: rgb(224 232 240 / 0.18);
+  --glow-2: rgb(224 232 240 / 0.12);
+  --bar-bg: rgb(12 15 18 / 0.5);
+  --field-bg: rgb(12 15 18 / 0.5);
+  --field-edge: rgb(207 220 232 / 0.22);
+  --ghost-bg: rgb(207 220 232 / 0.06);
+  --ghost-bg-hover: rgb(207 220 232 / 0.12);
+  --ghost-edge: rgb(207 220 232 / 0.2);
+  --btn-from: #f0f4f8;
+  --btn-to: #b9c6d2;
+  --btn-glow: rgb(224 232 240 / 0.55);
+  --code-bg: rgb(207 220 232 / 0.08);
+  --pre-bg: rgb(12 15 18 / 0.6);
 }
 
 html,

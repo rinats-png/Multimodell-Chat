@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Monitor, Snowflake, Sun, Layers } from "lucide-react";
 import { useEffect, useState } from "react";
 import { THEME_STORAGE_KEY, type ThemeChoice } from "@/lib/theme";
 
@@ -20,16 +20,17 @@ function applyTheme(choice: ThemeChoice) {
 const OPTIONS: { value: ThemeChoice; label: string; Icon: typeof Sun }[] = [
   { value: "system", label: "Wie System", Icon: Monitor },
   { value: "light", label: "Hell", Icon: Sun },
-  { value: "dark", label: "Dunkel", Icon: Moon },
+  { value: "eis", label: "Eis (dunkel)", Icon: Snowflake },
+  { value: "zinn", label: "Zinn (dunkel)", Icon: Layers },
 ];
 
-/** Darstellung wählen: wie System (Standard), hell oder dunkel. */
+/** Darstellung wählen: wie System (Standard), hell oder eine der beiden dunklen Farbwelten. */
 export function ThemeToggle({ className, vertical = false }: { className?: string; vertical?: boolean }) {
   const [choice, setChoice] = useState<ThemeChoice>("system");
 
   useEffect(() => {
     const t = document.documentElement.dataset.theme;
-    if (t === "light" || t === "dark") setChoice(t);
+    if (t === "light" || t === "eis" || t === "zinn") setChoice(t);
   }, []);
 
   return (

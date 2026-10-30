@@ -24,6 +24,7 @@ import { Segmented } from "@/components/ui/Segmented";
 import { AgentStudio } from "./AgentStudio";
 import { Composer } from "./Composer";
 import { ControlPanel } from "./ControlPanel";
+import { HudRail } from "./HudRail";
 import { MessageItem, RouterNote, StreamingMessage, WindowDivider } from "./MessageItem";
 import { PromptInspector, type InspectorTarget } from "./PromptInspector";
 
@@ -249,9 +250,9 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
     setRoom((prev) => ({ ...prev, running_summary: "", summarized_message_count: 0 }));
   }
 
-  // Auf breiten Bildschirmen startet das Seitenpanel geöffnet, sonst als Schublade bei Bedarf.
+  // Auf sehr breiten Bildschirmen startet das Seitenpanel geöffnet; darunter nimmt die Denkfeld-Leiste den Platz.
   useEffect(() => {
-    if (window.matchMedia("(min-width: 1280px)").matches) setPanel("controls");
+    if (window.matchMedia("(min-width: 1680px)").matches) setPanel("controls");
   }, []);
 
   // ---- Render ---------------------------------------------------------------
@@ -297,6 +298,18 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         onMobileClose={() => setNavOpen(false)}
       />
 
+      <HudRail
+        agents={agents}
+        messages={messages}
+        windowStart={windowStart}
+        windowSize={room.sliding_window_size}
+        streamingAgentId={streaming?.agentId ?? null}
+        streamingLength={streaming?.text.length ?? 0}
+        running={running}
+        canAsk={!running && room.orchestration_mode === "manual"}
+        onAsk={(agentId) => orchestrate({ agentId })}
+      />
+
       <main className="relative flex min-w-0 flex-1 flex-col">
         <header className="flex h-16 shrink-0 items-center gap-2 border-b border-line/50 px-2 sm:gap-3 sm:px-4">
           <IconButton label="Navigation öffnen" onClick={() => setNavOpen(true)} className="md:hidden">
@@ -324,7 +337,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
                 {room.title}
               </button>
               <div className={clsx("hud truncate px-2", running ? "hud-live" : "text-muted")} aria-live="polite">
-                {running ? "Übertragung läuft" : "Bereit"} // {activeAgents.length} Agenten // {room.orchestration_mode === "router" ? "Moderator" : room.orchestration_mode === "round-robin" ? "Reihum" : "Manuell"}
+                {running ? (streamingAgent ? `${streamingAgent.display_name} ${streaming && streaming.text ? "antwortet" : "denkt"}` : "Übertragung läuft") : "Bereit"} // {activeAgents.length} Agenten // {room.orchestration_mode === "router" ? "Moderator" : room.orchestration_mode === "round-robin" ? "Reihum" : "Manuell"}
               </div>
             </div>
           )}

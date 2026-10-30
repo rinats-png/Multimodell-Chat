@@ -61,3 +61,12 @@ Kontrast: Alle Texte auf Chat, Tarif und Datenschutz werden automatisch gegen de
 - Neue Farben nur als Token in `app/globals.css` (beide Themen), keine festen Hex- oder RGB-Werte in Komponenten.
 - Bewegung sparsam (Streaming-Cursor, Live-Punkt); `prefers-reduced-motion` wird respektiert.
 - Schriften und Bilder nur lokal (CSP `font-src 'self'`, `img-src 'self'`).
+
+## Stufe 4: Tron-Glas mit Eis und Zinn
+
+- **Farbwelten (dunkel):** *Eis* (Standard bei dunkler Systemeinstellung) und *Zinn*, beide kräftig leuchtend. Eis: Eisblau (ChatGPT), Bernstein (Claude), Weiß (Gemini) auf Tiefblau-Dunkel `#0a1118`. Zinn: Silber, Bernstein, Weiß auf Anthrazit `#0a0c0e`. Hell bleibt „Morgenlicht“. Die frühere Vorgabe „keine übersättigten Farben, kein Blau“ gilt für die dunklen Farbwelten nicht mehr (Entscheidung des Projektinhabers).
+- **Umschalten:** `components/ui/ThemeToggle.tsx` (Wie System / Hell / Eis / Zinn), gespeichert unter `mm-theme`; der alte Wert `dark` wird als Eis gelesen.
+- **Hintergrund:** `components/shell/TronBackdrop.tsx` zeichnet Horizont, Gitterboden und Lichtspuren in den KI-Farben; aktiv, wenn die Farbwelt `--backdrop-grid: 1` setzt. Bei „Bewegung reduzieren“ Standbild.
+- **Glas überall:** Rahmen, Karten, Nachrichten, Eingabe und Leisten bleiben Glas; die Rahmen sind durchscheinender, damit das Gitter sichtbar ist.
+- **Leiste links vom Chat** (`components/chat/HudRail.tsx`, ab 1280 px Breite): *Denkfeld* (`ThinkField.tsx`, kleines Partikelfeld; ruhend grau, denkend flimmernd, antwortend im Takt des Textes, je KI-Anbieter eigene Wellenform), *Stimmen* (Zustand, Tokens; im Modus Manuell antwortet ein Klick direkt), *Verlauf* (letzte 20 Beiträge, außerhalb des Kontextfensters gedimmt, plus Redeanteil). Es werden nur echte Werte gezeigt; „Konsens“ und „Streit“ aus dem Entwurf fehlen bewusst, weil es dafür noch keine Bewertung gibt.
+- Das Steuerungs-Panel rechts öffnet erst ab 1680 px Breite von selbst.
