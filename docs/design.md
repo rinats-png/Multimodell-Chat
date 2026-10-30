@@ -1,15 +1,15 @@
-# Design-System „Lounge & Glut“
+# Design-System „Lounge & Glut“ (Hintergründe: Tron × Blade Runner 2049)
 
-Ein großer Glasrahmen schwebt vor einem fotografischen Raum: eine Lounge mit Pflanzen und warmen Lampen. Links schwebt eine runde Icon-Leiste. Im Rahmen liegen Debatten, Chat und Steuerung nebeneinander, getrennt durch feine Linien statt einzelner Kacheln. Hinter den Inhalten glimmt orange Glut.
+Ein großer Glasrahmen schwebt vor einer futuristischen Szene im Stil von Tron und Blade Runner 2049: Lichtbahnen in Bernstein statt Cyan, oranger Staubdunst, eine leise verfallene Stadt. Post-apokalyptisch nur angedeutet. Links schwebt eine runde Icon-Leiste. Im Rahmen liegen Debatten, Chat und Steuerung nebeneinander, getrennt durch feine Linien statt einzelner Kacheln. Hinter den Inhalten glimmt orange Glut.
 
-- **Hell: „Morgenlicht“** – Sand, Leinen, Terrakotta.
-- **Dunkel: „Glut“** – warmes Anthrazit, Orange.
+- **Hell: „Morgenlicht“** – Sand, Leinen, Terrakotta. Foto: blasse Monolithen im Aprikose-Staub (`public/bg/dust-light.webp`).
+- **Dunkel: „Glut“** – warmes Anthrazit, Orange. Foto: Lounge hoch in einem Turm, geschwungene Bernstein-Lichtbahnen, Pflanzen, verfallene Stadt im Dunst (`public/bg/neon-dark.webp`).
 
 Referenzen:
 - „Glassy Dashboard“ (code.xr, vom Projektinhaber geschickt): Rahmen, Icon-Leiste mit orangem aktivem Kreis, Kennzahl-Pillen, oranges Glühen.
 - Mobbin: Leonardo AI (schmale Icon-Leiste), Sentry (Icon-Leiste plus Liste), hilos (Kennzahlen-Kacheln, Agentenliste, schwebender Composer), Origin (Kennzahlen mit Mono-Labels).
 
-Die Hintergrundfotos sind mit Higgscheap (Nano Banana Pro) erzeugt und liegen unter `public/bg/` (`lounge-light.webp`, `lounge-dark.webp`, je 2048 px).
+Die Hintergrundbilder sind mit Higgscheap (Nano Banana Pro) gerendert, je 2048 px. Tron-Lichtlinien bewusst in Bernstein, weil Blau ausgeschlossen ist. Alternativen zum Tauschen liegen unter `docs/hintergruende/`: Kommandozentrale, Wüste mit Lichtgitter, Atrium. Zum Wechseln die Datei nach `public/bg/` kopieren und `--bg-image` in `app/globals.css` anpassen. Der Rahmen ist bewusst durchscheinend (`--frame-*`, Blur 16 px), die Karten im dunklen Thema dunkel getönt (`--card-*`), damit Text auch vor hellen Lichtbahnen lesbar bleibt.
 
 ## Vorgaben des Projektinhabers
 - **Kein** Lila, Pink, Rosa, Blau oder Verwandtes; keine übersättigten Farben.

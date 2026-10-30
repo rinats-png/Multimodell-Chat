@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 /*
- * Designkonzept „Lounge & Glut“ – ein großer Glasrahmen schwebt vor einem fotografischen Raum
- * (Lounge mit Pflanzen und warmen Lampen, public/bg/lounge-*.webp). Orange Glut hinter den Karten,
+ * Designkonzept „Lounge & Glut“ – ein großer Glasrahmen schwebt vor einer futuristischen Szene
+ * (Tron × Blade Runner 2049, Lichtbahnen in Bernstein; public/bg/neon-dark.webp, dust-light.webp). Orange Glut hinter den Karten,
  * schwebende Icon-Leiste links, Kennzahl-Pillen oben. Referenz: „Glassy Dashboard“ (code.xr) + Mobbin.
  * Hell: „Morgenlicht“ – Sand, Leinen, Terrakotta. Dunkel: „Glut“ – warmes Anthrazit, Orange.
  * Vorgaben: kein Lila/Pink/Rosa/Blau, keine übersättigten Farben, kein reines Schwarz.
@@ -41,7 +41,7 @@
 
 :root {
   color-scheme: light;
-  --bg-image: url("/bg/lounge-light.webp");
+  --bg-image: url("/bg/dust-light.webp");
   --bg-shade:
     linear-gradient(90deg, rgb(235 229 221 / 0.55), rgb(235 229 221 / 0.25) 55%, rgb(235 229 221 / 0.3)),
     linear-gradient(180deg, rgb(235 229 221 / 0.3), transparent 30%, transparent 65%, rgb(235 229 221 / 0.45));
@@ -53,8 +53,8 @@
   --glass-edge: rgb(80 58 40 / 0.13);
   --glass-hl: rgb(255 255 255 / 0.6);
   --glass-drop: rgb(80 50 25 / 0.24);
-  --frame-1: rgb(252 249 245 / 0.62);
-  --frame-2: rgb(245 239 231 / 0.5);
+  --frame-1: rgb(252 249 245 / 0.5);
+  --frame-2: rgb(245 239 231 / 0.4);
   --card-1: rgb(255 255 255 / 0.62);
   --card-2: rgb(255 252 248 / 0.38);
   --card-edge: rgb(80 58 40 / 0.11);
@@ -99,7 +99,7 @@
     --color-google: #d5cdbd;
     --color-other: #a7cf8e;
     --color-on-agent: #221b16;
-    --bg-image: url("/bg/lounge-dark.webp");
+    --bg-image: url("/bg/neon-dark.webp");
     --bg-shade:
       linear-gradient(90deg, rgb(37 34 32 / 0.5), rgb(37 34 32 / 0.25) 55%, rgb(37 34 32 / 0.35)),
       linear-gradient(180deg, rgb(37 34 32 / 0.35), transparent 30%, transparent 65%, rgb(37 34 32 / 0.55));
@@ -111,10 +111,10 @@
     --glass-edge: rgb(255 238 224 / 0.11);
     --glass-hl: rgb(255 255 255 / 0.07);
     --glass-drop: rgb(12 10 9 / 0.62);
-    --frame-1: rgb(52 48 45 / 0.58);
-    --frame-2: rgb(30 28 27 / 0.66);
-    --card-1: rgb(255 244 235 / 0.07);
-    --card-2: rgb(255 244 235 / 0.025);
+    --frame-1: rgb(48 44 41 / 0.42);
+    --frame-2: rgb(28 26 25 / 0.56);
+    --card-1: rgb(50 46 43 / 0.62);
+    --card-2: rgb(32 30 28 / 0.55);
     --card-edge: rgb(255 238 224 / 0.09);
     --glow-1: rgb(240 130 60 / 0.26);
     --glow-2: rgb(232 150 80 / 0.16);
@@ -155,7 +155,7 @@
   --color-google: #d5cdbd;
   --color-other: #a7cf8e;
   --color-on-agent: #221b16;
-  --bg-image: url("/bg/lounge-dark.webp");
+  --bg-image: url("/bg/neon-dark.webp");
   --bg-shade:
     linear-gradient(90deg, rgb(37 34 32 / 0.5), rgb(37 34 32 / 0.25) 55%, rgb(37 34 32 / 0.35)),
     linear-gradient(180deg, rgb(37 34 32 / 0.35), transparent 30%, transparent 65%, rgb(37 34 32 / 0.55));
@@ -167,10 +167,10 @@
   --glass-edge: rgb(255 238 224 / 0.11);
   --glass-hl: rgb(255 255 255 / 0.07);
   --glass-drop: rgb(12 10 9 / 0.62);
-  --frame-1: rgb(52 48 45 / 0.58);
-  --frame-2: rgb(30 28 27 / 0.66);
-  --card-1: rgb(255 244 235 / 0.07);
-  --card-2: rgb(255 244 235 / 0.025);
+  --frame-1: rgb(48 44 41 / 0.42);
+  --frame-2: rgb(28 26 25 / 0.56);
+  --card-1: rgb(50 46 43 / 0.62);
+  --card-2: rgb(32 30 28 / 0.55);
   --card-edge: rgb(255 238 224 / 0.09);
   --glow-1: rgb(240 130 60 / 0.26);
   --glow-2: rgb(232 150 80 / 0.16);
@@ -267,8 +267,8 @@ body::after {
   box-shadow:
     inset 0 1px 0 var(--glass-hl),
     0 40px 120px -40px var(--glass-drop);
-  backdrop-filter: blur(30px) saturate(140%);
-  -webkit-backdrop-filter: blur(30px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
 }
 
 /* Karte innerhalb des Rahmens: heller Hauch statt zweiter Unschärfe */
