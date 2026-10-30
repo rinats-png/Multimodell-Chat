@@ -368,7 +368,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
 
         {error && (
           <div className="mx-auto mb-2 flex w-full max-w-3xl items-start gap-2 px-4">
-            <div className="flex w-full items-start gap-2 rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-[13px] text-red-200 backdrop-blur">
+            <div className="flex w-full items-start gap-2 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-[13px] text-danger backdrop-blur">
               <TriangleAlert className="mt-0.5 size-4 shrink-0" />
               <span className="flex-1">{error}</span>
               <button onClick={() => setError(null)} aria-label="Fehler schließen">

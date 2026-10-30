@@ -40,7 +40,7 @@ export default function PasswortNeuPage() {
           <span className="mt-1 block text-[11.5px]">Mindestens {PASSWORD_MIN_LENGTH} Zeichen.</span>
         </label>
         {error && (
-          <p role="alert" className="text-[12.5px] text-red-300">
+          <p role="alert" className="text-[12.5px] text-danger">
             {error}
           </p>
         )}

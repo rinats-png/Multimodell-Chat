@@ -11,6 +11,7 @@ import type { ChatRoom, PublicProfile } from "@/lib/types";
 import { LegalLinks } from "@/components/legal/LegalLinks";
 import { BrandMark, Wordmark } from "@/components/ui/BrandMark";
 import { Meter } from "@/components/ui/Meter";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface SidebarProps {
   rooms: ChatRoom[];
@@ -88,7 +89,7 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
           Neue Debatte
         </button>
         {error && (
-          <p role="alert" className="mt-2 text-[12px] text-red-300">
+          <p role="alert" className="mt-2 text-[12px] text-danger">
             {error}
           </p>
         )}
@@ -125,12 +126,12 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
                   isActive ? "bg-accent/12 text-ink ring-1 ring-accent/25" : "text-ink-2 hover:bg-surface-3/50 hover:text-ink",
                 )}
               >
-                <span className={clsx("size-1.5 shrink-0 rounded-full", isActive ? "bg-accent shadow-[0_0_8px_rgb(79_216_255/0.9)]" : "bg-line-strong")} />
+                <span className={clsx("size-1.5 shrink-0 rounded-full", isActive ? "bg-accent shadow-[0_0_8px_color-mix(in_srgb,var(--color-accent)_90%,transparent)]" : "bg-line-strong")} />
                 <span className="truncate">{room.title}</span>
               </Link>
               <button
                 onClick={() => deleteRoom(room.id)}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted opacity-100 hover:text-red-300 focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted opacity-100 hover:text-danger focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100"
                 aria-label={`${room.title} löschen`}
               >
                 <Trash2 className="size-3.5" />
@@ -166,7 +167,10 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
         )}
       </div>
 
-      <LegalLinks className="px-5 pb-2" />
+      <div className="flex items-center justify-between gap-2 px-5 pb-2">
+        <LegalLinks />
+        <ThemeToggle />
+      </div>
       <div className="flex items-center gap-2.5 border-t border-line/70 px-4 py-3">
         <span className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-surface-3 to-surface-2 text-[11px] font-semibold text-accent-strong ring-1 ring-accent/20">
           {(email ?? "?").slice(0, 2).toUpperCase()}

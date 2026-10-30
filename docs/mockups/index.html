@@ -2,36 +2,37 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <style>
-  /* Farbkonzept „Tiefsee & Gletscher“ wie die App. Layout: Kontaktbogen – Bereiche als Filter, Screens als Abzüge mit Route und Funktions-IDs, Lightbox zum Durchblättern */
+  /* Farbkonzept „Hub Center“ wie die App (hell: Frost & Kupfer, dunkel: Basalt & Rost). Layout: Kontaktbogen – Bereiche als Filter, Screens als Abzüge mit Route und Funktions-IDs, Lightbox zum Durchblättern */
   :root {
-    --bg: #eef4f8;
-    --surface: #ffffff;
-    --ink: #0b2233;
-    --muted: #4f6a7e;
-    --line: #d3e1ea;
-    --accent: #0e8fb8;
-    --openai: #1fae78;
-    --anthropic: #d98a33;
-    --google: #3c86e0;
-    --shadow: 0 1px 2px rgb(10 40 60 / 0.06), 0 8px 24px rgb(10 40 60 / 0.07);
-    --font-display: "Unbounded", "Figtree", ui-sans-serif, system-ui, sans-serif;
-    --font-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
-    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --bg: #e8e4dd;
+    --surface: #fbf9f6;
+    --ink: #2c2925;
+    --muted: #5c534a;
+    --line: #d6cdc1;
+    --accent: #9d5532;
+    --openai: #46632f;
+    --anthropic: #66461b;
+    --google: #5f5a50;
+    --frame: #e8e4dd;
+    --shadow: 0 1px 2px rgb(70 50 30 / 0.06), 0 8px 24px rgb(70 50 30 / 0.08);
+    --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Geist", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #071521; --surface: #0d2131; --ink: #e8f2f9; --muted: #8aa6bb; --line: #1d3a51;
-      --accent: #4fd8ff; --openai: #3ee0a1; --anthropic: #ffaf5f; --google: #62a9ff;
-      --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 10px 30px rgb(2 10 18 / 0.5);
+      --bg: #2a2624; --surface: #322d2a; --ink: #efe8e3; --muted: #b6a99f; --line: #4b433e;
+      --accent: #d6a083; --openai: #adc293; --anthropic: #d8b07c; --google: #cfc6b0; --frame: #2a2624;
+      --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px rgb(10 10 12 / 0.45);
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #071521; --surface: #0d2131; --ink: #e8f2f9; --muted: #8aa6bb; --line: #1d3a51;
-    --accent: #4fd8ff; --openai: #3ee0a1; --anthropic: #ffaf5f; --google: #62a9ff;
-    --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 10px 30px rgb(2 10 18 / 0.5);
+    --bg: #2a2624; --surface: #322d2a; --ink: #efe8e3; --muted: #b6a99f; --line: #4b433e;
+    --accent: #d6a083; --openai: #adc293; --anthropic: #d8b07c; --google: #cfc6b0; --frame: #2a2624;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px rgb(10 10 12 / 0.45);
     color-scheme: dark;
   }
 
@@ -62,7 +63,7 @@
   .grid.phones { grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
 
   .shot { display: grid; grid-template-rows: auto 1fr; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); cursor: zoom-in; text-align: left; padding: 0; color: inherit; font: inherit; }
-  .shot .frame { background: #071521; aspect-ratio: 16 / 10; overflow: hidden; border-bottom: 1px solid var(--line); }
+  .shot .frame { background: var(--frame); aspect-ratio: 16 / 10; overflow: hidden; border-bottom: 1px solid var(--line); }
   .phones .shot .frame { aspect-ratio: 390 / 844; }
   .shot img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; transition: transform 0.4s ease; }
   .shot:hover img { transform: scale(1.015); }
@@ -73,7 +74,7 @@
   .tags code { padding: 2px 6px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); }
   .tags code.route { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
 
-  .lb { position: fixed; inset: 0; z-index: 50; background: rgb(5 16 26 / 0.94); display: grid; grid-template-rows: auto 1fr auto; padding: calc(12px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); color: #ececf1; }
+  .lb { position: fixed; inset: 0; z-index: 50; background: rgb(30 27 25 / 0.94); display: grid; grid-template-rows: auto 1fr auto; padding: calc(12px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); color: #ececf1; }
   .lb-top { display: flex; align-items: center; gap: 12px; min-width: 0; }
   .lb-top div { min-width: 0; flex: 1; }
   .lb-top strong { display: block; font-size: 16px; }
@@ -81,7 +82,7 @@
   .lb img { max-width: 100%; max-height: 100%; margin: auto; object-fit: contain; border-radius: 8px; align-self: center; justify-self: center; min-height: 0; }
   .lb-stage { display: grid; min-height: 0; padding-block: 12px; }
   .lb-nav { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 12px; color: #a6a6b4; }
-  .lb button { background: #112a3d; color: #e8f2f9; border: 1px solid #2a4d68; border-radius: 8px; padding: 8px 12px; font: 500 13px var(--font-body); cursor: pointer; }
+  .lb button { background: #3a3431; color: #efe8e3; border: 1px solid #615750; border-radius: 8px; padding: 8px 12px; font: 500 13px var(--font-body); cursor: pointer; }
 
   footer { border-top: 1px solid var(--line); padding-top: 16px; color: var(--muted); font-size: 13px; }
   @media (prefers-reduced-motion: reduce) { .shot img { transition: none; } }
@@ -91,13 +92,14 @@
   <header>
     <div class="brand"><span class="dots"><i style="background:var(--openai)"></i><i style="background:var(--anthropic)"></i><i style="background:var(--google)"></i></span> Multimodell-Chat · KI-Gruppendebatten</div>
     <h1>Alle Screens der App</h1>
-    <p class="lede">Echte Aufnahmen der laufenden Anwendung im neuen Design „Tiefsee & Gletscher“ (Glasflächen, Gletscher-Cyan), keine Entwürfe. Die Antworten stammen aus dem Demo-Modus mit simuliertem Modell; mit OpenRouter-Key antworten GPT-4o, Claude und Gemini selbst. Klick auf einen Screen öffnet die Großansicht, Pfeiltasten blättern.</p>
-    <div class="meta"><span>24 Screens</span><span>Desktop 1440 × 900</span><span>Mobil 390 × 844</span><span>Branch ccr-aab1b190-y70xl3</span></div>
+    <p class="lede">Echte Aufnahmen der laufenden Anwendung im Design „Hub Center“ – Glasflächen vor einem fotografischen Raum, hell „Frost & Kupfer“, dunkel „Basalt & Rost“. Keine Entwürfe. Die Antworten stammen aus dem Demo-Modus mit simuliertem Modell; mit OpenRouter-Key antworten GPT-4o, Claude und Gemini selbst. Klick auf einen Screen öffnet die Großansicht, Pfeiltasten blättern.</p>
+    <div class="meta"><span>24 Screens × hell/dunkel</span><span>Desktop 1440 × 900</span><span>Mobil 390 × 844</span><span>Branch ccr-aab1b190-y70xl3</span></div>
   </header>
 
+  <div class="filters" role="toolbar" aria-label="Darstellung der Aufnahmen" id="modes"></div>
   <div class="filters" role="toolbar" aria-label="Bereich filtern" id="filters"></div>
   <main id="gallery"></main>
-  <footer>Funktions-IDs (F-…) und Routen beziehen sich auf <code>docs/idea-to-app/05-mvp.md</code> im Repository. Die Bilder liegen auch als PNG unter <code>docs/mockups/</code>.</footer>
+  <footer>Funktions-IDs (F-…) und Routen beziehen sich auf <code>docs/idea-to-app/05-mvp.md</code> im Repository. Die Bilder liegen als PNG unter <code>docs/mockups/hell/</code> und <code>docs/mockups/dunkel/</code>.</footer>
 </div>
 
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-labelledby="lb-title">
@@ -155,6 +157,19 @@
 
   const all = SECTIONS.flatMap((s) => s.shots.map((shot) => ({ section: s.id, file: shot[0], title: shot[1], desc: shot[2], route: shot[3], ids: shot[4] })));
   let filter = "alle";
+  let mode = matchMedia("(prefers-color-scheme: dark)").matches ? "dunkel" : "hell";
+  const modes = document.getElementById("modes");
+  function renderModes() {
+    modes.innerHTML = "";
+    for (const [id, title] of [["hell", "Hell · Frost & Kupfer"], ["dunkel", "Dunkel · Basalt & Rost"]]) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(mode === id));
+      b.textContent = title;
+      b.addEventListener("click", () => { mode = id; renderModes(); renderGallery(); });
+      modes.appendChild(b);
+    }
+  }
   let visible = all;
   let current = 0;
 
@@ -190,7 +205,7 @@
         b.type = "button";
         b.className = "shot";
         b.setAttribute("aria-label", `${shot.title} vergrößern`);
-        b.innerHTML = `<div class="frame"><img src="${shot.file}.png" alt="${shot.title}: ${shot.desc}" loading="lazy"></div>
+        b.innerHTML = `<div class="frame"><img src="${mode}/${shot.file}.png" alt="${shot.title}: ${shot.desc}" loading="lazy"></div>
           <div class="cap"><strong>${shot.title}</strong><span>${shot.desc}</span>
           <div class="tags"><code class="route">${shot.route}</code>${shot.ids.map((id) => `<code>${id}</code>`).join("")}</div></div>`;
         b.addEventListener("click", () => open(visible.indexOf(shot)));
@@ -205,7 +220,7 @@
   function show(i) {
     current = (i + visible.length) % visible.length;
     const s = visible[current];
-    document.getElementById("lb-img").src = `${s.file}.png`;
+    document.getElementById("lb-img").src = `${mode}/${s.file}.png`;
     document.getElementById("lb-img").alt = `${s.title}: ${s.desc}`;
     document.getElementById("lb-title").textContent = s.title;
     document.getElementById("lb-desc").textContent = `${s.desc} · ${s.route}`;
@@ -225,6 +240,7 @@
     if (e.key === "ArrowLeft") show(current - 1);
   });
 
+  renderModes();
   renderFilters();
   renderGallery();
 </script>

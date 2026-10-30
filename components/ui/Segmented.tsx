@@ -30,7 +30,7 @@ export function Segmented<T extends string>({ value, options, onChange, size = "
             "inline-flex items-center gap-1.5 rounded-full font-medium transition-colors",
             size === "sm" ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-[13px]",
             v === value
-              ? "bg-gradient-to-b from-accent/25 to-accent/10 text-ink shadow-[0_0_16px_-6px_rgb(79_216_255/0.8)] ring-1 ring-accent/40"
+              ? "bg-gradient-to-b from-accent/25 to-accent/10 text-ink shadow-[0_0_16px_-6px_color-mix(in_srgb,var(--color-accent)_80%,transparent)] ring-1 ring-accent/40"
               : "text-muted hover:text-ink-2",
           )}
         >

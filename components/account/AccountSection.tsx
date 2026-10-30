@@ -86,14 +86,14 @@ export function AccountSection({ isDemoStore }: { isDemoStore: boolean }) {
         <button
           onClick={() => setConfirmDelete(true)}
           disabled={busy}
-          className="inline-flex items-center gap-2 rounded-xl border border-red-400/40 px-3 py-2 text-[13px] text-red-200 transition-colors hover:bg-red-500/10 disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-xl border border-danger/40 px-3 py-2 text-[13px] text-danger transition-colors hover:bg-danger/10 disabled:opacity-60"
         >
           <Trash2 className="size-4" aria-hidden />
           Konto löschen
         </button>
       </div>
       {message && (
-        <p role={message.ok ? "status" : "alert"} className={`mt-3 text-[12.5px] ${message.ok ? "text-openai" : "text-red-400"}`}>
+        <p role={message.ok ? "status" : "alert"} className={`mt-3 text-[12.5px] ${message.ok ? "text-openai" : "text-danger"}`}>
           {message.text}
         </p>
       )}
@@ -113,7 +113,7 @@ export function AccountSection({ isDemoStore }: { isDemoStore: boolean }) {
                 setConfirmDelete(false);
                 void run("delete");
               }}
-              className="rounded-xl bg-gradient-to-b from-red-400 to-red-500 px-3 py-1.5 font-semibold text-white shadow-[0_8px_24px_-10px_rgb(248_113_113/0.8)] hover:brightness-110"
+              className="rounded-xl bg-danger px-3 py-1.5 font-semibold text-on-accent shadow-[0_8px_24px_-10px_var(--color-danger)] hover:brightness-110"
             >
               Endgültig löschen
             </button>

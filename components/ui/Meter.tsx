@@ -7,7 +7,7 @@ export function Meter({ value, max, className }: { value: number; max: number; c
       <div
         className={clsx(
           "h-full rounded-full transition-all",
-          pct > 90 ? "bg-red-400" : pct > 70 ? "bg-anthropic" : "bg-gradient-to-r from-accent to-openai shadow-[0_0_10px_rgb(79_216_255/0.6)]",
+          pct > 90 ? "bg-danger" : pct > 70 ? "bg-anthropic" : "bg-gradient-to-r from-accent to-openai shadow-[0_0_10px_color-mix(in_srgb,var(--color-accent)_60%,transparent)]",
         )}
         style={{ width: `${pct}%` }}
       />

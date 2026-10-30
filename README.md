@@ -6,7 +6,7 @@ Ein Mensch diskutiert in einem gemeinsamen Raum gleichzeitig mit **ChatGPT (GPT-
 
 ![Gruppenchat](docs/screenshot-chat.png)
 
-Alle Screens (Desktop und Mobil): [`docs/mockups/`](docs/mockups/) – Galerie in `docs/mockups/index.html`. Design-System: [`docs/design.md`](docs/design.md).
+Alle Screens (Desktop und Mobil, hell und dunkel): [`docs/mockups/hell/`](docs/mockups/hell/) und [`docs/mockups/dunkel/`](docs/mockups/dunkel/) – Galerie in `docs/mockups/index.html`. Design-System: [`docs/design.md`](docs/design.md).
 
 ## Schnellstart (lokal, ohne Konten)
 

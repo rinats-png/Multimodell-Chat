@@ -27,7 +27,7 @@ export function AgentStudio({ agents, onUpdate, onCreate, onDelete, modelCatalog
         Schmeichelei) werden automatisch angehängt. In deinem Tarif antworten bis zu {maxActiveAgents} aktive Agenten.
       </p>
       {toggleError && (
-        <p role="alert" className="text-[12px] text-red-400">
+        <p role="alert" className="text-[12px] text-danger">
           {toggleError}
         </p>
       )}
@@ -104,7 +104,7 @@ function AgentCard({ agent, open, onToggle, onUpdate, onToggleActive, onDelete, 
     "field mt-1 px-2.5 py-1.5 text-[13px]";
 
   return (
-    <div className={clsx("rounded-xl border bg-canvas/35", open ? "border-accent/30 shadow-[0_0_24px_-12px_rgb(79_216_255/0.7)]" : "border-line/80")}>
+    <div className={clsx("rounded-xl border bg-canvas/35", open ? "border-accent/30 shadow-[0_0_24px_-12px_color-mix(in_srgb,var(--color-accent)_70%,transparent)]" : "border-line/80")}>
       <div className="flex items-center gap-2.5 p-2.5">
         <button onClick={onToggle} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
           <AgentAvatar name={agent.display_name} modelId={agent.model_identifier} />
@@ -121,7 +121,7 @@ function AgentCard({ agent, open, onToggle, onUpdate, onToggleActive, onDelete, 
           onClick={onToggleActive}
           className={clsx(
             "relative h-5 w-9 shrink-0 rounded-full transition-colors",
-            agent.is_active ? "bg-gradient-to-r from-accent-deep to-accent shadow-[0_0_12px_-2px_rgb(79_216_255/0.8)]" : "bg-surface-3 ring-1 ring-line-strong",
+            agent.is_active ? "bg-gradient-to-r from-accent-deep to-accent shadow-[0_0_12px_-2px_color-mix(in_srgb,var(--color-accent)_80%,transparent)]" : "bg-surface-3 ring-1 ring-line-strong",
           )}
         >
           <span
@@ -180,11 +180,11 @@ function AgentCard({ agent, open, onToggle, onUpdate, onToggleActive, onDelete, 
               onChange={(e) => setDraft({ ...draft, system_prompt: e.target.value })}
             />
           </label>
-          {error && <p className="text-[12px] text-red-400">{error}</p>}
+          {error && <p className="text-[12px] text-danger">{error}</p>}
           <div className="flex items-center justify-between">
             <button
               onClick={() => confirm(`${agent.display_name} aus dem Raum entfernen?`) && onDelete()}
-              className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] text-muted hover:text-red-400"
+              className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] text-muted hover:text-danger"
             >
               <Trash2 className="size-3.5" />
               Entfernen

@@ -29,7 +29,7 @@ export default function PasswortVergessenPage() {
           <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
         </label>
         {message && (
-          <p role={message.ok ? "status" : "alert"} className={`text-[12.5px] ${message.ok ? "text-openai" : "text-red-300"}`}>
+          <p role={message.ok ? "status" : "alert"} className={`text-[12.5px] ${message.ok ? "text-openai" : "text-danger"}`}>
             {message.text}
           </p>
         )}

@@ -112,8 +112,8 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
         <h2 className="text-center font-display text-[28px] font-medium tracking-tight sm:text-[34px]">
           <span className="text-gradient">Mehr Stimmen, mehr Perspektiven.</span>
         </h2>
-        <p className="mt-2 text-center text-[14px] text-muted">Wähle den Tarif, der zu deinen Debatten passt.</p>
-        {error && <p className="mt-4 text-center text-[13px] text-red-400">{error}</p>}
+        <p className="mt-2 text-center text-[14px] text-ink-2">Wähle den Tarif, der zu deinen Debatten passt.</p>
+        {error && <p className="mt-4 text-center text-[13px] text-danger">{error}</p>}
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {PLAN_ORDER.map((tier) => {
@@ -125,7 +125,7 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
                 key={tier}
                 className={clsx(
                   "relative flex flex-col overflow-hidden rounded-2xl p-5",
-                  highlighted ? "glass-strong ring-1 ring-accent/50 shadow-[0_0_60px_-20px_rgb(79_216_255/0.7)]" : "glass",
+                  highlighted ? "glass-strong ring-1 ring-accent/50 shadow-[0_0_60px_-20px_color-mix(in_srgb,var(--color-accent)_70%,transparent)]" : "glass",
                 )}
               >
                 <div className="flex items-start justify-between">
@@ -234,7 +234,7 @@ function ByokForm({ profile, onSaved }: { profile: PublicProfile; onSaved: (p: P
       {profile.has_custom_key && (
         <div className="mt-4 flex items-center justify-between rounded-xl border border-openai/25 bg-openai/[0.06] px-3 py-2">
           <span className="font-mono text-[12.5px] text-ink-2">{profile.custom_key_hint}</span>
-          <button onClick={() => save(null)} className="text-[12px] text-muted hover:text-red-400">
+          <button onClick={() => save(null)} className="text-[12px] text-muted hover:text-danger">
             Entfernen
           </button>
         </div>
@@ -263,7 +263,7 @@ function ByokForm({ profile, onSaved }: { profile: PublicProfile; onSaved: (p: P
           Speichern
         </button>
       </form>
-      {status && <p className={clsx("mt-2 text-[12.5px]", status.ok ? "text-openai" : "text-red-400")}>{status.text}</p>}
+      {status && <p className={clsx("mt-2 text-[12.5px]", status.ok ? "text-openai" : "text-danger")}>{status.text}</p>}
     </section>
   );
 }

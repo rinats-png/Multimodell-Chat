@@ -41,7 +41,7 @@ export function MessageItem({ message, agent, outsideWindow, onInspect }: Messag
     return (
       <div className={clsx("flex justify-end", outsideWindow && "opacity-55")}>
         <div className="max-w-[80%]">
-          <div className="rounded-2xl rounded-br-md border border-accent/25 bg-gradient-to-br from-accent/[0.16] to-accent/[0.05] px-4 py-2.5 text-[14.5px] leading-relaxed text-ink shadow-[0_8px_24px_-14px_rgb(79_216_255/0.6)] backdrop-blur">
+          <div className="rounded-2xl rounded-br-md border border-accent/25 bg-gradient-to-br from-accent/[0.16] to-accent/[0.05] px-4 py-2.5 text-[14.5px] leading-relaxed text-ink shadow-[0_8px_24px_-14px_color-mix(in_srgb,var(--color-accent)_60%,transparent)] backdrop-blur">
             <p className="whitespace-pre-wrap">{message.content}</p>
           </div>
           <div className="mt-1 text-right text-[11px] text-muted">{formatTime(message.created_at)}</div>
@@ -71,7 +71,7 @@ export function MessageItem({ message, agent, outsideWindow, onInspect }: Messag
         <div className="mt-1">
           <Markdown>{message.content}</Markdown>
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-muted">
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-ink-2">
           <span className="inline-flex items-center gap-0.5 rounded-md border border-line/80 bg-canvas/40 px-1.5 py-0.5" title="Input-Tokens">
             <ArrowUpRight className="size-3" />
             {formatNumber(message.input_tokens)}

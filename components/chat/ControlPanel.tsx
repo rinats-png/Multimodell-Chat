@@ -55,14 +55,14 @@ export function ControlPanel({ room, messages, onChange, limits }: ControlPanelP
               onClick={() => onChange({ orchestration_mode: value })}
               className={`flex w-full gap-3 rounded-xl border p-3 text-left transition-colors ${
                 room.orchestration_mode === value
-                  ? "border-accent/50 bg-gradient-to-br from-accent/15 to-accent/[0.03] shadow-[0_0_24px_-10px_rgb(79_216_255/0.8)]"
+                  ? "border-accent/50 bg-gradient-to-br from-accent/15 to-accent/[0.03] shadow-[0_0_24px_-10px_color-mix(in_srgb,var(--color-accent)_80%,transparent)]"
                   : "border-line/80 bg-canvas/30 hover:border-accent/30"
               }`}
             >
               <Icon className={`mt-0.5 size-4 shrink-0 ${room.orchestration_mode === value ? "text-accent-strong" : "text-muted"}`} />
               <span>
                 <span className="block text-[13px] font-medium text-ink">{title}</span>
-                <span className="mt-0.5 block text-[12px] leading-relaxed text-muted">{description}</span>
+                <span className="mt-0.5 block text-[12px] leading-relaxed text-ink-2">{description}</span>
               </span>
             </button>
           ))}

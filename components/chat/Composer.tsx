@@ -148,8 +148,8 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: 
 
         <div
           className={clsx(
-            "glass-strong rounded-2xl transition-shadow focus-within:shadow-[0_0_0_1px_rgb(79_216_255/0.45),0_18px_50px_-18px_rgb(79_216_255/0.55)]",
-            firewall.flagged && "!border-red-400/60",
+            "glass-strong rounded-2xl transition-shadow focus-within:shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-accent)_45%,transparent),0_18px_50px_-18px_color-mix(in_srgb,var(--color-accent)_55%,transparent)]",
+            firewall.flagged && "!border-danger/60",
           )}
         >
           <textarea
@@ -167,7 +167,7 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: 
           />
           <div className="flex items-center gap-3 px-3 pb-2.5 pt-1.5">
             {firewall.flagged ? (
-              <span className="inline-flex items-center gap-1.5 text-[12px] text-red-300">
+              <span className="inline-flex items-center gap-1.5 text-[12px] text-danger">
                 <ShieldAlert className="size-3.5" />
                 Prompt-Firewall: {firewall.matches.join(", ")}
               </span>
@@ -198,7 +198,7 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: 
           </div>
         </div>
       </div>
-      <p className="mt-2 text-center text-[11px] text-muted">
+      <p className="mt-2 text-center text-[11px] text-ink-2">
         KIs können Fehler machen und widersprechen sich absichtlich. Enter zum Senden, Shift+Enter für neue Zeile.
       </p>
     </div>

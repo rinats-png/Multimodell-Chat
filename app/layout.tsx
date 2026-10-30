@@ -1,22 +1,33 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
-import "@fontsource-variable/unbounded";
+import { headers } from "next/headers";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 // Alle Seiten dynamisch rendern: Die CSP nutzt eine Nonce pro Anfrage (siehe middleware.ts).
 export const dynamic = "force-dynamic";
 
-export const viewport = { themeColor: "#071521" };
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#e8e4dd" },
+    { media: "(prefers-color-scheme: dark)", color: "#2a2624" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: "Multimodell-Chat – KI-Gruppendebatten",
   description: "Diskutiere gleichzeitig mit ChatGPT, Claude und Gemini in einem gemeinsamen Gruppenchat.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
-    <html lang="de" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    // data-theme setzt das Skript vor dem Hydrieren; Browser blenden das nonce-Attribut aus – daher suppressHydrationWarning.
+    <html lang="de" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
+      <head>
+        <script nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="font-sans antialiased">{children}</body>
     </html>
   );

@@ -10,7 +10,7 @@ export default function ImpressumPage() {
   return (
     <LegalPage title="Impressum">
       {!op.configured && (
-        <p role="alert" className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-amber-200">
+        <p role="alert" className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-warn">
           Die Betreiberangaben sind noch nicht konfiguriert. Ohne vollständiges Impressum darf die App nicht öffentlich angeboten werden.
         </p>
       )}
