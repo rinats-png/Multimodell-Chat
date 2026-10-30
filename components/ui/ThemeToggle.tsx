@@ -33,7 +33,7 @@ export function ThemeToggle({ className, vertical = false }: { className?: strin
   }, []);
 
   return (
-    <div role="radiogroup" aria-label="Darstellung" className={clsx("inline-flex rounded-xl border border-line/70 bg-canvas/30 p-0.5", vertical && "flex-col rounded-full", className)}>
+    <div role="radiogroup" aria-label="Darstellung" className={clsx("inline-flex rounded-xl border border-line/70 bg-canvas/30 p-0.5", vertical && "flex-col rounded-[6px]", className)}>
       {OPTIONS.map(({ value, label, Icon }) => (
         <button
           key={value}
@@ -48,7 +48,7 @@ export function ThemeToggle({ className, vertical = false }: { className?: strin
           }}
           className={clsx(
             "flex size-7 items-center justify-center transition-colors",
-            vertical ? "rounded-full" : "rounded-lg",
+            vertical ? "rounded-[4px]" : "rounded-lg",
             choice === value ? "bg-accent/15 text-accent ring-1 ring-accent/30" : "text-muted hover:text-ink",
           )}
         >

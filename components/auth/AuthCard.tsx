@@ -4,7 +4,7 @@ import { BrandMark, Wordmark } from "@/components/ui/BrandMark";
 export function AuthCard({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
     <main className="flex min-h-dvh items-center justify-center px-4 py-10">
-      <div className="frame relative w-full max-w-md overflow-hidden rounded-[28px] px-6 py-8 sm:px-8">
+      <div className="frame relative w-full max-w-md overflow-hidden rounded-[10px] px-6 py-8 sm:px-8">
         <div className="glow-field" aria-hidden />
         <div className="relative flex flex-col items-center text-center">
           <BrandMark className="size-12" />

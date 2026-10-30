@@ -1,6 +1,6 @@
 # Design-System „Lounge & Glut“ mit Tron-Schicht
 
-Ein großer Glasrahmen schwebt vor einer Tron-Szene. Darüber liegt eine Tron-Schicht aus Lichtkanten in Orange (statt Cyan), einem Lichtgitter im Rahmen, leuchtenden HUD-Eckklammern an Karten, Orbitron als HUD-Schrift und leuchtenden Avatar-Ringen. Der Aufbau bleibt unverändert. Links schwebt eine runde Icon-Leiste. Im Rahmen liegen Debatten, Chat und Steuerung nebeneinander, getrennt durch feine Linien statt einzelner Kacheln. Hinter den Inhalten glimmt orange Glut.
+Ein großer Glasrahmen schwebt vor einer Tron-Szene. Darüber liegt eine Tron-Schicht aus Lichtkanten in Orange (statt Cyan), einem Lichtgitter im Rahmen, leuchtenden HUD-Eckklammern an Karten, Orbitron als HUD-Schrift und leuchtenden Avatar-Ringen. Der Aufbau bleibt unverändert; die Formen sind kantig (Radius 4–10 px statt 16–28 px), die Lichtkante des Rahmens wandert langsam (Animation `trail`, bei `prefers-reduced-motion` aus). Zehn Alternativen: `docs/varianten/`. Links schwebt eine runde Icon-Leiste. Im Rahmen liegen Debatten, Chat und Steuerung nebeneinander, getrennt durch feine Linien statt einzelner Kacheln. Hinter den Inhalten glimmt orange Glut.
 
 - **Hell: „Morgenlicht“** – Sand, Leinen, Terrakotta. Hintergrund: weißer Tron-Digitalraum mit orangen Lichtlinien (`public/bg/tron-light.webp`).
 - **Dunkel: „Glut“** – warmes Anthrazit, Orange. Hintergrund: Tron-Gitterlandschaft mit Leuchtspuren (`public/bg/tron-dark.webp`).

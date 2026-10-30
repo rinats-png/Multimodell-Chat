@@ -285,7 +285,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
   return (
     <div className="flex h-dvh gap-3 overflow-hidden md:p-3">
       <IconRail active="chat" isDemoStore={props.isDemoStore} />
-      <div className="frame relative flex min-w-0 flex-1 overflow-hidden md:rounded-[28px]">
+      <div className="frame relative flex min-w-0 flex-1 overflow-hidden md:rounded-[10px]">
       <div className="glow-field" aria-hidden />
       <Sidebar
         rooms={props.rooms.map((r) => (r.id === room.id ? { ...r, title: room.title } : r))}
@@ -324,7 +324,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
             </button>
           )}
 
-          <div className="hidden -space-x-1.5 md:flex">
+          <div className="hidden space-x-1 md:flex">
             {activeAgents.map((a) => (
               <AgentAvatar key={a.id} name={a.display_name} modelId={a.model_identifier} size="sm" className="ring-2 ring-surface" />
             ))}
@@ -539,10 +539,10 @@ function StatPills({ messages, className }: { messages: ChatMessage[]; className
     { icon: MessagesSquare, label: "Antworten", value: String(replies.length) },
   ];
   return (
-    <div className={clsx("card items-center rounded-full p-1", className)} aria-label="Kennzahlen dieser Debatte">
+    <div className={clsx("card items-center rounded-[8px] p-1", className)} aria-label="Kennzahlen dieser Debatte">
       {items.map(({ icon: Icon, label, value }, i) => (
         <div key={label} className={clsx("flex items-center gap-2 px-3 py-1", i > 0 && "border-l border-line/50")}>
-          <span className="flex size-6 items-center justify-center rounded-full bg-accent/12 text-accent">
+          <span className="flex size-6 items-center justify-center rounded-[4px] bg-accent/12 text-accent">
             <Icon className="size-3.5" aria-hidden />
           </span>
           <span className="leading-tight">

@@ -40,9 +40,9 @@ export function IconRail({ active, isDemoStore }: IconRailProps) {
   }
 
   return (
-    <nav aria-label="Hauptbereiche" className="glass tron-edge hidden w-[64px] shrink-0 flex-col items-center gap-2 self-center rounded-full py-3 md:flex">
+    <nav aria-label="Hauptbereiche" className="glass tron-edge hidden w-[64px] shrink-0 flex-col items-center gap-2 self-center rounded-[10px] py-3 md:flex">
       <Link href="/chat" aria-label="Multimodell – Start" className="mb-2">
-        <BrandMark className="size-10 rounded-full" />
+        <BrandMark className="size-10 rounded-[6px]" />
       </Link>
       <RailItem label="Debatten" href="/chat" active={active === "chat"}>
         <MessagesSquare className="size-[18px]" />
@@ -83,7 +83,7 @@ function RailItem({
   children: React.ReactNode;
 }) {
   const cls = clsx(
-    "flex size-10 items-center justify-center rounded-full transition-all",
+    "flex size-10 items-center justify-center rounded-[6px] transition-all",
     active
       ? "bg-gradient-to-b from-[var(--btn-from)] to-[var(--btn-to)] text-on-accent shadow-[0_0_22px_-4px_var(--btn-glow)]"
       : "text-muted hover:bg-surface-3/60 hover:text-ink",
