@@ -179,6 +179,7 @@ Alle konkreten Werte, auf die diese Regeln verweisen (Passwort-Hashing, Längen,
 | A-012 | Beta-Test mit 5–10 Nutzern im Stripe-Testmodus | Launch |
 | A-013 | RPO 24 h / RTO 4 h | Betrieb |
 | A-014 | Support per E-Mail, Störungshinweis auf Login-Seite | Betrieb |
+| A-015 | Supabase-Dashboard wie in `docs/sicherheit.md` eingestellt | Login, Sitzungen (TASK-021) |
 
 ## 7. Abweichungen vom Plan (Rückweg)
 

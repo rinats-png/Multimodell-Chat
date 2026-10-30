@@ -1,7 +1,10 @@
 import "server-only";
 import { effectiveCustomKey } from "./ai/provider";
+import { sessionAuthTime } from "./auth-time";
 import { assertProductionConfig, demoMayUsePlatformKey, isDemoWorkspaceAllowed } from "./env";
-import { DEMO_USER_ID, memoryStore } from "./store/memory-store";
+import { cookies } from "next/headers";
+import { isProduction } from "./env";
+import { createMemoryStore, DEMO_USER_ID, memoryStore, userIdFor } from "./store/memory-store";
 import { createSupabaseStore } from "./store/supabase-store";
 import type { DataStore } from "./store/types";
 import { getSupabaseAdmin } from "./supabase/admin";
@@ -21,6 +24,8 @@ export interface AppSession {
   allowPlatformKey: boolean;
 }
 
+export const DEMO_VISITOR_COOKIE = "mmchat_demo";
+
 export class UnauthorizedError extends Error {
   constructor() {
     super("Nicht angemeldet");
@@ -32,11 +37,14 @@ export async function getSession(): Promise<AppSession> {
   assertProductionConfig();
   if (!isSupabaseConfigured()) {
     if (!isDemoWorkspaceAllowed()) throw new UnauthorizedError();
+    // Öffentliche Demo (Produktion): eigener Bestand je Besucher-Cookie, gesetzt von der Middleware.
+    const visitor = isProduction() ? (await cookies()).get(DEMO_VISITOR_COOKIE)?.value : undefined;
+    if (isProduction() && !visitor) throw new UnauthorizedError();
     return {
-      userId: DEMO_USER_ID,
+      userId: visitor ? userIdFor(visitor) : DEMO_USER_ID,
       email: "demo@multimodell.chat",
       lastSignInAt: new Date().toISOString(),
-      store: memoryStore,
+      store: visitor ? createMemoryStore(visitor) : memoryStore,
       isDemoStore: true,
       allowPlatformKey: demoMayUsePlatformKey(),
     };
@@ -46,10 +54,13 @@ export async function getSession(): Promise<AppSession> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new UnauthorizedError();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   return {
     userId: user.id,
     email: user.email ?? null,
-    lastSignInAt: user.last_sign_in_at ?? null,
+    lastSignInAt: sessionAuthTime(session?.access_token),
     store: createSupabaseStore(supabase, getSupabaseAdmin(), user.id),
     isDemoStore: false,
     allowPlatformKey: true,
@@ -65,11 +76,17 @@ export function isRecentSignIn(session: Pick<AppSession, "lastSignInAt" | "isDem
   return Date.now() - new Date(session.lastSignInAt).getTime() <= REAUTH_MAX_AGE_MS;
 }
 
+/** Allowlist der Profilfelder für den Browser – nie Key oder Stripe-IDs (Z14-06). */
 export function toPublicProfile(profile: UserProfile): PublicProfile {
-  const { custom_openrouter_key: _key, ...rest } = profile;
   const key = effectiveCustomKey(profile);
   return {
-    ...rest,
+    id: profile.id,
+    subscription_tier: profile.subscription_tier,
+    monthly_token_limit: profile.monthly_token_limit,
+    tokens_used_this_month: profile.tokens_used_this_month,
+    usage_period_start: profile.usage_period_start,
+    rate_limit_per_min: profile.rate_limit_per_min,
+    created_at: profile.created_at,
     has_custom_key: Boolean(key),
     custom_key_hint: key ? `${key.slice(0, 7)}…${key.slice(-4)}` : null,
   };

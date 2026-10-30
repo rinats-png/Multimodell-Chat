@@ -102,6 +102,19 @@ export async function peekLimit(bucket: string, id: string, limit: number, windo
   return remaining > 0 ? { allowed: true, remaining, retryAfterMs: 0 } : { allowed: false, remaining: 0, retryAfterMs: Math.max(1, reset - Date.now()) };
 }
 
+/**
+ * Client-IP für IP-Limits (Z14-07). Standard (Vercel): Die Plattform überschreibt
+ * `x-forwarded-for`, der erste Eintrag ist die echte Client-IP. Hinter Proxys, die nur
+ * anhängen, `TRUSTED_PROXY_HOPS` = Anzahl eigener Proxys setzen – dann zählt der Eintrag,
+ * den der äußerste eigene Proxy hinzugefügt hat (vom Client nicht fälschbar).
+ */
+export function clientIpFromHeaders(headers: Headers): string {
+  const entries = (headers.get("x-forwarded-for") ?? "").split(",").map((e) => e.trim()).filter(Boolean);
+  const hops = Number(process.env.TRUSTED_PROXY_HOPS ?? "0");
+  const ip = hops > 0 ? entries[entries.length - hops] : entries[0];
+  return ip || headers.get("x-real-ip") || "unknown";
+}
+
 export function retryAfterSeconds(result: RateLimitResult): string {
   return String(Math.max(1, Math.ceil(result.retryAfterMs / 1000)));
 }
@@ -112,28 +125,41 @@ export function retryAfterSeconds(result: RateLimitResult): string {
 
 const memoryLocks = new Map<string, number>();
 
-export async function acquireLock(key: string, ttlSeconds: number): Promise<boolean> {
+const memoryLockOwners = new Map<string, string>();
+
+/** Liefert ein Besitzer-Token oder null, wenn die Sperre schon gehalten wird. */
+export async function acquireLock(key: string, ttlSeconds: number): Promise<string | null> {
+  const token = crypto.randomUUID();
   if (hasUpstash()) {
-    const ok = await Redis.fromEnv().set(`mmchat:lock:${key}`, "1", { nx: true, ex: ttlSeconds });
-    return ok === "OK";
+    const ok = await Redis.fromEnv().set(`mmchat:lock:${key}`, token, { nx: true, ex: ttlSeconds });
+    return ok === "OK" ? token : null;
   }
   const now = Date.now();
   const until = memoryLocks.get(key);
-  if (until && until > now) return false;
+  if (until && until > now) return null;
   memoryLocks.set(key, now + ttlSeconds * 1000);
-  return true;
+  memoryLockOwners.set(key, token);
+  return token;
 }
 
-export async function releaseLock(key: string): Promise<void> {
+/** Gibt die Sperre nur frei, wenn sie noch diesem Besitzer gehört (Z14-12). */
+export async function releaseLock(key: string, token: string): Promise<void> {
   if (hasUpstash()) {
-    await Redis.fromEnv().del(`mmchat:lock:${key}`);
+    await Redis.fromEnv().eval(
+      "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end",
+      [`mmchat:lock:${key}`],
+      [token],
+    );
     return;
   }
+  if (memoryLockOwners.get(key) !== token) return;
   memoryLocks.delete(key);
+  memoryLockOwners.delete(key);
 }
 
 /** Nur für Tests: In-Memory-Zustand zurücksetzen. */
 export function resetRateLimitMemory(): void {
   memoryWindows.clear();
   memoryLocks.clear();
+  memoryLockOwners.clear();
 }

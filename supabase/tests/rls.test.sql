@@ -87,6 +87,22 @@ SELECT pg_temp.expect_denied($q$SELECT * FROM public.billing_events$q$, 'T-SEC-2
 SELECT pg_temp.expect_denied($q$UPDATE public.room_agents SET system_prompt = repeat('x', 5000) WHERE id = 'a1000000-0000-4000-8000-00000000000a'$q$, 'T-SEC-21 System-Prompt > 4000');
 SELECT pg_temp.expect_denied($q$UPDATE public.chat_rooms SET sliding_window_size = 100 WHERE id = 'a0000000-0000-4000-8000-00000000000a'$q$, 'T-SEC-21 Window > 40');
 SELECT pg_temp.expect_affected($q$UPDATE public.chat_rooms SET title = 'Umbenannt' WHERE id = 'a0000000-0000-4000-8000-00000000000a'$q$, 1, 'eigenen Raum umbenennen');
+SELECT pg_temp.expect_denied($q$UPDATE public.room_agents SET room_id = 'a0000000-0000-4000-8000-00000000000a' WHERE id = 'a1000000-0000-4000-8000-00000000000a'$q$, 'T-SEC-21 room_id eines Agenten ändern');
+DO $$
+BEGIN
+  FOR i IN 1..11 LOOP
+    INSERT INTO public.room_agents (room_id, model_identifier, display_name, role_title, system_prompt)
+    VALUES ('a0000000-0000-4000-8000-00000000000a', 'openai/gpt-4o', 'A' || i, 'Rolle', 'Zusätzlicher Agent');
+  END LOOP;
+END $$;
+SELECT pg_temp.expect_denied($q$INSERT INTO public.room_agents (room_id, model_identifier, display_name, role_title, system_prompt) VALUES ('a0000000-0000-4000-8000-00000000000a', 'openai/gpt-4o', 'Zu viel', 'Rolle', 'Dreizehnter Agent')$q$, 'T-SEC-21 mehr als 12 Agenten pro Raum');
+DO $$
+BEGIN
+  FOR i IN 1..99 LOOP
+    INSERT INTO public.chat_rooms (title) VALUES ('Raum ' || i);
+  END LOOP;
+END $$;
+SELECT pg_temp.expect_denied($q$INSERT INTO public.chat_rooms (title) VALUES ('Raum 101')$q$, 'T-SEC-21 mehr als 100 Räume');
 ROLLBACK;
 
 -- ---------------------------------------------------------------------------

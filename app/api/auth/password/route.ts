@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { handleApi, HttpError, readJson } from "@/lib/api";
+import { sessionAuthTime } from "@/lib/auth-time";
+import { REAUTH_MAX_AGE_MS } from "@/lib/session";
 import { assertAuthAvailable } from "@/lib/auth-routes";
 import { logError, securityLog } from "@/lib/log";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -15,6 +17,15 @@ export async function POST(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) throw new HttpError(401, "unauthorized", "Der Link ist abgelaufen. Fordere einen neuen an.");
+    // Z14-02: nur direkt nach dem Reset-Link bzw. einer frischen Anmeldung DIESER Sitzung.
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const authTime = sessionAuthTime(session?.access_token);
+    if (!authTime || Date.now() - new Date(authTime).getTime() > REAUTH_MAX_AGE_MS) {
+      securityLog("password_change_denied", { userId: user.id });
+      throw new HttpError(403, "reauth_required", "Der Link ist abgelaufen. Fordere über „Passwort vergessen“ einen neuen an.");
+    }
 
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {

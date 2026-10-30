@@ -90,7 +90,13 @@ export async function runOrchestration(input: OrchestrateInput): Promise<void> {
       let decision;
       if (key.apiKey) {
         assertQuota(profile, ROUTER_TOKEN_ESTIMATE);
-        decision = await routeNextSpeaker(messages, activeAgents, key.apiKey, turn, signal);
+        try {
+          decision = await routeNextSpeaker(messages, activeAgents, key.apiKey, turn, signal);
+        } catch (error) {
+          // Z14-13: Abbruch während des Router-Aufrufs – Schätzung buchen, dann weiterreichen.
+          await store.incrementTokens(ROUTER_TOKEN_ESTIMATE);
+          throw error;
+        }
         const routerTokens = decision.inputTokens + decision.outputTokens;
         if (routerTokens > 0) {
           await store.incrementTokens(routerTokens);
@@ -236,7 +242,9 @@ async function runAgentTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
   const reported = failure || aborted ? null : await result.usage.catch(() => null);
   const partial = stripSpeakerPrefix(text).trim();
   let inputTokens = reported?.inputTokens ?? promptTokens;
-  let outputTokens = reported?.outputTokens ?? approxTokens(partial);
+  // Z14-03: Bei Abbruch ist unbekannt, wie viel der Anbieter noch erzeugt (inkl. Reasoning-Tokens)
+  // → konservativ die volle Ausgabe-Reservierung buchen.
+  let outputTokens = reported?.outputTokens ?? (aborted ? Math.max(MAX_OUTPUT_TOKENS, approxTokens(partial)) : approxTokens(partial));
   if (failure && !aborted && !partial) {
     // Anbieter hat die Anfrage abgelehnt, bevor etwas generiert wurde – nichts angefallen.
     inputTokens = 0;
@@ -287,16 +295,22 @@ async function maybeUpdateSummary({ store, room, messages, profile, key, windowS
   const alreadySummarized = Math.min(room.summarized_message_count, outsideWindow);
   if (outsideWindow - alreadySummarized < SUMMARY_BATCH) return;
 
+  const estimate = 2_000 + SUMMARY_MAX_OUTPUT_TOKENS;
+  let called = false;
   try {
     const dropped = messages.slice(alreadySummarized, outsideWindow);
-    if (key.apiKey) assertQuota(profile, 2_000 + SUMMARY_MAX_OUTPUT_TOKENS);
+    if (key.apiKey) assertQuota(profile, estimate);
+    called = Boolean(key.apiKey);
     const result = await summarizeDroppedMessages(room.running_summary, dropped, key.apiKey, signal);
+    called = false;
     const tokens = result.inputTokens + result.outputTokens;
     if (tokens > 0) await store.incrementTokens(tokens);
     await store.updateRoomSummary(room.id, result.summary, outsideWindow);
     emit({ type: "summary", summary: result.summary, summarizedCount: outsideWindow });
   } catch (error) {
     // BF-05: Die Antworten sind bereits gespeichert – ein Summary-Fehler beendet die Runde nicht.
+    // Z14-13: Ein begonnener Aufruf wird mit der Schätzung gebucht.
+    if (called) await store.incrementTokens(estimate).catch((e) => logError("summary.book", e));
     if (!signal.aborted) logError("summary", error, { roomId: room.id });
   }
 }

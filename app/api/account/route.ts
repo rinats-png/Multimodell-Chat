@@ -1,5 +1,5 @@
 import { assertSensitiveAction } from "@/lib/account";
-import { handleApi } from "@/lib/api";
+import { handleApi, HttpError } from "@/lib/api";
 import { getStripe, isBillingConfigured } from "@/lib/billing";
 import { logError, securityLog } from "@/lib/log";
 import { getSession } from "@/lib/session";
@@ -19,7 +19,14 @@ export async function DELETE() {
         .eq("id", session.userId)
         .single<{ stripe_subscription_id: string | null }>();
       if (data?.stripe_subscription_id) {
-        await getStripe().subscriptions.cancel(data.stripe_subscription_id).catch((error) => logError("account.cancel_subscription", error));
+        // Z14-05: Ohne erfolgreiche Kündigung wird das Konto NICHT gelöscht (sonst zahlt der Kunde weiter).
+        try {
+          const sub = await getStripe().subscriptions.retrieve(data.stripe_subscription_id);
+          if (sub.status !== "canceled") await getStripe().subscriptions.cancel(sub.id);
+        } catch (error) {
+          logError("account.cancel_subscription", error, { userId: session.userId });
+          throw new HttpError(502, "cancel_failed", "Dein Abo konnte gerade nicht gekündigt werden. Das Konto wurde nicht gelöscht – bitte später erneut versuchen.");
+        }
       }
     }
 

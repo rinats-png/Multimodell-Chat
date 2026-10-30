@@ -3,6 +3,7 @@ import { z } from "zod";
 import { buildTranscript } from "./context-builder";
 import { getLanguageModel, ROUTER_MODEL, SUMMARY_MODEL } from "./ai/provider";
 import { logError } from "./log";
+import { approxTokens } from "./models";
 import type { ChatMessage, RoomAgent } from "./types";
 
 export const USER_TURN = "USER";
@@ -100,7 +101,8 @@ export async function routeNextSpeaker(
   } catch (error) {
     if (signal?.aborted) throw error;
     logError("router.fallback", error, { model: ROUTER_MODEL });
-    return heuristicRoute(messages, agents, turnIndex);
+    // Z14-13: Der fehlgeschlagene Aufruf kann Kosten verursacht haben – Eingabe schätzen und buchen lassen.
+    return { ...heuristicRoute(messages, agents, turnIndex), inputTokens: approxTokens(buildTranscript(recent.map(truncateMessage))) + 200 };
   }
 }
 

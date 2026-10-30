@@ -30,7 +30,9 @@ const OUT = process.env.SCREENSHOT_DIR || '.';
   const banner = await page.locator('.text-red-300').allTextContents();
   console.log('banner', banner);
   // mobile
-  const m = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  // Gleicher Kontext = gleicher Demo-Besucher (eigener Datenbestand je Besucher-Cookie).
+  const m = await ctx.newPage();
+  await m.setViewportSize({ width: 390, height: 844 });
   m.on('console', msg => msg.type() === 'error' && errors.push('mobile console: ' + msg.text()));
   await m.goto(page.url());
   await m.waitForTimeout(800);

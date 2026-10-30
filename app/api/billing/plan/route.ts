@@ -3,6 +3,7 @@ import { appOrigin, getStripe, isBillingConfigured, priceIdFor } from "@/lib/bil
 import { handleApi, HttpError, limitMutations, readJson } from "@/lib/api";
 import { isProduction } from "@/lib/env";
 import { getSession, toPublicProfile } from "@/lib/session";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { planSchema } from "@/lib/validation";
 
 /**
@@ -22,6 +23,16 @@ export async function POST(request: Request) {
     }
     if (!isBillingConfigured()) throw new HttpError(503, "billing_not_configured", "Die Bezahlung ist noch nicht eingerichtet.");
     if (tier === "free") throw new HttpError(400, "use_portal", "Zum Kündigen nutze „Abo verwalten“.");
+
+    // Z14-04: kein zweites Abo – Wechsel und Kündigung laufen über das Kundenportal.
+    const { data: existing } = await getSupabaseAdmin()
+      .from("user_profiles")
+      .select("stripe_subscription_id")
+      .eq("id", userId)
+      .single<{ stripe_subscription_id: string | null }>();
+    if (existing?.stripe_subscription_id) {
+      throw new HttpError(409, "use_portal", "Du hast bereits ein Abo. Tarif wechseln oder kündigen über „Abo verwalten“.");
+    }
 
     const origin = appOrigin(request);
     const session = await getStripe().checkout.sessions.create({

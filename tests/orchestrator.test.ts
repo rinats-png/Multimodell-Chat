@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { MAX_OUTPUT_TOKENS } from "@/lib/models";
 import { runOrchestration } from "@/lib/orchestrator";
 import { memoryStore } from "@/lib/store/memory-store";
 import { collector, demoRoom, userMessage } from "./support/fixtures";
@@ -61,10 +62,12 @@ describe("Orchestrierung (F-03, F-04)", () => {
     await runOrchestration({ store: memoryStore, room, agents, forcedAgentId: null, userMessage: msg, allowPlatformKey: false, emit: emitAndAbort, signal: controller.signal });
 
     const profile = await memoryStore.getProfile();
-    expect(profile.tokens_used_this_month).toBeGreaterThan(0);
     const replies = (await memoryStore.listMessages(room.id)).filter((m) => m.sender_type === "agent");
     expect(replies).toHaveLength(1);
     expect(replies[0]!.content).toContain("abgebrochen");
+    // Z14-03: konservativ – mindestens die volle Ausgabe-Reservierung wird gebucht.
+    expect(replies[0]!.output_tokens).toBeGreaterThanOrEqual(MAX_OUTPUT_TOKENS);
+    expect(profile.tokens_used_this_month).toBe(replies[0]!.input_tokens + replies[0]!.output_tokens);
   });
 
   it("T-SEC-05: Kontingent erschöpft → kein Modellaufruf, verständlicher Fehler", async () => {

@@ -71,6 +71,12 @@ describe("buildAgentMessages – Perspektiven-Umkehr (F-05)", () => {
     expect(prompt.messages.at(-1)!.content).toContain("19:");
   });
 
+  it("T-SEC-08: auch eine einzelne riesige Nachricht wird auf das Budget gekürzt", () => {
+    const prompt = buildAgentMessages(claude, [msg({ content: "y".repeat(100_000) })], 40, { maxInputTokens: 6_000 });
+    expect(estimatePromptTokens(prompt)).toBeLessThanOrEqual(6_000);
+    expect(prompt.messages.at(-1)!.content).toContain("[gekürzt]");
+  });
+
   it("entfernt ein vom Modell vorangestelltes [Name]:-Präfix", () => {
     expect(stripSpeakerPrefix("[Claude]: Hallo")).toBe("Hallo");
     expect(stripSpeakerPrefix("Kein [Präfix]: hier")).toBe("Kein [Präfix]: hier");

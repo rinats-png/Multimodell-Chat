@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { ZodError, type ZodType } from "zod";
 import { ConfigError } from "./env";
 import { logError, securityLog } from "./log";
-import { rateLimit, RATE_LIMITS, retryAfterSeconds } from "./rate-limit";
+import { clientIpFromHeaders, rateLimit, RATE_LIMITS, retryAfterSeconds } from "./rate-limit";
 import { UnauthorizedError } from "./session";
 import { UsageGuardError } from "./usage-guard";
 
@@ -25,7 +25,11 @@ export class HttpError extends Error {
   }
 }
 
-export const notFound = () => new HttpError(404, "not_found", "Nicht gefunden");
+/** 404 nach Zugriffs-Antwortstrategie; verweigerte Zugriffe werden protokolliert (Regel 9.4). */
+export const notFound = () => {
+  securityLog("access_denied_or_missing");
+  return new HttpError(404, "not_found", "Nicht gefunden");
+};
 
 /** Body mit Größenlimit lesen und gegen ein Schema prüfen (Regeln 4.4, 5.1). */
 export async function readJson<T>(request: Request, schema: ZodType<T>): Promise<T> {
@@ -59,9 +63,9 @@ export async function limitMutations(userId: string): Promise<void> {
   }
 }
 
-/** Client-IP aus den Proxy-Headern der Hosting-Plattform. */
+/** Client-IP aus den Proxy-Headern der Hosting-Plattform (siehe clientIpFromHeaders). */
 export function clientIp(request: Request): string {
-  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
+  return clientIpFromHeaders(request.headers);
 }
 
 /** Einheitliches Fehler-Mapping: nie interne Details an den Client (Regel 9.3). */

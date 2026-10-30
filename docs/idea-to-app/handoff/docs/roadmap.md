@@ -36,6 +36,7 @@ gantt
 | TASK-015 | M2 | Tests: Unit, Integration, Routen, Middleware, Auth, Webhook, RLS + Gegenprobe | BF-09 | `npm test`, `npm run test:rls` grün | Regeln 10.1, 10.2 | TASK-001 … TASK-012 | M | erledigt |
 | TASK-016 | M2 | CI (Typecheck, Tests, Build, Audit, RLS, gitleaks), Dependabot | BF-09, BF-15 | Workflow grün auf GitHub | Regel 9.6 | TASK-015 | S | erledigt (erster Lauf auf GitHub ausstehend) |
 | TASK-017 | M2 | zod 4.6.7; Restbefunde bewerten | BF-15 | `npm audit --audit-level=critical` grün | Regel 9.2 | – | S | erledigt (E-005) |
+| TASK-024 | M2 | Nachsanierung nach Zweitprüfung 14: Passwortänderung/Reauth an Sitzung gebunden, Abbruch-Reservierung, Webhook live + Abo-Abgleich, kein Zweit-Checkout, Löschung nur nach Kündigung, Demo je Besucher, Migration 0004 (Spalten-Grants Agenten, harte Obergrenzen), Lock-Token, Client-IP, Profil-Allowlist, APP_ORIGIN Pflicht | T-SEC-30, T-SEC-31, T-SEC-32, T-SEC-33, T-SEC-34 | alle Tests grün | Regeln 3.5, 3.6, 4.1, 8.2 | TASK-015 | M | erledigt |
 | TASK-018 | M3 | Deployment Vercel + Supabase Pro + Upstash; Backups/Wiederherstellungstest; Monitoring/Alarme; Incident-Plan; `billing_events` nach 90 Tagen löschen | BF-20 | `20-betrieb.md` umgesetzt, Wiederherstellung einmal geübt | Regel 9.7 | – | M | offen |
 | TASK-019 | M3 | AGB und Widerrufsbelehrung (Fachperson), Seite `/agb`, Link bei Checkout | – | Texte geprüft, verlinkt | – | – | S | offen (braucht Rechtstext) |
 | TASK-020 | M3 | Barrierefreiheit: Lighthouse/axe + Tastatur-Test | BF-14 | keine kritischen Befunde | – | TASK-013 | S | offen |

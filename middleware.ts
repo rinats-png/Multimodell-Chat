@@ -1,8 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { RATE_LIMITS, rateLimit, retryAfterSeconds } from "@/lib/rate-limit";
+import { clientIpFromHeaders, RATE_LIMITS, rateLimit, retryAfterSeconds } from "@/lib/rate-limit";
 import { buildCsp, isAllowedOrigin, STATIC_SECURITY_HEADERS } from "@/lib/security-headers";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { updateSession } from "@/lib/supabase/middleware";
+
+const DEMO_VISITOR_COOKIE = "mmchat_demo";
 
 const MAX_BODY_BYTES = 100 * 1024;
 const MAX_WEBHOOK_BYTES = 256 * 1024;
@@ -36,7 +38,7 @@ export async function middleware(request: NextRequest) {
     if (length > (path === "/api/billing/webhook" ? MAX_WEBHOOK_BYTES : MAX_BODY_BYTES)) {
       return withSecurityHeaders(NextResponse.json({ error: "Anfrage zu groß", code: "payload_too_large" }, { status: 413 }), csp);
     }
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const ip = clientIpFromHeaders(request.headers);
     const result = await rateLimit("api-ip", ip, RATE_LIMITS.apiPerIp.limit, RATE_LIMITS.apiPerIp.windowMs);
     if (!result.allowed) {
       return withSecurityHeaders(
@@ -50,9 +52,26 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
 
-  const response = isSupabaseConfigured()
-    ? await updateSession(request, requestHeaders)
-    : NextResponse.next({ request: { headers: requestHeaders } });
+  if (isSupabaseConfigured()) return withSecurityHeaders(await updateSession(request, requestHeaders), csp);
+
+  // Demo ohne Supabase: jeder Besucher bekommt einen eigenen, zufälligen Demo-Bestand (Z14-10).
+  let visitor = request.cookies.get(DEMO_VISITOR_COOKIE)?.value;
+  const isNew = !visitor || !/^[0-9a-f-]{36}$/.test(visitor);
+  if (isNew) {
+    visitor = crypto.randomUUID();
+    request.cookies.set(DEMO_VISITOR_COOKIE, visitor);
+    requestHeaders.set("cookie", request.cookies.toString());
+  }
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  if (isNew) {
+    response.cookies.set(DEMO_VISITOR_COOKIE, visitor!, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 24 * 60 * 60,
+    });
+  }
   return withSecurityHeaders(response, csp);
 }
 

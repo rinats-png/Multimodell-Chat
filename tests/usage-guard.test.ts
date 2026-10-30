@@ -66,9 +66,26 @@ describe("Rate-Limit (F-08)", () => {
   });
 
   it("T-SEC-07: nur eine laufende Runde pro Konto", async () => {
-    expect(await acquireLock("round:u1", 10)).toBe(true);
-    expect(await acquireLock("round:u1", 10)).toBe(false);
-    await releaseLock("round:u1");
-    expect(await acquireLock("round:u1", 10)).toBe(true);
+    const token = await acquireLock("round:u1", 10);
+    expect(token).toBeTruthy();
+    expect(await acquireLock("round:u1", 10)).toBeNull();
+    await releaseLock("round:u1", "fremdes-token");
+    expect(await acquireLock("round:u1", 10)).toBeNull();
+    await releaseLock("round:u1", token!);
+    expect(await acquireLock("round:u1", 10)).toBeTruthy();
+  });
+});
+
+describe("Client-IP (Z14-07)", () => {
+  it("nimmt auf Vercel den ersten Eintrag, hinter anhängenden Proxys den vom eigenen Proxy gesetzten", async () => {
+    const { clientIpFromHeaders } = await import("@/lib/rate-limit");
+    const h = new Headers({ "x-forwarded-for": "6.6.6.6, 1.2.3.4" });
+    expect(clientIpFromHeaders(h)).toBe("6.6.6.6");
+    process.env.TRUSTED_PROXY_HOPS = "1";
+    try {
+      expect(clientIpFromHeaders(h)).toBe("1.2.3.4");
+    } finally {
+      delete process.env.TRUSTED_PROXY_HOPS;
+    }
   });
 });

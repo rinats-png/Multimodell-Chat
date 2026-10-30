@@ -1,6 +1,6 @@
 # Qualität & Tests
 
-> Stand 2026-10-29: `npm test` → 12 Testdateien, 69 Tests grün · `npm run test:rls` → alle Erwartungen erfüllt (PostgreSQL 16). Testnamen enthalten die IDs, Fundstelle `tests/*.test.ts` bzw. `supabase/tests/rls.test.sql`.
+> Stand 2026-10-30: `npm test` → 13 Testdateien, 78 Tests grün · `npm run test:rls` → alle Erwartungen erfüllt (PostgreSQL 16). Testnamen enthalten die IDs, Fundstelle `tests/*.test.ts` bzw. `supabase/tests/rls.test.sql`.
 
 ## Akzeptanzkriterien und Tests
 
@@ -155,10 +155,15 @@
 | T-SEC-23 | `auth.test.ts` | keine Enumeration | BD-08 |
 | T-SEC-24 | `auth.test.ts` | Fehlversuchs-Sperre | BD-07 |
 | T-SEC-25 | `webhook.test.ts` | Signatur + Idempotenz | BD-12 |
-| T-SEC-26 | `misc-security.test.ts` | Cookie-Optionen | BD-11 |
+| T-SEC-26 | `misc-security.test.ts` | Cookie-Optionen (prüft die zentrale Konstante, die alle Supabase-Cookies setzt – kein echter Set-Cookie-Header, siehe Release-Checkliste) | BD-11 |
 | T-SEC-27 | `misc-security.test.ts` | kein Gratis-Tarifwechsel in Produktion | BD-12 |
 | T-SEC-28 | `misc-security.test.ts` | Markdown ohne Bilder/HTML | BD-11 |
 | T-SEC-29 | `misc-security.test.ts` | Logs ohne Request-Body | BD-14 |
+| T-SEC-30 | `webhook.test.ts` | Live-Zustand, veraltete/fremde Abo-Events ohne Wirkung | BD-12 |
+| T-SEC-31 | `auth.test.ts` | Passwortänderung nur mit frischer Anmeldung dieser Sitzung | BD-07 |
+| T-SEC-32 | `misc-security.test.ts` | Demo-Bestand je Besucher, kein Zugriff ohne Cookie | BD-06 |
+| T-SEC-33 | `misc-security.test.ts` | Browser-Profil ohne Key/Stripe-IDs | BD-13 |
+| T-SEC-34 | `supabase-store.test.ts` | Service-Role nur nach Besitzprüfung, nur eigene ID | BD-03 |
 
 **Gegenprobe** (2026-10-29): Abbruchbuchung entfernt → T-SEC-02 rot; BYOK-Prüfung gelockert → T-SEC-04 rot (2 Tests); Origin-Prüfung entfernt → T-SEC-12 rot (2 Tests); `GRANT ALL ON messages` → T-SEC-19 rot. Nach Rücknahme alle grün.
 
@@ -173,6 +178,7 @@
 - [ ] Export herunterladen und Inhalt prüfen; Konto löschen (mit Passwortbestätigung) → Login-Seite
 - [ ] Impressum/Datenschutz mit echten Betreiberangaben
 - [ ] Browser-Konsole: keine CSP-Fehler
+- [ ] DevTools → Application → Cookies: `sb-…`-Cookies sind HttpOnly, Secure, SameSite=Lax (T-SEC-26 am echten Header)
 
 ## Beta-Test
 5–10 Testnutzer im Stripe-Testmodus, 2 Wochen, Fokus: Kosten pro Nutzer (Ledger), Verständlichkeit der Limits [ANNAHME A-012].

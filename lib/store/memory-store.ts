@@ -13,17 +13,19 @@ interface MemoryDb {
   messages: Map<string, ChatMessage>;
 }
 
-const globalForDb = globalThis as unknown as { __mmchatMemoryDb?: MemoryDb };
+/** Ein Datenbestand pro Demo-Besucher (Z14-10); lokal ein gemeinsamer Bestand „local“. */
+const globalForDb = globalThis as unknown as { __mmchatMemoryDbs?: Map<string, MemoryDb> };
+const MAX_DEMO_VISITORS = 500;
 
 function monthStart(): string {
   const d = new Date();
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString().slice(0, 10);
 }
 
-function freshDb(): MemoryDb {
+function freshDb(userId: string): MemoryDb {
   return {
     profile: {
-      id: DEMO_USER_ID,
+      id: userId,
       subscription_tier: "free",
       monthly_token_limit: PLANS.free.monthlyTokenLimit,
       tokens_used_this_month: 0,
@@ -38,14 +40,31 @@ function freshDb(): MemoryDb {
   };
 }
 
-function db(): MemoryDb {
-  globalForDb.__mmchatMemoryDb ??= freshDb();
-  return globalForDb.__mmchatMemoryDb;
+/** Jeder Demo-Besucher ist ein eigener Nutzer (eigene Limits); lokal der feste Demo-Nutzer. */
+export function userIdFor(visitorId: string): string {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(visitorId) ? visitorId : DEMO_USER_ID;
 }
 
-/** Nur für Tests und „Konto löschen“ im Demo-Workspace. */
+function dbs(): Map<string, MemoryDb> {
+  globalForDb.__mmchatMemoryDbs ??= new Map();
+  return globalForDb.__mmchatMemoryDbs;
+}
+
+function dbFor(visitorId: string): MemoryDb {
+  const all = dbs();
+  let found = all.get(visitorId);
+  if (!found) {
+    // Älteste Besucher verwerfen, damit der Speicher begrenzt bleibt.
+    while (all.size >= MAX_DEMO_VISITORS) all.delete(all.keys().next().value!);
+    found = freshDb(userIdFor(visitorId));
+    all.set(visitorId, found);
+  }
+  return found;
+}
+
+/** Nur für Tests: alle Demo-Bestände verwerfen. */
 export function resetMemoryDb(): void {
-  globalForDb.__mmchatMemoryDb = freshDb();
+  dbs().clear();
 }
 
 function must<T>(value: T | undefined, what: string): T {
@@ -57,8 +76,10 @@ function decryptedProfile(p: UserProfile): UserProfile {
   return { ...p, custom_openrouter_key: decryptSecret(p.custom_openrouter_key) };
 }
 
-/** In-Memory-Store für den lokalen Demo-Betrieb ohne Supabase (ein Demo-Nutzer). */
-export const memoryStore: DataStore = {
+/** In-Memory-Store für den Demo-Betrieb ohne Supabase – je Besucher ein eigener Bestand. */
+export function createMemoryStore(visitorId: string): DataStore {
+  const db = () => dbFor(visitorId);
+  const store: DataStore = {
   async getProfile() {
     const p = db().profile;
     if (p.usage_period_start < monthStart()) {
@@ -93,7 +114,7 @@ export const memoryStore: DataStore = {
   async createRoom(title) {
     const room: ChatRoom = {
       id: crypto.randomUUID(),
-      user_id: DEMO_USER_ID,
+      user_id: userIdFor(visitorId),
       title: title ?? "Neue KI-Debatte",
       orchestration_mode: "router",
       sliding_window_size: 12,
@@ -192,16 +213,21 @@ export const memoryStore: DataStore = {
   },
   async exportAccount() {
     const { custom_openrouter_key, ...profile } = db().profile;
-    const rooms = await this.listRooms();
+    const rooms = await store.listRooms();
     return {
       exported_at: new Date().toISOString(),
       profile: { ...profile, has_custom_key: Boolean(custom_openrouter_key) },
       rooms: await Promise.all(
-        rooms.map(async (room) => ({ ...room, agents: await this.listAgents(room.id), messages: await this.listMessages(room.id) })),
+        rooms.map(async (room) => ({ ...room, agents: await store.listAgents(room.id), messages: await store.listMessages(room.id) })),
       ),
     };
   },
   async deleteAccount() {
-    resetMemoryDb();
+    dbs().set(visitorId, freshDb(userIdFor(visitorId)));
   },
-};
+  };
+  return store;
+}
+
+/** Lokaler Entwicklungs-Workspace (ein gemeinsamer Bestand). */
+export const memoryStore = createMemoryStore("local");

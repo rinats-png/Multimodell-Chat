@@ -101,6 +101,13 @@ export function buildAgentMessages(
     windowed = windowed.slice(1);
     prompt = mapToPrompt(targetAgent, windowed, options);
   }
+  // Bleibt eine einzelne Nachricht zu groß (z. B. riesiger System-Prompt + Gedächtnis), wird sie gekürzt.
+  const overflow = estimatePromptTokens(prompt) - maxInputTokens;
+  if (overflow > 0 && windowed.length === 1) {
+    const only = windowed[0]!;
+    const keepChars = Math.max(200, only.content.length - overflow * 4 - 100);
+    prompt = mapToPrompt(targetAgent, [{ ...only, content: `${only.content.slice(0, keepChars)} …[gekürzt]` }], options);
+  }
   return prompt;
 }
 

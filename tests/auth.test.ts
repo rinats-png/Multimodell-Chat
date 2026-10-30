@@ -7,7 +7,10 @@ const auth = {
   signOut: vi.fn(),
   getUser: vi.fn(),
   updateUser: vi.fn(),
+  getSession: vi.fn(),
 };
+const tokenWithAuthTime = (secondsAgo: number) =>
+  `x.${Buffer.from(JSON.stringify({ amr: [{ method: "otp", timestamp: Math.floor(Date.now() / 1000) - secondsAgo }] })).toString("base64url")}.y`;
 vi.mock("@/lib/supabase/server", () => ({ createSupabaseServerClient: async () => ({ auth }) }));
 
 const { POST: login } = await import("@/app/api/auth/login/route");
@@ -87,8 +90,17 @@ describe("Passwort-Reset (F-17)", () => {
     expect(auth.resetPasswordForEmail.mock.calls[0]![1].redirectTo).toContain("/auth/callback?next=/passwort-neu");
   });
 
+  it("T-SEC-31: Passwortänderung nur mit frischer Anmeldung dieser Sitzung (Reset-Link ≤ 15 min)", async () => {
+    auth.getUser.mockResolvedValue({ data: { user: { id: "u1" } } });
+    auth.getSession.mockResolvedValue({ data: { session: { access_token: tokenWithAuthTime(3600) } } });
+    const res = await password(jsonRequest("/api/auth/password", "POST", { password: strongPassword }));
+    expect(res.status).toBe(403);
+    expect(auth.updateUser).not.toHaveBeenCalled();
+  });
+
   it("TEST-F17-2: neues Passwort beendet alle anderen Sitzungen", async () => {
     auth.getUser.mockResolvedValue({ data: { user: { id: "u1" } } });
+    auth.getSession.mockResolvedValue({ data: { session: { access_token: tokenWithAuthTime(60) } } });
     auth.updateUser.mockResolvedValue({ error: null });
     const res = await password(jsonRequest("/api/auth/password", "POST", { password: strongPassword }));
     expect(res.status).toBe(200);

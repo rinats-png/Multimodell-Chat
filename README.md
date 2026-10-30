@@ -15,11 +15,11 @@ npm run dev          # http://localhost:3000
 
 Ohne Umgebungsvariablen läuft ein **Demo-Workspace**: In-Memory-Daten, ein Demo-Nutzer, simulierte Antworten über ein lokales Modell. Streaming, Ledger, Limits, Router und Gedächtnis laufen dabei durch dieselbe Pipeline wie im Produktivbetrieb. Mit `OPENROUTER_API_KEY` in `.env.local` antworten lokal echte Modelle.
 
-> **Produktion fällt geschlossen aus:** Mit `NODE_ENV=production` startet die App nur, wenn Supabase (inkl. `SUPABASE_SERVICE_ROLE_KEY`), Upstash und die Betreiberangaben (`OPERATOR_*`) gesetzt sind. Eine öffentliche Vorschau ohne Supabase ist nur mit `ALLOW_DEMO_MODE=true` möglich und nutzt dann nie den Plattform-Key.
+> **Produktion fällt geschlossen aus:** Mit `NODE_ENV=production` startet die App nur, wenn Supabase (inkl. `SUPABASE_SERVICE_ROLE_KEY`), Upstash, `APP_ORIGIN` und die Betreiberangaben (`OPERATOR_*`) gesetzt sind. Eine öffentliche Vorschau ohne Supabase ist nur mit `ALLOW_DEMO_MODE=true` möglich: Jeder Besucher bekommt einen eigenen, flüchtigen Demo-Bestand, und es wird nie der Plattform-Key genutzt.
 
 ## Produktiv einrichten
 
-1. **Supabase** (Pro-Plan empfohlen, Region EU): Migrationen ausführen (`supabase db push` oder der Reihe nach im SQL-Editor: `supabase/migrations/0001_init.sql`, `0002_hardening.sql`, `0003_billing.sql`).
+1. **Supabase** (Pro-Plan empfohlen, Region EU): Migrationen ausführen (`supabase db push` oder der Reihe nach im SQL-Editor: `supabase/migrations/0001_init.sql`, `0002_hardening.sql`, `0003_billing.sql`, `0004_limits.sql`).
    Im Dashboard: „Confirm email“ an, Mindestlänge 15, „Leaked password protection“ an, Email-OTP-Ablauf 1800 s, Session-Time-box 90 Tage, Redirect-URL `https://<domain>/auth/callback`.
 2. **Upstash Redis** anlegen (Pflicht in Produktion für instanzübergreifende Limits).
 3. **OpenRouter**: Key anlegen, Credit-Limit setzen, unter Privacy „data collection“ verbieten.

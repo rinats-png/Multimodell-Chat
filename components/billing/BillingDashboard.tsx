@@ -98,7 +98,7 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
             </>
           )}
         </div>
-        <Stat label="Rate-Limit" value={`${profile.rate_limit_per_min}/Min`} hint="Sliding Window über 60 s" />
+        <Stat label="Rate-Limit" value={`${profile.rate_limit_per_min}/Min`} hint="KI-Antworten pro Minute (gleitendes Fenster)" />
         <Stat label="Geschätzte API-Kosten" value={formatUsd(totals.cost)} hint={`${formatNumber(totals.replies)} KI-Antworten`} />
       </section>
 

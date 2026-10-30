@@ -49,7 +49,8 @@ export async function POST(request: Request) {
 
     // Höchstens eine laufende Runde pro Konto (BF-03, BF-21).
     const lockKey = `round:${userId}`;
-    if (!(await acquireLock(lockKey, LOCK_TTL_SECONDS))) {
+    const lockToken = await acquireLock(lockKey, LOCK_TTL_SECONDS);
+    if (!lockToken) {
       throw new HttpError(409, "busy", "Es läuft bereits eine Antwortrunde. Warte, bis sie fertig ist, oder stoppe sie.");
     }
 
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
           logError("orchestrate.stream", error, { userId, roomId: room.id });
           emit({ type: "error", code: "internal", message: "Die Runde konnte nicht abgeschlossen werden. Bitte erneut versuchen." });
         } finally {
-          await releaseLock(lockKey).catch((error) => logError("lock.release", error));
+          await releaseLock(lockKey, lockToken).catch((error) => logError("lock.release", error));
           emit({ type: "done" });
           try {
             controller.close();

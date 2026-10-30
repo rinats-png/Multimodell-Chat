@@ -150,7 +150,7 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
           <Meter value={profile.tokens_used_this_month} max={profile.monthly_token_limit} className="mt-2" />
         )}
         <div className="mt-1.5 text-[11px] text-muted">
-          Tokens diesen Monat · {profile.rate_limit_per_min} Anfragen/Min
+          Tokens diesen Monat · {profile.rate_limit_per_min} KI-Antworten/Min
         </div>
         {profile.subscription_tier !== "team" && (
           <Link

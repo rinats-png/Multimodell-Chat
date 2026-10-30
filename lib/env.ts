@@ -41,6 +41,7 @@ export function missingProductionConfig(): string[] {
   }
   const required: [string, boolean][] = [
     ["SUPABASE_SERVICE_ROLE_KEY", Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)],
+    ["APP_ORIGIN (https://…)", /^https:\/\/[^/]+$/.test(process.env.APP_ORIGIN ?? "")],
     ["UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN", hasSharedRateLimitStore()],
     ["OPERATOR_NAME", Boolean(process.env.OPERATOR_NAME)],
     ["OPERATOR_ADDRESS", Boolean(process.env.OPERATOR_ADDRESS)],

@@ -6,7 +6,7 @@
 |---|---|
 | Slug | `multimodell-chat` |
 | Erstellt | 2026-10-29 |
-| Zuletzt aktualisiert | 2026-10-29 |
+| Zuletzt aktualisiert | 2026-10-30 |
 | Einstieg | Bestehende App |
 | Erfahrung | Entwickler |
 | Arbeitsweise | Adaptiv |
@@ -76,6 +76,7 @@
 | A-012 | Beta-Test mit 5–10 Nutzern im Stripe-Testmodus | 19 | nein |
 | A-013 | RPO 24 h / RTO 4 h reichen | 20 | nein |
 | A-014 | Support per E-Mail, Störungshinweis auf der Login-Seite | 20 | nein |
+| A-015 | Supabase-Dashboard wird wie in `14-sicherheit.md` eingestellt (Confirm email, Länge 15, Leaked-Password-Schutz, OTP 1800 s, Time-box 90 Tage, Redirect-Allowlist, Auth-Rate-Limits) | 14 | nein |
 
 ## Offene Fragen
 - Wer ist Betreiber (Name, Anschrift, E-Mail für Impressum)?
