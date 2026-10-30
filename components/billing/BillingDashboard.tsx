@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Check, KeyRound } from "lucide-react";
+import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { formatCompact, formatNumber, formatUsd } from "@/lib/format";
@@ -9,6 +9,7 @@ import { PLAN_ORDER, PLANS } from "@/lib/plans";
 import type { PublicProfile, SubscriptionTier } from "@/lib/types";
 import { AccountSection } from "@/components/account/AccountSection";
 import { Meter } from "@/components/ui/Meter";
+import { ConnectionsPanel } from "./ConnectionsPanel";
 
 interface BillingDashboardProps {
   profile: PublicProfile;
@@ -16,9 +17,11 @@ interface BillingDashboardProps {
   isDemoStore: boolean;
   billingConfigured: boolean;
   checkoutState: "success" | "cancelled" | null;
+  connectState: "connected" | "failed" | null;
+  localMode: boolean;
 }
 
-export function BillingDashboard({ profile: initialProfile, totals, isDemoStore, billingConfigured, checkoutState }: BillingDashboardProps) {
+export function BillingDashboard({ profile: initialProfile, totals, isDemoStore, billingConfigured, checkoutState, connectState, localMode }: BillingDashboardProps) {
   const router = useRouter();
   const [profile, setProfile] = useState(initialProfile);
   const [busyTier, setBusyTier] = useState<SubscriptionTier | null>(null);
@@ -86,7 +89,7 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
           {profile.has_custom_key ? (
             <>
               <div className="mt-2 text-2xl font-semibold">{formatNumber(profile.tokens_used_this_month)}</div>
-              <p className="mt-1 text-[12px] text-muted">Eigener OpenRouter-Key aktiv – kein Token-Deckel.</p>
+              <p className="mt-1 text-[12px] text-muted">Eigener Zugang aktiv – kein Token-Deckel.</p>
             </>
           ) : (
             <>
@@ -107,6 +110,8 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
         <Stat label="Input-Tokens (Ledger)" value={formatNumber(totals.input)} hint="Kontext inkl. Sliding Window" />
         <Stat label="Output-Tokens (Ledger)" value={formatNumber(totals.output)} hint="Generierte Antworten" />
       </section>
+
+      <ConnectionsPanel profile={profile} onSaved={setProfile} connectState={connectState} localMode={localMode} />
 
       <section className="mt-12">
         <h2 className="text-center font-display text-[28px] font-medium tracking-tight sm:text-[34px]">
@@ -182,7 +187,6 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
         )}
       </section>
 
-      <ByokForm profile={profile} onSaved={setProfile} />
       <AccountSection isDemoStore={isDemoStore} />
     </div>
   );
@@ -195,75 +199,5 @@ function Stat({ label, value, hint }: { label: string; value: string; hint: stri
       <div className="mt-2 font-display text-2xl font-medium tabular-nums">{value}</div>
       <p className="mt-1 text-[12px] text-muted">{hint}</p>
     </div>
-  );
-}
-
-function ByokForm({ profile, onSaved }: { profile: PublicProfile; onSaved: (p: PublicProfile) => void }) {
-  const [key, setKey] = useState("");
-  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
-  const enabled = profile.subscription_tier === "team";
-
-  async function save(value: string | null) {
-    setStatus(null);
-    const res = await fetch("/api/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ custom_openrouter_key: value }),
-    });
-    const data = (await res.json()) as { profile?: PublicProfile; error?: string };
-    if (!res.ok || !data.profile) return setStatus({ ok: false, text: data.error ?? "Speichern fehlgeschlagen" });
-    onSaved(data.profile);
-    setKey("");
-    setStatus({ ok: true, text: value ? "Key gespeichert – alle Agenten laufen jetzt über deinen Account." : "Key entfernt." });
-  }
-
-  return (
-    <section className="glass mt-12 rounded-2xl p-5">
-      <div className="flex items-start gap-3">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-accent/12 ring-1 ring-accent/25">
-          <KeyRound className="size-4 text-accent" />
-        </div>
-        <div className="flex-1">
-          <h2 className="text-[15px] font-semibold">Bring Your Own Key</h2>
-          <p className="mt-0.5 text-[13px] text-muted">
-            Hinterlege deinen eigenen OpenRouter-Key. Alle Modell-Aufrufe laufen dann über deinen Account – ohne Token-Deckel.
-            {!enabled && " Verfügbar im Workspace/BYOK-Tarif."}
-          </p>
-        </div>
-      </div>
-      {profile.has_custom_key && (
-        <div className="mt-4 flex items-center justify-between rounded-xl border border-openai/25 bg-openai/[0.06] px-3 py-2">
-          <span className="font-mono text-[12.5px] text-ink-2">{profile.custom_key_hint}</span>
-          <button onClick={() => save(null)} className="text-[12px] text-muted hover:text-danger">
-            Entfernen
-          </button>
-        </div>
-      )}
-      <form
-        className="mt-4 flex gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (key.trim()) save(key.trim());
-        }}
-      >
-        <input
-          type="password"
-          autoComplete="off"
-          disabled={!enabled}
-          value={key}
-          onChange={(e) => setKey(e.target.value)}
-          placeholder="sk-or-v1-…"
-          className="field flex-1 px-3 py-2 font-mono text-[13px] disabled:opacity-50"
-        />
-        <button
-          type="submit"
-          disabled={!enabled || !key.trim()}
-          className="btn-primary px-4 py-2 text-[13px]"
-        >
-          Speichern
-        </button>
-      </form>
-      {status && <p className={clsx("mt-2 text-[12.5px]", status.ok ? "text-openai" : "text-danger")}>{status.text}</p>}
-    </section>
   );
 }

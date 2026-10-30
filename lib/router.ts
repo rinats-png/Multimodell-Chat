@@ -1,7 +1,7 @@
 import { generateObject, generateText } from "ai";
 import { z } from "zod";
 import { buildTranscript } from "./context-builder";
-import { getLanguageModel, ROUTER_MODEL, SUMMARY_MODEL } from "./ai/provider";
+import { getLanguageModel, ROUTER_MODEL, SUMMARY_MODEL, type ResolvedKey } from "./ai/provider";
 import { logError } from "./log";
 import { approxTokens } from "./models";
 import type { ChatMessage, RoomAgent } from "./types";
@@ -71,7 +71,7 @@ export function heuristicRoute(messages: ChatMessage[], agents: RoomAgent[], tur
 export async function routeNextSpeaker(
   messages: ChatMessage[],
   agents: RoomAgent[],
-  apiKey: string,
+  access: ResolvedKey,
   turnIndex: number,
   signal?: AbortSignal,
 ): Promise<RouterDecision> {
@@ -80,7 +80,7 @@ export async function routeNextSpeaker(
 
   try {
     const { object, usage } = await generateObject({
-      model: getLanguageModel(ROUTER_MODEL, apiKey),
+      model: getLanguageModel(ROUTER_MODEL, access),
       schema: routerSchema,
       temperature: 0,
       maxOutputTokens: 120,
@@ -129,16 +129,16 @@ export interface SummaryResult {
 export async function summarizeDroppedMessages(
   previousSummary: string,
   droppedAll: ChatMessage[],
-  apiKey: string | null,
+  access: ResolvedKey | null,
   signal?: AbortSignal,
 ): Promise<SummaryResult> {
   const dropped = droppedAll.slice(-MAX_SUMMARY_INPUT_MESSAGES).map(truncateMessage);
-  if (!apiKey) {
+  if (!access?.apiKey) {
     const lines = dropped.slice(-3).map((m) => `${m.sender_name}: ${m.content.replace(/\s+/g, " ").slice(0, 90)}…`);
     return { summary: [previousSummary, ...lines].filter(Boolean).join(" ").slice(-900), inputTokens: 0, outputTokens: 0 };
   }
   const { text, usage } = await generateText({
-    model: getLanguageModel(SUMMARY_MODEL, apiKey),
+    model: getLanguageModel(SUMMARY_MODEL, access),
     temperature: 0.2,
     maxOutputTokens: SUMMARY_MAX_OUTPUT_TOKENS,
     abortSignal: signal,

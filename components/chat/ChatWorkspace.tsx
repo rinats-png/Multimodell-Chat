@@ -1,10 +1,11 @@
 "use client";
 
 import clsx from "clsx";
-import { Brain, Eraser, Hand, Info, Menu, PanelRight, Repeat2, ScanSearch, TriangleAlert, X } from "lucide-react";
+import { Brain, Coins, Eraser, Hand, Info, Menu, MessagesSquare, PanelRight, Receipt, Repeat2, ScanSearch, TriangleAlert, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { applySlidingWindow } from "@/lib/context-builder";
+import { formatCompact, formatUsd } from "@/lib/format";
 import type { PlanLimits } from "@/lib/plans";
 import type {
   AgentPatch,
@@ -16,6 +17,7 @@ import type {
   RoomAgent,
   RoomSettingsPatch,
 } from "@/lib/types";
+import { IconRail } from "@/components/shell/IconRail";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { AgentAvatar } from "@/components/ui/AgentAvatar";
 import { Segmented } from "@/components/ui/Segmented";
@@ -281,7 +283,10 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
   notesAt(messages.length);
 
   return (
-    <div className="flex h-dvh overflow-hidden">
+    <div className="flex h-dvh gap-3 overflow-hidden md:p-3">
+      <IconRail active="chat" isDemoStore={props.isDemoStore} />
+      <div className="frame relative flex min-w-0 flex-1 overflow-hidden md:rounded-[28px]">
+      <div className="glow-field" aria-hidden />
       <Sidebar
         rooms={props.rooms.map((r) => (r.id === room.id ? { ...r, title: room.title } : r))}
         activeRoomId={room.id}
@@ -292,8 +297,8 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         onMobileClose={() => setNavOpen(false)}
       />
 
-      <main className="flex min-w-0 flex-1 flex-col md:py-3 md:pl-3 xl:pr-0">
-        <header className="glass mx-2 mt-2 flex h-14 shrink-0 items-center gap-2 rounded-2xl px-2 sm:gap-3 sm:px-3 md:mx-0 md:mt-0 md:mr-3">
+      <main className="relative flex min-w-0 flex-1 flex-col">
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-line/50 px-2 sm:gap-3 sm:px-4">
           <IconButton label="Navigation öffnen" onClick={() => setNavOpen(true)} className="md:hidden">
             <Menu className="size-4" />
           </IconButton>
@@ -325,7 +330,10 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
             ))}
           </div>
 
-          <div className="mx-auto hidden lg:block">
+          {/* Mit offenem Panel (dort steht der Modus) zeigt die Kopfzeile die Kennzahlen. */}
+          <StatPills messages={messages} className={clsx("ml-auto", panel ? "hidden xl:flex" : "hidden 2xl:flex")} />
+
+          <div className={clsx("mx-auto 2xl:mx-0", panel ? "hidden 2xl:block" : "hidden lg:block")}>
             <Segmented<OrchestrationMode>
               ariaLabel="Orchestrierungs-Modus"
               size="sm"
@@ -349,9 +357,12 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         </header>
 
         {props.isDemoModel && (
-          <div className="mx-2 mt-2 rounded-xl border border-anthropic/25 bg-anthropic/10 px-4 py-1.5 text-center text-[12px] text-anthropic backdrop-blur md:mx-0 md:mr-3">
-            Demo-Modus: Kein OpenRouter-Key konfiguriert – Antworten werden lokal simuliert. Setze{" "}
-            <code className="font-mono">OPENROUTER_API_KEY</code> für echte Modelle.
+          <div className="mx-3 mt-3 rounded-xl border border-anthropic/25 bg-anthropic/10 px-4 py-1.5 text-center text-[12px] text-anthropic">
+            Demo-Modus: Antworten werden simuliert.{" "}
+            <a href="/billing" className="font-medium underline underline-offset-2">
+              Verbinde OpenRouter oder einen API-Key
+            </a>{" "}
+            für echte Modelle.
           </div>
         )}
 
@@ -392,9 +403,9 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
       {panel && (
         <aside
           aria-label="Steuerung und Agenten-Studio"
-          className="glass-strong fixed inset-y-2 right-2 z-40 flex w-[min(344px,calc(100vw-1rem))] shrink-0 flex-col rounded-2xl xl:static xl:z-auto xl:my-3 xl:mr-3 xl:h-[calc(100dvh-1.5rem)] xl:glass"
+          className="drawer fixed inset-y-2 right-2 z-40 flex w-[min(344px,calc(100vw-1rem))] shrink-0 flex-col rounded-2xl max-xl:glass-strong xl:relative xl:inset-auto xl:z-auto xl:rounded-none xl:border-l xl:border-line/50"
         >
-          <div className="flex h-14 shrink-0 items-center justify-between border-b border-line/70 px-3">
+          <div className="flex h-16 shrink-0 items-center justify-between border-b border-line/50 px-3">
             <Segmented
               ariaLabel="Panel"
               size="sm"
@@ -426,6 +437,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
           </div>
         </aside>
       )}
+      </div>
 
       <PromptInspector
         target={inspector}
@@ -512,6 +524,33 @@ function EmptyState({ agents, onPick }: { agents: RoomAgent[]; onPick: (prompt: 
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** Kennzahlen der Debatte als Pillen-Gruppe (Referenz: Glassy Dashboard). */
+function StatPills({ messages, className }: { messages: ChatMessage[]; className?: string }) {
+  const replies = messages.filter((m) => m.sender_type === "agent");
+  const tokens = replies.reduce((sum, m) => sum + m.input_tokens + m.output_tokens, 0);
+  const cost = replies.reduce((sum, m) => sum + m.estimated_cost_usd, 0);
+  const items = [
+    { icon: Coins, label: "Tokens", value: formatCompact(tokens) },
+    { icon: Receipt, label: "Kosten", value: formatUsd(cost) },
+    { icon: MessagesSquare, label: "Antworten", value: String(replies.length) },
+  ];
+  return (
+    <div className={clsx("card items-center rounded-full p-1", className)} aria-label="Kennzahlen dieser Debatte">
+      {items.map(({ icon: Icon, label, value }, i) => (
+        <div key={label} className={clsx("flex items-center gap-2 px-3 py-1", i > 0 && "border-l border-line/50")}>
+          <span className="flex size-6 items-center justify-center rounded-full bg-accent/12 text-accent">
+            <Icon className="size-3.5" aria-hidden />
+          </span>
+          <span className="leading-tight">
+            <span className="block text-[10px] text-muted">{label}</span>
+            <span className="block font-mono text-[12px] font-medium text-ink">{value}</span>
+          </span>
+        </div>
+      ))}
     </div>
   );
 }

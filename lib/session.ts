@@ -1,5 +1,6 @@
 import "server-only";
-import { effectiveCustomKey } from "./ai/provider";
+import { isLocalSubscriptionMode } from "./ai/local-cli";
+import { effectiveCustomKey, effectiveProviderKey, hasUniversalOwnAccess } from "./ai/provider";
 import { sessionAuthTime } from "./auth-time";
 import { assertProductionConfig, demoMayUsePlatformKey, isDemoWorkspaceAllowed } from "./env";
 import { cookies } from "next/headers";
@@ -10,7 +11,7 @@ import type { DataStore } from "./store/types";
 import { getSupabaseAdmin } from "./supabase/admin";
 import { isSupabaseConfigured } from "./supabase/config";
 import { createSupabaseServerClient } from "./supabase/server";
-import type { PublicProfile, UserProfile } from "./types";
+import { PROVIDER_KEY_IDS, type ConnectionInfo, type PublicProfile, type UserProfile } from "./types";
 
 export interface AppSession {
   userId: string;
@@ -77,8 +78,16 @@ export function isRecentSignIn(session: Pick<AppSession, "lastSignInAt" | "isDem
 }
 
 /** Allowlist der Profilfelder für den Browser – nie Key oder Stripe-IDs (Z14-06). */
+const hintOf = (key: string) => `${key.slice(0, 6)}…${key.slice(-4)}`;
+
 export function toPublicProfile(profile: UserProfile): PublicProfile {
   const key = effectiveCustomKey(profile);
+  const connections: ConnectionInfo[] = [];
+  if (key) connections.push({ id: "openrouter", hint: hintOf(key) });
+  for (const id of PROVIDER_KEY_IDS) {
+    const value = effectiveProviderKey(profile, id);
+    if (value) connections.push({ id, hint: hintOf(value) });
+  }
   return {
     id: profile.id,
     subscription_tier: profile.subscription_tier,
@@ -87,7 +96,9 @@ export function toPublicProfile(profile: UserProfile): PublicProfile {
     usage_period_start: profile.usage_period_start,
     rate_limit_per_min: profile.rate_limit_per_min,
     created_at: profile.created_at,
-    has_custom_key: Boolean(key),
+    // Lokaler Abo-Modus zählt als eigener Zugang (die Abo-Agenten buchen kein Kontingent).
+    has_custom_key: hasUniversalOwnAccess(profile) || isLocalSubscriptionMode(),
     custom_key_hint: key ? `${key.slice(0, 7)}…${key.slice(-4)}` : null,
+    connections,
   };
 }

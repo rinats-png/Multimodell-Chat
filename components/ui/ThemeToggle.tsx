@@ -24,7 +24,7 @@ const OPTIONS: { value: ThemeChoice; label: string; Icon: typeof Sun }[] = [
 ];
 
 /** Darstellung wählen: wie System (Standard), hell oder dunkel. */
-export function ThemeToggle({ className }: { className?: string }) {
+export function ThemeToggle({ className, vertical = false }: { className?: string; vertical?: boolean }) {
   const [choice, setChoice] = useState<ThemeChoice>("system");
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export function ThemeToggle({ className }: { className?: string }) {
   }, []);
 
   return (
-    <div role="radiogroup" aria-label="Darstellung" className={clsx("inline-flex rounded-xl border border-line/70 bg-canvas/30 p-0.5", className)}>
+    <div role="radiogroup" aria-label="Darstellung" className={clsx("inline-flex rounded-xl border border-line/70 bg-canvas/30 p-0.5", vertical && "flex-col rounded-full", className)}>
       {OPTIONS.map(({ value, label, Icon }) => (
         <button
           key={value}
@@ -47,7 +47,8 @@ export function ThemeToggle({ className }: { className?: string }) {
             applyTheme(value);
           }}
           className={clsx(
-            "flex size-7 items-center justify-center rounded-lg transition-colors",
+            "flex size-7 items-center justify-center transition-colors",
+            vertical ? "rounded-full" : "rounded-lg",
             choice === value ? "bg-accent/15 text-accent ring-1 ring-accent/30" : "text-muted hover:text-ink",
           )}
         >

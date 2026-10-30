@@ -19,7 +19,7 @@ export function BrandMark({ className }: { className?: string }) {
 export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={clsx("font-display font-semibold tracking-tight", className)}>
-      Multi<span className="text-accent">modell</span>
+      Multi<span className="text-accent-strong">modell</span>
     </span>
   );
 }

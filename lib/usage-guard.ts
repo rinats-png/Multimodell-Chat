@@ -1,4 +1,4 @@
-import { effectiveCustomKey } from "./ai/provider";
+import { hasUniversalOwnAccess } from "./ai/provider";
 import { rateLimit, type RateLimitResult } from "./rate-limit";
 import type { UserProfile } from "./types";
 
@@ -11,10 +11,10 @@ export interface QuotaCheckResult {
 
 /**
  * Prüft, ob der geschätzte Verbrauch eines Aufrufs noch ins Monatskontingent passt (BF-03).
- * Mit eigenem OpenRouter-Key (BYOK) zahlt der User selbst – kein Deckel.
+ * Mit eigenem Zugang für alle Modelle (OpenRouter oder Gateway) zahlt der User selbst – kein Deckel.
  */
 export function checkTokenQuota(profile: UserProfile, estimatedTokens = 1): QuotaCheckResult {
-  if (effectiveCustomKey(profile)) {
+  if (hasUniversalOwnAccess(profile)) {
     return { allowed: true, remainingTokens: Number.POSITIVE_INFINITY };
   }
   const remainingTokens = Math.max(0, profile.monthly_token_limit - profile.tokens_used_this_month);
@@ -45,7 +45,7 @@ export function assertQuota(profile: UserProfile, estimatedTokens: number): void
       "quota_exceeded",
       quota.remainingTokens > 0
         ? `Dein restliches Kontingent (${quota.remainingTokens} Tokens) reicht für diese Antwort nicht aus (≈ ${estimatedTokens} Tokens). Verkleinere das Sliding Window oder upgrade deinen Tarif.`
-        : "Dein monatliches Token-Kontingent ist aufgebraucht. Upgrade deinen Tarif oder hinterlege einen eigenen OpenRouter-Key.",
+        : "Dein monatliches Token-Kontingent ist aufgebraucht. Verbinde dein OpenRouter-Konto oder hinterlege einen eigenen API-Key.",
       402,
     );
   }
@@ -56,8 +56,9 @@ export function assertQuota(profile: UserProfile, estimatedTokens: number): void
  * Router- und Summary-Aufrufe zählen nicht gegen das Minutenlimit (BF-25), nur gegen
  * das Kontingent – sie sind über das Rundenlimit begrenzt.
  */
-export async function assertCanCallModel(profile: UserProfile, estimatedTokens: number): Promise<void> {
-  assertQuota(profile, estimatedTokens);
+export async function assertCanCallModel(profile: UserProfile, estimatedTokens: number, options: { ownAccess?: boolean } = {}): Promise<void> {
+  // Eigener Zugang für genau dieses Modell (z. B. Anthropic-Key, lokales Abo): kein Kontingent.
+  if (!options.ownAccess) assertQuota(profile, estimatedTokens);
   const rate = await rateLimit("model", profile.id, profile.rate_limit_per_min);
   if (!rate.allowed) {
     throw new UsageGuardError("rate_limited", rateLimitMessage(profile.rate_limit_per_min, rate), 429, rate.retryAfterMs);

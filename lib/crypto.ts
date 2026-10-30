@@ -1,6 +1,7 @@
 import "server-only";
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { isProduction } from "./env";
+import { PROVIDER_KEY_IDS, type ProviderKeys } from "./types";
 
 /**
  * Verschlüsselung des BYOK-Keys at rest (BF-08) mit AES-256-GCM aus Node `crypto`.
@@ -58,5 +59,28 @@ export function decryptSecret(stored: string | null | undefined): string | null 
   } catch {
     console.error("[crypto] BYOK-Key konnte nicht entschlüsselt werden");
     return null;
+  }
+}
+
+/** Weitere eigene Keys als ein verschlüsselter JSON-Wert (Spalte provider_keys). */
+export function encryptProviderKeys(keys: ProviderKeys): string | null {
+  const clean = Object.fromEntries(Object.entries(keys).filter(([, v]) => typeof v === "string" && v.trim()));
+  return Object.keys(clean).length > 0 ? encryptSecret(JSON.stringify(clean)) : null;
+}
+
+export function decryptProviderKeys(stored: string | null | undefined): ProviderKeys {
+  const plain = decryptSecret(stored);
+  if (!plain) return {};
+  try {
+    const parsed: unknown = JSON.parse(plain);
+    if (!parsed || typeof parsed !== "object") return {};
+    const result: ProviderKeys = {};
+    for (const id of PROVIDER_KEY_IDS) {
+      const value = (parsed as Record<string, unknown>)[id];
+      if (typeof value === "string" && value.trim()) result[id] = value;
+    }
+    return result;
+  } catch {
+    return {};
   }
 }

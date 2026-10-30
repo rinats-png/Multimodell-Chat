@@ -5,6 +5,7 @@ import type {
   NewChatMessage,
   NewRoomAgent,
   RoomAgent,
+  ProviderKeyId,
   RoomSettingsPatch,
   SubscriptionTier,
   UserProfile,
@@ -19,18 +20,20 @@ export interface UsageTotals {
 
 export interface AccountExport {
   exported_at: string;
-  profile: Omit<UserProfile, "custom_openrouter_key"> & { has_custom_key: boolean };
+  profile: Omit<UserProfile, "custom_openrouter_key" | "provider_keys"> & { has_custom_key: boolean };
   rooms: (ChatRoom & { agents: RoomAgent[]; messages: ChatMessage[] })[];
 }
 
 /**
  * Datenzugriff – implementiert für Supabase (Produktion) und In-Memory (Demo).
  * Jede Instanz ist an genau einen angemeldeten Nutzer gebunden.
- * `custom_openrouter_key` ist im Rückgabewert immer entschlüsselt (oder null).
+ * `custom_openrouter_key` und `provider_keys` sind im Rückgabewert immer entschlüsselt.
  */
 export interface DataStore {
   getProfile(): Promise<UserProfile>;
   setCustomKey(key: string | null): Promise<UserProfile>;
+  /** Weiteren eigenen Key setzen (null entfernt ihn); verschlüsselt gespeichert. */
+  setProviderKey(id: ProviderKeyId, key: string | null): Promise<UserProfile>;
   /** Nur im Demo-Store erlaubt; in Produktion setzt der Billing-Webhook den Tarif. */
   setTier?(tier: SubscriptionTier): Promise<UserProfile>;
   incrementTokens(tokens: number): Promise<void>;

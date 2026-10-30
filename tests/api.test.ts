@@ -116,22 +116,22 @@ describe("Orchestrierung über HTTP (F-03, F-08)", () => {
 });
 
 describe("Konto & Tarif (F-12, F-13, F-15, F-16)", () => {
-  it("TEST-F13-2: eigener Key nur im Workspace-Tarif", async () => {
-    const res = await patchProfile(jsonRequest("/api/profile", "PATCH", { custom_openrouter_key: "sk-or-v1-abcdefghijklmnop" }));
-    expect(res.status).toBe(402);
-    await memoryStore.setTier!("team");
+  it("TEST-F13-2: eigener Key in jedem Tarif – der Key verlässt den Server nicht", async () => {
     const ok = await patchProfile(jsonRequest("/api/profile", "PATCH", { custom_openrouter_key: "sk-or-v1-abcdefghijklmnop" }));
+    expect(ok.status).toBe(200);
     const body = await ok.json();
     expect(body.profile.has_custom_key).toBe(true);
     expect(JSON.stringify(body)).not.toContain("abcdefghijklmnop");
   });
 
-  it("TEST-F12-1: Tarifwechsel im Demo-Workspace (nur Entwicklung) setzt Limits; Downgrade entfernt eigenen Key", async () => {
+  it("TEST-F12-1: Tarifwechsel im Demo-Workspace (nur Entwicklung) setzt Limits; eigener Key bleibt", async () => {
     const res = await choosePlan(jsonRequest("/api/billing/plan", "POST", { tier: "team" }));
     expect((await res.json()).profile.monthly_token_limit).toBe(2_500_000);
     await memoryStore.setCustomKey("sk-or-v1-abcdefghijklmnop");
     await choosePlan(jsonRequest("/api/billing/plan", "POST", { tier: "free" }));
-    expect((await memoryStore.getProfile()).custom_openrouter_key).toBeNull();
+    const profile = await memoryStore.getProfile();
+    expect(profile.monthly_token_limit).toBe(15_000);
+    expect(profile.custom_openrouter_key).toBe("sk-or-v1-abcdefghijklmnop");
   });
 
   it("TEST-F15-1: Datenexport enthält alle eigenen Räume, Agenten und Nachrichten, aber keinen Key", async () => {

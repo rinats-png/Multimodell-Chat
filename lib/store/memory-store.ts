@@ -1,13 +1,17 @@
-import { encryptSecret, decryptSecret } from "../crypto";
-import { DEFAULT_AGENTS } from "../default-agents";
+import { isLocalSubscriptionMode } from "../ai/local-cli";
+import { decryptProviderKeys, decryptSecret, encryptProviderKeys, encryptSecret } from "../crypto";
+import { defaultAgents } from "../default-agents";
 import { PLANS } from "../plans";
 import type { ChatMessage, ChatRoom, RoomAgent, UserProfile } from "../types";
 import type { DataStore } from "./types";
 
 export const DEMO_USER_ID = "00000000-0000-4000-8000-000000000001";
 
+/** Gespeichert wie in der Datenbank: Keys nur verschlüsselt. */
+type StoredProfile = Omit<UserProfile, "provider_keys"> & { provider_keys: string | null };
+
 interface MemoryDb {
-  profile: UserProfile;
+  profile: StoredProfile;
   rooms: Map<string, ChatRoom>;
   agents: Map<string, RoomAgent>;
   messages: Map<string, ChatMessage>;
@@ -23,15 +27,18 @@ function monthStart(): string {
 }
 
 function freshDb(userId: string): MemoryDb {
+  // Lokaler Abo-Modus: Einzelplatz ohne Tarifgrenzen bei Agenten und Runden.
+  const tier = isLocalSubscriptionMode() ? "team" : "free";
   return {
     profile: {
       id: userId,
-      subscription_tier: "free",
-      monthly_token_limit: PLANS.free.monthlyTokenLimit,
+      subscription_tier: tier,
+      monthly_token_limit: PLANS[tier].monthlyTokenLimit,
       tokens_used_this_month: 0,
       usage_period_start: monthStart(),
-      rate_limit_per_min: PLANS.free.rateLimitPerMin,
+      rate_limit_per_min: PLANS[tier].rateLimitPerMin,
       custom_openrouter_key: null,
+      provider_keys: null,
       created_at: new Date().toISOString(),
     },
     rooms: new Map(),
@@ -72,8 +79,8 @@ function must<T>(value: T | undefined, what: string): T {
   return value;
 }
 
-function decryptedProfile(p: UserProfile): UserProfile {
-  return { ...p, custom_openrouter_key: decryptSecret(p.custom_openrouter_key) };
+function decryptedProfile(p: StoredProfile): UserProfile {
+  return { ...p, custom_openrouter_key: decryptSecret(p.custom_openrouter_key), provider_keys: decryptProviderKeys(p.provider_keys) };
 }
 
 /** In-Memory-Store für den Demo-Betrieb ohne Supabase – je Besucher ein eigener Bestand. */
@@ -92,12 +99,20 @@ export function createMemoryStore(visitorId: string): DataStore {
     db().profile.custom_openrouter_key = key ? encryptSecret(key) : null;
     return decryptedProfile(db().profile);
   },
+  async setProviderKey(id, key) {
+    const p = db().profile;
+    p.provider_keys = encryptProviderKeys({ ...decryptProviderKeys(p.provider_keys), [id]: key ?? undefined });
+    return decryptedProfile(p);
+  },
   async setTier(tier) {
     const p = db().profile;
     p.subscription_tier = tier;
     p.monthly_token_limit = PLANS[tier].monthlyTokenLimit;
     p.rate_limit_per_min = PLANS[tier].rateLimitPerMin;
-    if (!PLANS[tier].byok) p.custom_openrouter_key = null;
+    if (!PLANS[tier].byok) {
+      p.custom_openrouter_key = null;
+      p.provider_keys = null;
+    }
     return decryptedProfile(p);
   },
   async incrementTokens(tokens) {
@@ -124,7 +139,7 @@ export function createMemoryStore(visitorId: string): DataStore {
       created_at: new Date().toISOString(),
     };
     db().rooms.set(room.id, room);
-    for (const agent of DEFAULT_AGENTS) {
+    for (const agent of defaultAgents()) {
       const id = crypto.randomUUID();
       db().agents.set(id, { ...agent, id, room_id: room.id });
     }
@@ -212,11 +227,11 @@ export function createMemoryStore(visitorId: string): DataStore {
     );
   },
   async exportAccount() {
-    const { custom_openrouter_key, ...profile } = db().profile;
+    const { custom_openrouter_key, provider_keys, ...profile } = db().profile;
     const rooms = await store.listRooms();
     return {
       exported_at: new Date().toISOString(),
-      profile: { ...profile, has_custom_key: Boolean(custom_openrouter_key) },
+      profile: { ...profile, has_custom_key: Boolean(custom_openrouter_key || provider_keys) },
       rooms: await Promise.all(
         rooms.map(async (room) => ({ ...room, agents: await store.listAgents(room.id), messages: await store.listMessages(room.id) })),
       ),

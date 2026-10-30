@@ -4,18 +4,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <style>
-  /* Farbkonzept „Hub Center“ wie die App (hell: Frost & Kupfer, dunkel: Basalt & Rost). Layout: Kontaktbogen – Bereiche als Filter, Screens als Abzüge mit Route und Funktions-IDs, Lightbox zum Durchblättern */
+  /* Farbkonzept „Lounge & Glut“ wie die App (hell: Morgenlicht, dunkel: Glut). Layout: Kontaktbogen – Bereiche als Filter, Screens als Abzüge mit Route und Funktions-IDs, Lightbox zum Durchblättern */
   :root {
-    --bg: #e8e4dd;
-    --surface: #fbf9f6;
-    --ink: #2c2925;
-    --muted: #5c534a;
-    --line: #d6cdc1;
-    --accent: #9d5532;
-    --openai: #46632f;
-    --anthropic: #66461b;
-    --google: #5f5a50;
-    --frame: #e8e4dd;
+    --bg: #ebe5dd;
+    --surface: #fcfaf7;
+    --ink: #2b2723;
+    --muted: #5b5148;
+    --line: #d8cec2;
+    --accent: #b9581d;
+    --openai: #44622f;
+    --anthropic: #7a4417;
+    --google: #5c574d;
+    --frame: #ebe5dd;
     --shadow: 0 1px 2px rgb(70 50 30 / 0.06), 0 8px 24px rgb(70 50 30 / 0.08);
     --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
     --font-body: "Geist", ui-sans-serif, system-ui, sans-serif;
@@ -23,15 +23,15 @@
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #2a2624; --surface: #322d2a; --ink: #efe8e3; --muted: #b6a99f; --line: #4b433e;
-      --accent: #d6a083; --openai: #adc293; --anthropic: #d8b07c; --google: #cfc6b0; --frame: #2a2624;
+      --bg: #252220; --surface: #2e2b28; --ink: #f4efea; --muted: #c0b5ab; --line: #48423d;
+      --accent: #f08c4e; --openai: #abc994; --anthropic: #eab98c; --google: #d5cdbd; --frame: #252220;
       --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px rgb(10 10 12 / 0.45);
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #2a2624; --surface: #322d2a; --ink: #efe8e3; --muted: #b6a99f; --line: #4b433e;
-    --accent: #d6a083; --openai: #adc293; --anthropic: #d8b07c; --google: #cfc6b0; --frame: #2a2624;
+    --bg: #252220; --surface: #2e2b28; --ink: #f4efea; --muted: #c0b5ab; --line: #48423d;
+    --accent: #f08c4e; --openai: #abc994; --anthropic: #eab98c; --google: #d5cdbd; --frame: #252220;
     --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px rgb(10 10 12 / 0.45);
     color-scheme: dark;
   }
@@ -92,7 +92,7 @@
   <header>
     <div class="brand"><span class="dots"><i style="background:var(--openai)"></i><i style="background:var(--anthropic)"></i><i style="background:var(--google)"></i></span> Multimodell-Chat · KI-Gruppendebatten</div>
     <h1>Alle Screens der App</h1>
-    <p class="lede">Echte Aufnahmen der laufenden Anwendung im Design „Hub Center“ – Glasflächen vor einem fotografischen Raum, hell „Frost & Kupfer“, dunkel „Basalt & Rost“. Keine Entwürfe. Die Antworten stammen aus dem Demo-Modus mit simuliertem Modell; mit OpenRouter-Key antworten GPT-4o, Claude und Gemini selbst. Klick auf einen Screen öffnet die Großansicht, Pfeiltasten blättern.</p>
+    <p class="lede">Echte Aufnahmen der laufenden Anwendung im Design „Lounge & Glut“ – ein großer Glasrahmen mit Icon-Leiste vor einer Lounge, hell „Morgenlicht“, dunkel „Glut“. Keine Entwürfe. Die Antworten stammen aus dem Demo-Modus mit simuliertem Modell; mit verbundenem OpenRouter-Konto oder eigenen Keys antworten die echten Modelle, im lokalen Abo-Modus deine Abos. Klick auf einen Screen öffnet die Großansicht, Pfeiltasten blättern.</p>
     <div class="meta"><span>24 Screens × hell/dunkel</span><span>Desktop 1440 × 900</span><span>Mobil 390 × 844</span><span>Branch ccr-aab1b190-y70xl3</span></div>
   </header>
 
@@ -132,7 +132,7 @@
     ]},
     { id: "konto", title: "Tarif & Konto", text: "Verbrauch, Tarife, eigener API-Key und die Datenschutz-Funktionen für das Konto.", shots: [
       ["10-tarif-und-verbrauch", "Tarif & Verbrauch", "Kontingent, Rate-Limit, Ledger-Summen und die drei Tarife.", "/billing", ["F-07", "F-12"]],
-      ["11-byok-und-konto", "Eigener Key & Konto", "Workspace-Tarif mit hinterlegtem OpenRouter-Key (nur gekürzt sichtbar), Export und Löschung.", "/billing", ["F-13", "F-15", "F-16"]],
+      ["11-eigene-zugaenge", "Eigene KI-Zugänge", "„Mit OpenRouter verbinden“ (OAuth) oder Keys für Vercel AI Gateway, OpenAI, Anthropic, Google, xAI – nur gekürzt sichtbar.", "/billing", ["F-13"]],
       ["12-konto-loeschen-dialog", "Konto löschen", "Bestätigung vor der endgültigen Löschung inklusive Abo-Kündigung.", "/billing", ["F-16"]],
     ]},
     { id: "anmeldung", title: "Anmeldung", text: "Alle Auth-Abläufe laufen serverseitig; Antworten verraten nicht, ob eine E-Mail registriert ist.", shots: [
@@ -141,6 +141,8 @@
       ["22-passwort-vergessen", "Passwort vergessen", "Reset-Link per E-Mail, gleiche Antwort für jede Adresse.", "/passwort-vergessen", ["F-17"]],
       ["23-anmelden-link-abgelaufen", "Link abgelaufen", "Hinweis, wenn ein Bestätigungs- oder Reset-Link ungültig ist.", "/login?link=ungueltig", ["F-17"]],
       ["24-neues-passwort", "Neues Passwort", "Nach dem Reset-Link; danach werden alle anderen Geräte abgemeldet.", "/passwort-neu", ["F-17"]],
+      ["25-abo-modus-debatte", "Lokaler Abo-Modus: Debatte", "ChatGPT, Claude, Gemini und Kimi antworten über die Abo-Programme auf dem eigenen Rechner – ohne API-Key, $0 in der App.", "/chat/[roomId]", ["F-13"]],
+      ["26-abo-modus-programme", "Lokaler Abo-Modus: Programme", "Zeigt, welche Abo-Programme (Claude Code, Codex, Gemini CLI, Kimi CLI) gefunden wurden.", "/billing", ["F-13"]],
     ]},
     { id: "recht", title: "Rechtliches & Fehler", text: "Pflichtseiten aus der Betreiberkonfiguration und die einheitliche 404-Antwort.", shots: [
       ["13-datenschutz", "Datenschutzerklärung", "Zwecke, Rechtsgrundlagen, KI-Anbieter, Empfänger und Rechte.", "/datenschutz", ["F-18"]],
@@ -161,7 +163,7 @@
   const modes = document.getElementById("modes");
   function renderModes() {
     modes.innerHTML = "";
-    for (const [id, title] of [["hell", "Hell · Frost & Kupfer"], ["dunkel", "Dunkel · Basalt & Rost"]]) {
+    for (const [id, title] of [["hell", "Hell · Morgenlicht"], ["dunkel", "Dunkel · Glut"]]) {
       const b = document.createElement("button");
       b.type = "button";
       b.setAttribute("aria-pressed", String(mode === id));

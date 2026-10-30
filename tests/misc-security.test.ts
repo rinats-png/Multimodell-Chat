@@ -43,7 +43,7 @@ describe("weitere Sicherheitstests", () => {
   it("T-SEC-33: Browser-Profil enthält weder Key noch Stripe-IDs", () => {
     const profile = toPublicProfile({
       id: "u", subscription_tier: "team", monthly_token_limit: 1, tokens_used_this_month: 0, usage_period_start: "2026-10-01",
-      rate_limit_per_min: 60, custom_openrouter_key: "sk-or-v1-abcdefghijklmnop", created_at: "x",
+      rate_limit_per_min: 60, custom_openrouter_key: "sk-or-v1-abcdefghijklmnop", provider_keys: {}, created_at: "x",
       ...({ stripe_customer_id: "cus_geheim", stripe_subscription_id: "sub_geheim" } as object),
     });
     expect(JSON.stringify(profile)).not.toMatch(/cus_geheim|sub_geheim|abcdefghijklmnop/);

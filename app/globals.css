@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
 /*
- * Designkonzept „Hub Center“ – Glasflächen vor einem fotografischen Raum (Hintergrund: public/bg/).
- * Hell (Standard ohne Systemvorgabe): „Frost & Kupfer“ – Sandstein, Elfenbein, Kupfer.
- * Dunkel: „Basalt & Rost“ – warmer Stein, gedämpftes Rost.
+ * Designkonzept „Lounge & Glut“ – ein großer Glasrahmen schwebt vor einem fotografischen Raum
+ * (Lounge mit Pflanzen und warmen Lampen, public/bg/lounge-*.webp). Orange Glut hinter den Karten,
+ * schwebende Icon-Leiste links, Kennzahl-Pillen oben. Referenz: „Glassy Dashboard“ (code.xr) + Mobbin.
+ * Hell: „Morgenlicht“ – Sand, Leinen, Terrakotta. Dunkel: „Glut“ – warmes Anthrazit, Orange.
  * Vorgaben: kein Lila/Pink/Rosa/Blau, keine übersättigten Farben, kein reines Schwarz.
  * Umschaltung: Systemeinstellung, überschreibbar per <html data-theme="light|dark"> (components/ui/ThemeToggle.tsx).
  */
@@ -12,157 +13,178 @@
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 
-  /* Hell – Frost & Kupfer */
-  --color-canvas: #e8e4dd;
-  --color-canvas-2: #efebe5;
-  --color-surface: #f6f3ee;
-  --color-surface-2: #fbf9f6;
-  --color-surface-3: #e6dfd5;
-  --color-line: #d6cdc1;
-  --color-line-strong: #bfb3a4;
-  --color-ink: #2c2925;
-  --color-ink-2: #3f3934;
-  --color-muted: #5c534a;
-  --color-accent: #9d5532;
-  --color-accent-strong: #6e361d;
-  --color-accent-deep: #b4673f;
-  --color-signal: #4f7a3a;
-  --color-on-accent: #fffaf4;
+  /* Hell – Morgenlicht */
+  --color-canvas: #ebe5dd;
+  --color-canvas-2: #f1ece5;
+  --color-surface: #f7f3ee;
+  --color-surface-2: #fcfaf7;
+  --color-surface-3: #e8e0d6;
+  --color-line: #d8cec2;
+  --color-line-strong: #c0b3a4;
+  --color-ink: #2b2723;
+  --color-ink-2: #3e3833;
+  --color-muted: #5b5148;
+  --color-accent: #b9581d;
+  --color-accent-strong: #873b0e;
+  --color-accent-deep: #d06f2c;
+  --color-signal: #47733a;
+  --color-on-accent: #fffaf5;
   --color-danger: #a8382a;
   --color-warn: #6b4c0e;
 
-  --color-openai: #46632f;
-  --color-anthropic: #66461b;
-  --color-google: #5f5a50;
-  --color-other: #4f7a3a;
-  --color-on-agent: #fffaf4;
+  --color-openai: #44622f;
+  --color-anthropic: #7a4417;
+  --color-google: #5c574d;
+  --color-other: #47733a;
+  --color-on-agent: #fffaf5;
 }
 
 :root {
   color-scheme: light;
-  --bg-image: url("/bg/hub-light.webp");
+  --bg-image: url("/bg/lounge-light.webp");
   --bg-shade:
-    linear-gradient(90deg, rgb(232 228 221 / 0.9), rgb(232 228 221 / 0.55) 55%, rgb(232 228 221 / 0.38)),
-    linear-gradient(180deg, rgb(232 228 221 / 0.5), transparent 22%, transparent 55%, rgb(232 228 221 / 0.7));
-  --grid-line: rgb(70 56 44 / 0.035);
-  --glass-1: rgb(252 250 246 / 0.66);
-  --glass-2: rgb(246 242 236 / 0.5);
-  --glass-strong-1: rgb(253 251 248 / 0.84);
-  --glass-strong-2: rgb(248 244 238 / 0.72);
-  --glass-edge: rgb(70 56 44 / 0.13);
-  --glass-hl: rgb(255 255 255 / 0.5);
-  --glass-drop: rgb(70 50 30 / 0.22);
+    linear-gradient(90deg, rgb(235 229 221 / 0.55), rgb(235 229 221 / 0.25) 55%, rgb(235 229 221 / 0.3)),
+    linear-gradient(180deg, rgb(235 229 221 / 0.3), transparent 30%, transparent 65%, rgb(235 229 221 / 0.45));
+  --grid-line: rgb(70 56 44 / 0.03);
+  --glass-1: rgb(255 252 248 / 0.68);
+  --glass-2: rgb(249 244 237 / 0.54);
+  --glass-strong-1: rgb(255 253 250 / 0.88);
+  --glass-strong-2: rgb(250 246 240 / 0.8);
+  --glass-edge: rgb(80 58 40 / 0.13);
+  --glass-hl: rgb(255 255 255 / 0.6);
+  --glass-drop: rgb(80 50 25 / 0.24);
+  --frame-1: rgb(252 249 245 / 0.62);
+  --frame-2: rgb(245 239 231 / 0.5);
+  --card-1: rgb(255 255 255 / 0.62);
+  --card-2: rgb(255 252 248 / 0.38);
+  --card-edge: rgb(80 58 40 / 0.11);
+  --glow-1: rgb(214 112 45 / 0.2);
+  --glow-2: rgb(224 150 80 / 0.16);
   --bar-bg: rgb(255 255 255 / 0.55);
-  --field-bg: rgb(255 255 255 / 0.6);
-  --field-edge: rgb(70 56 44 / 0.18);
-  --ghost-bg: rgb(255 255 255 / 0.42);
-  --ghost-bg-hover: rgb(255 255 255 / 0.68);
-  --ghost-edge: rgb(70 56 44 / 0.16);
-  --btn-from: #a9633d;
-  --btn-to: #8a4828;
-  --btn-glow: rgb(157 85 50 / 0.38);
-  --code-bg: rgb(70 56 44 / 0.06);
-  --pre-bg: rgb(255 255 255 / 0.55);
+  --field-bg: rgb(255 255 255 / 0.66);
+  --field-edge: rgb(80 58 40 / 0.18);
+  --ghost-bg: rgb(255 255 255 / 0.48);
+  --ghost-bg-hover: rgb(255 255 255 / 0.74);
+  --ghost-edge: rgb(80 58 40 / 0.16);
+  --btn-from: #b4541a;
+  --btn-to: #923e0e;
+  --btn-glow: rgb(196 92 30 / 0.42);
+  --code-bg: rgb(80 58 40 / 0.06);
+  --pre-bg: rgb(255 255 255 / 0.6);
 }
 
-/* Dunkel – Basalt & Rost (einmal für die Systemeinstellung, einmal für die feste Wahl) */
+/* Dunkel – Glut (einmal für die Systemeinstellung, einmal für die feste Wahl) */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --color-canvas: #2a2624;
-    --color-canvas-2: #24201e;
-    --color-surface: #322d2a;
-    --color-surface-2: #3a3431;
-    --color-surface-3: #463f3b;
-    --color-line: #4b433e;
-    --color-line-strong: #615750;
-    --color-ink: #efe8e3;
-    --color-ink-2: #ddd3cb;
-    --color-muted: #b6a99f;
-    --color-accent: #d6a083;
-    --color-accent-strong: #e8c0a8;
-    --color-accent-deep: #a87459;
-    --color-signal: #b9cfa0;
-    --color-on-accent: #2a1810;
-    --color-danger: #e5826c;
-    --color-warn: #e2c27a;
-    --color-openai: #adc293;
-    --color-anthropic: #d8b07c;
-    --color-google: #cfc6b0;
-    --color-other: #b9cfa0;
-    --color-on-agent: #241d18;
-    --bg-image: url("/bg/hub-dark.webp");
+    --color-canvas: #252220;
+    --color-canvas-2: #201e1c;
+    --color-surface: #2e2b28;
+    --color-surface-2: #363230;
+    --color-surface-3: #403b37;
+    --color-line: #48423d;
+    --color-line-strong: #5e5650;
+    --color-ink: #f4efea;
+    --color-ink-2: #ddd5cd;
+    --color-muted: #c0b5ab;
+    --color-accent: #f08c4e;
+    --color-accent-strong: #f7b98f;
+    --color-accent-deep: #c9672e;
+    --color-signal: #a7cf8e;
+    --color-on-accent: #2a1307;
+    --color-danger: #ef8a72;
+    --color-warn: #e8c77d;
+    --color-openai: #abc994;
+    --color-anthropic: #eab98c;
+    --color-google: #d5cdbd;
+    --color-other: #a7cf8e;
+    --color-on-agent: #221b16;
+    --bg-image: url("/bg/lounge-dark.webp");
     --bg-shade:
-      linear-gradient(90deg, rgb(42 38 36 / 0.8), rgb(42 38 36 / 0.58) 55%, rgb(42 38 36 / 0.5)),
-      linear-gradient(180deg, rgb(42 38 36 / 0.45), transparent 22%, transparent 55%, rgb(42 38 36 / 0.65));
-    --grid-line: rgb(246 228 218 / 0.035);
-    --glass-1: rgb(62 56 52 / 0.62);
-    --glass-2: rgb(40 36 34 / 0.58);
-    --glass-strong-1: rgb(66 60 56 / 0.78);
-    --glass-strong-2: rgb(44 40 37 / 0.74);
-    --glass-edge: rgb(246 228 218 / 0.13);
-    --glass-hl: rgb(255 255 255 / 0.09);
-    --glass-drop: rgb(10 10 12 / 0.6);
-    --bar-bg: rgb(42 38 36 / 0.55);
-    --field-bg: rgb(36 32 30 / 0.5);
-    --field-edge: rgb(246 228 218 / 0.16);
-    --ghost-bg: rgb(250 238 230 / 0.07);
-    --ghost-bg-hover: rgb(250 238 230 / 0.12);
-    --ghost-edge: rgb(246 228 218 / 0.16);
-    --btn-from: #d9a68a;
-    --btn-to: #bd8466;
-    --btn-glow: rgb(140 90 65 / 0.55);
-    --code-bg: rgb(250 238 230 / 0.07);
-    --pre-bg: rgb(36 32 30 / 0.55);
+      linear-gradient(90deg, rgb(37 34 32 / 0.5), rgb(37 34 32 / 0.25) 55%, rgb(37 34 32 / 0.35)),
+      linear-gradient(180deg, rgb(37 34 32 / 0.35), transparent 30%, transparent 65%, rgb(37 34 32 / 0.55));
+    --grid-line: rgb(255 240 228 / 0.025);
+    --glass-1: rgb(58 53 50 / 0.6);
+    --glass-2: rgb(34 32 30 / 0.62);
+    --glass-strong-1: rgb(62 57 53 / 0.86);
+    --glass-strong-2: rgb(38 35 33 / 0.84);
+    --glass-edge: rgb(255 238 224 / 0.11);
+    --glass-hl: rgb(255 255 255 / 0.07);
+    --glass-drop: rgb(12 10 9 / 0.62);
+    --frame-1: rgb(52 48 45 / 0.58);
+    --frame-2: rgb(30 28 27 / 0.66);
+    --card-1: rgb(255 244 235 / 0.07);
+    --card-2: rgb(255 244 235 / 0.025);
+    --card-edge: rgb(255 238 224 / 0.09);
+    --glow-1: rgb(240 130 60 / 0.26);
+    --glow-2: rgb(232 150 80 / 0.16);
+    --bar-bg: rgb(37 34 32 / 0.55);
+    --field-bg: rgb(30 28 27 / 0.55);
+    --field-edge: rgb(255 238 224 / 0.14);
+    --ghost-bg: rgb(255 244 235 / 0.06);
+    --ghost-bg-hover: rgb(255 244 235 / 0.11);
+    --ghost-edge: rgb(255 238 224 / 0.14);
+    --btn-from: #f39857;
+    --btn-to: #dc7232;
+    --btn-glow: rgb(240 130 60 / 0.55);
+    --code-bg: rgb(255 244 235 / 0.07);
+    --pre-bg: rgb(30 28 27 / 0.6);
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-canvas: #2a2624;
-  --color-canvas-2: #24201e;
-  --color-surface: #322d2a;
-  --color-surface-2: #3a3431;
-  --color-surface-3: #463f3b;
-  --color-line: #4b433e;
-  --color-line-strong: #615750;
-  --color-ink: #efe8e3;
-  --color-ink-2: #ddd3cb;
-  --color-muted: #b6a99f;
-  --color-accent: #d6a083;
-  --color-accent-strong: #e8c0a8;
-  --color-accent-deep: #a87459;
-  --color-signal: #b9cfa0;
-  --color-on-accent: #2a1810;
-  --color-danger: #e5826c;
-  --color-warn: #e2c27a;
-  --color-openai: #adc293;
-  --color-anthropic: #d8b07c;
-  --color-google: #cfc6b0;
-  --color-other: #b9cfa0;
-  --color-on-agent: #241d18;
-  --bg-image: url("/bg/hub-dark.webp");
+  --color-canvas: #252220;
+  --color-canvas-2: #201e1c;
+  --color-surface: #2e2b28;
+  --color-surface-2: #363230;
+  --color-surface-3: #403b37;
+  --color-line: #48423d;
+  --color-line-strong: #5e5650;
+  --color-ink: #f4efea;
+  --color-ink-2: #ddd5cd;
+  --color-muted: #c0b5ab;
+  --color-accent: #f08c4e;
+  --color-accent-strong: #f7b98f;
+  --color-accent-deep: #c9672e;
+  --color-signal: #a7cf8e;
+  --color-on-accent: #2a1307;
+  --color-danger: #ef8a72;
+  --color-warn: #e8c77d;
+  --color-openai: #abc994;
+  --color-anthropic: #eab98c;
+  --color-google: #d5cdbd;
+  --color-other: #a7cf8e;
+  --color-on-agent: #221b16;
+  --bg-image: url("/bg/lounge-dark.webp");
   --bg-shade:
-    linear-gradient(90deg, rgb(42 38 36 / 0.8), rgb(42 38 36 / 0.58) 55%, rgb(42 38 36 / 0.5)),
-    linear-gradient(180deg, rgb(42 38 36 / 0.45), transparent 22%, transparent 55%, rgb(42 38 36 / 0.65));
-  --grid-line: rgb(246 228 218 / 0.035);
-  --glass-1: rgb(62 56 52 / 0.62);
-  --glass-2: rgb(40 36 34 / 0.58);
-  --glass-strong-1: rgb(66 60 56 / 0.78);
-  --glass-strong-2: rgb(44 40 37 / 0.74);
-  --glass-edge: rgb(246 228 218 / 0.13);
-  --glass-hl: rgb(255 255 255 / 0.09);
-  --glass-drop: rgb(10 10 12 / 0.6);
-  --bar-bg: rgb(42 38 36 / 0.55);
-  --field-bg: rgb(36 32 30 / 0.5);
-  --field-edge: rgb(246 228 218 / 0.16);
-  --ghost-bg: rgb(250 238 230 / 0.07);
-  --ghost-bg-hover: rgb(250 238 230 / 0.12);
-  --ghost-edge: rgb(246 228 218 / 0.16);
-  --btn-from: #d9a68a;
-  --btn-to: #bd8466;
-  --btn-glow: rgb(140 90 65 / 0.55);
-  --code-bg: rgb(250 238 230 / 0.07);
-  --pre-bg: rgb(36 32 30 / 0.55);
+    linear-gradient(90deg, rgb(37 34 32 / 0.5), rgb(37 34 32 / 0.25) 55%, rgb(37 34 32 / 0.35)),
+    linear-gradient(180deg, rgb(37 34 32 / 0.35), transparent 30%, transparent 65%, rgb(37 34 32 / 0.55));
+  --grid-line: rgb(255 240 228 / 0.025);
+  --glass-1: rgb(58 53 50 / 0.6);
+  --glass-2: rgb(34 32 30 / 0.62);
+  --glass-strong-1: rgb(62 57 53 / 0.86);
+  --glass-strong-2: rgb(38 35 33 / 0.84);
+  --glass-edge: rgb(255 238 224 / 0.11);
+  --glass-hl: rgb(255 255 255 / 0.07);
+  --glass-drop: rgb(12 10 9 / 0.62);
+  --frame-1: rgb(52 48 45 / 0.58);
+  --frame-2: rgb(30 28 27 / 0.66);
+  --card-1: rgb(255 244 235 / 0.07);
+  --card-2: rgb(255 244 235 / 0.025);
+  --card-edge: rgb(255 238 224 / 0.09);
+  --glow-1: rgb(240 130 60 / 0.26);
+  --glow-2: rgb(232 150 80 / 0.16);
+  --bar-bg: rgb(37 34 32 / 0.55);
+  --field-bg: rgb(30 28 27 / 0.55);
+  --field-edge: rgb(255 238 224 / 0.14);
+  --ghost-bg: rgb(255 244 235 / 0.06);
+  --ghost-bg-hover: rgb(255 244 235 / 0.11);
+  --ghost-edge: rgb(255 238 224 / 0.14);
+  --btn-from: #f39857;
+  --btn-to: #dc7232;
+  --btn-glow: rgb(240 130 60 / 0.55);
+  --code-bg: rgb(255 244 235 / 0.07);
+  --pre-bg: rgb(30 28 27 / 0.6);
 }
 
 html,
@@ -238,6 +260,24 @@ body::after {
   -webkit-backdrop-filter: blur(30px) saturate(160%);
 }
 
+/* Großer Rahmen um die App (Referenz: Glassy Dashboard) */
+@utility frame {
+  background: linear-gradient(150deg, var(--frame-1), var(--frame-2));
+  border: 1px solid var(--glass-edge);
+  box-shadow:
+    inset 0 1px 0 var(--glass-hl),
+    0 40px 120px -40px var(--glass-drop);
+  backdrop-filter: blur(30px) saturate(140%);
+  -webkit-backdrop-filter: blur(30px) saturate(140%);
+}
+
+/* Karte innerhalb des Rahmens: heller Hauch statt zweiter Unschärfe */
+@utility card {
+  background: linear-gradient(160deg, var(--card-1), var(--card-2));
+  border: 1px solid var(--card-edge);
+  box-shadow: inset 0 1px 0 var(--glass-hl);
+}
+
 @utility glass-bar {
   background: var(--bar-bg);
   border-color: var(--glass-edge);
@@ -305,6 +345,28 @@ body::after {
     border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 16%, transparent);
   }
+}
+
+/* Orange Glut hinter Inhalten (Rahmen, Kacheln) */
+.glow-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 42% at 58% 62%, var(--glow-1), transparent 70%),
+    radial-gradient(26% 30% at 88% 10%, var(--glow-2), transparent 70%),
+    radial-gradient(22% 26% at 6% 92%, var(--glow-2), transparent 70%);
+}
+.glow-card {
+  isolation: isolate;
+}
+.glow-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(60% 70% at 85% 0%, var(--glow-1), transparent 70%);
 }
 
 @utility text-gradient {
@@ -427,4 +489,13 @@ body::after {
   *::after {
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Glaskarten innerhalb des Rahmens: kein zweiter Blur, sondern ein heller Hauch (Schubladen ausgenommen) */
+.frame .glass:not(.drawer) {
+  background: linear-gradient(160deg, var(--card-1), var(--card-2));
+  border-color: var(--card-edge);
+  box-shadow: inset 0 1px 0 var(--glass-hl);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }

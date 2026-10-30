@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { effectiveCustomKey, resolveApiKey } from "@/lib/ai/provider";
+import { effectiveCustomKey, resolveApiKey, resolveModelAccess } from "@/lib/ai/provider";
 import { acquireLock, peekLimit, rateLimit, releaseLock } from "@/lib/rate-limit";
 import type { UserProfile } from "@/lib/types";
 import { assertCanCallModel, checkTokenQuota, UsageGuardError } from "@/lib/usage-guard";
@@ -12,6 +12,7 @@ const profile = (patch: Partial<UserProfile> = {}): UserProfile => ({
   usage_period_start: "2026-10-01",
   rate_limit_per_min: 5,
   custom_openrouter_key: null,
+  provider_keys: {},
   created_at: "2026-10-01T00:00:00Z",
   ...patch,
 });
@@ -34,11 +35,17 @@ describe("Kontingent (F-07)", () => {
     expect(resolveApiKey(p, { allowPlatformKey: true }).source).toBe("platform");
   });
 
-  it("T-SEC-04: BYOK zählt nur im Team-Tarif", () => {
+  it("T-SEC-04: eigener OpenRouter-Key zählt in jedem Tarif und hebt das Kontingent auf", () => {
     const p = profile({ custom_openrouter_key: "sk-or-v1-abcdefghijklmnop", tokens_used_this_month: 15_000 });
-    expect(effectiveCustomKey(p)).toBeNull();
+    expect(effectiveCustomKey(p)).toBe("sk-or-v1-abcdefghijklmnop");
+    expect(checkTokenQuota(p, 100).allowed).toBe(true);
+  });
+
+  it("T-SEC-04: ein Anbieter-Key hebt das Kontingent nur für Modelle dieses Anbieters auf", () => {
+    const p = profile({ provider_keys: { anthropic: "sk-ant-abcdefghijklmnopqrstuvwxyz" }, tokens_used_this_month: 15_000 });
     expect(checkTokenQuota(p, 100).allowed).toBe(false);
-    expect(effectiveCustomKey({ ...p, subscription_tier: "team" })).toBe("sk-or-v1-abcdefghijklmnop");
+    expect(resolveModelAccess(p, "anthropic/claude-sonnet-4.5", { allowPlatformKey: true }).source).toBe("anthropic");
+    expect(resolveModelAccess(p, "openai/gpt-5", { allowPlatformKey: false }).source).toBe("demo");
   });
 
   it("T-SEC-01: Demo-Workspace ohne Freigabe nutzt nie den Plattform-Key", () => {

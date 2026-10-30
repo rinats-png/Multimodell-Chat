@@ -10,13 +10,29 @@ export interface UserProfile {
   usage_period_start: string;
   rate_limit_per_min: number;
   custom_openrouter_key: string | null;
+  /** Weitere eigene Zugänge (entschlüsselt; in der DB als ein verschlüsselter Wert gespeichert). */
+  provider_keys: ProviderKeys;
   created_at: string;
 }
 
-/** Profil, wie es an den Browser geht – ohne Klartext-API-Key. */
-export interface PublicProfile extends Omit<UserProfile, "custom_openrouter_key"> {
+/** Eigene Zugänge neben OpenRouter: ein Gateway und die großen Anbieter direkt. */
+export const PROVIDER_KEY_IDS = ["gateway", "openai", "anthropic", "google", "xai"] as const;
+export type ProviderKeyId = (typeof PROVIDER_KEY_IDS)[number];
+export type ProviderKeys = Partial<Record<ProviderKeyId, string>>;
+export type ConnectionId = "openrouter" | ProviderKeyId;
+
+export interface ConnectionInfo {
+  id: ConnectionId;
+  /** Gekürzte Anzeige, z. B. "sk-or-v…abcd" – nie der ganze Key. */
+  hint: string;
+}
+
+/** Profil, wie es an den Browser geht – ohne Klartext-API-Keys. */
+export interface PublicProfile extends Omit<UserProfile, "custom_openrouter_key" | "provider_keys"> {
+  /** true, wenn ein eigener Zugang ALLE Modelle abdeckt (OpenRouter oder Gateway). */
   has_custom_key: boolean;
   custom_key_hint: string | null;
+  connections: ConnectionInfo[];
 }
 
 export interface ChatRoom {

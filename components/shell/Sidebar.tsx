@@ -65,13 +65,14 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
     <aside
       aria-label="Navigation"
       className={clsx(
-        "glass z-40 flex w-[268px] shrink-0 flex-col rounded-2xl",
-        "fixed inset-y-2 left-2 transition-transform md:static md:inset-auto md:my-3 md:ml-3 md:h-[calc(100dvh-1.5rem)] md:translate-x-0",
+        "drawer z-40 flex w-[264px] shrink-0 flex-col max-md:glass-strong",
+        "fixed inset-y-2 left-2 rounded-2xl transition-transform",
+        "md:relative md:inset-auto md:z-auto md:translate-x-0 md:rounded-none md:border-r md:border-line/50",
         mobileOpen ? "translate-x-0" : "-translate-x-[110%]",
       )}
     >
       <div className="flex items-center gap-3 px-4 pb-4 pt-4">
-        <BrandMark className="size-9" />
+        <BrandMark className="size-9 md:hidden" />
         <div className="leading-tight">
           <Wordmark className="text-[15px] font-semibold" />
           <div className="mt-0.5 text-[11px] text-muted">KI-Gruppendebatten</div>
@@ -141,7 +142,7 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
         })}
       </ul>
 
-      <div className="mx-3 mb-3 rounded-xl border border-accent/15 bg-gradient-to-b from-accent/[0.07] to-transparent p-3">
+      <div className="glow-card relative mx-3 mb-3 overflow-hidden rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.08] to-transparent p-3">
         <div className="flex items-center justify-between text-[12px]">
           <span className="inline-flex items-center gap-1.5 font-medium text-ink">
             <span className="size-1.5 rounded-full bg-signal" />
@@ -149,7 +150,7 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
           </span>
           <span className="font-mono text-[11px] text-ink-2">
             {profile.has_custom_key
-              ? "Eigener Key"
+              ? "Eigener Zugang"
               : `${formatCompact(profile.tokens_used_this_month)} / ${formatCompact(profile.monthly_token_limit)}`}
           </span>
         </div>
@@ -159,17 +160,17 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
         <div className="mt-2 text-[11px] text-muted">
           Tokens diesen Monat · {profile.rate_limit_per_min} KI-Antworten/Min
         </div>
-        {profile.subscription_tier !== "team" && (
+        {!profile.has_custom_key && (
           <Link href="/billing" className="btn-ghost mt-3 w-full px-3 py-1.5 text-[12px] font-semibold">
             <Sparkles className="size-3.5 text-accent" />
-            Upgrade
+            Eigenen Zugang verbinden
           </Link>
         )}
       </div>
 
       <div className="flex items-center justify-between gap-2 px-5 pb-2">
         <LegalLinks />
-        <ThemeToggle />
+        <ThemeToggle className="md:hidden" />
       </div>
       <div className="flex items-center gap-2.5 border-t border-line/70 px-4 py-3">
         <span className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-surface-3 to-surface-2 text-[11px] font-semibold text-accent-strong ring-1 ring-accent/20">
@@ -180,7 +181,7 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
           <div className="text-[11px] text-muted">{isDemoStore ? "Demo-Workspace" : plan.name}</div>
         </div>
         {!isDemoStore && (
-          <button onClick={signOut} className="rounded-lg p-1.5 text-muted hover:bg-surface-3/60 hover:text-ink" aria-label="Abmelden">
+          <button onClick={signOut} className="rounded-lg p-1.5 text-muted hover:bg-surface-3/60 hover:text-ink md:hidden" aria-label="Abmelden">
             <LogOut className="size-4" />
           </button>
         )}

@@ -3,6 +3,7 @@
 import { Menu } from "lucide-react";
 import { useState } from "react";
 import type { ChatRoom, PublicProfile } from "@/lib/types";
+import { IconRail } from "./IconRail";
 import { Sidebar } from "./Sidebar";
 
 interface AppShellProps {
@@ -19,7 +20,10 @@ interface AppShellProps {
 export function AppShell({ rooms, profile, email, isDemoStore, active, title, children }: AppShellProps) {
   const [navOpen, setNavOpen] = useState(false);
   return (
-    <div className="flex h-dvh overflow-hidden">
+    <div className="flex h-dvh gap-3 overflow-hidden md:p-3">
+      <IconRail active={active} isDemoStore={isDemoStore} />
+      <div className="frame relative flex min-w-0 flex-1 overflow-hidden md:rounded-[28px]">
+      <div className="glow-field" aria-hidden />
       <Sidebar
         rooms={rooms}
         profile={profile}
@@ -29,8 +33,8 @@ export function AppShell({ rooms, profile, email, isDemoStore, active, title, ch
         mobileOpen={navOpen}
         onMobileClose={() => setNavOpen(false)}
       />
-      <main className="flex min-w-0 flex-1 flex-col">
-        <header className="glass mx-2 mt-2 flex h-14 shrink-0 items-center gap-2 rounded-2xl px-2 md:hidden">
+      <main className="relative flex min-w-0 flex-1 flex-col">
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line/50 px-2 md:hidden">
           <button onClick={() => setNavOpen(true)} className="rounded-xl p-2 text-muted hover:bg-surface-3/60 hover:text-ink" aria-label="Navigation öffnen">
             <Menu className="size-4" />
           </button>
@@ -38,6 +42,7 @@ export function AppShell({ rooms, profile, email, isDemoStore, active, title, ch
         </header>
         <div className="flex-1 overflow-y-auto">{children}</div>
       </main>
+      </div>
     </div>
   );
 }

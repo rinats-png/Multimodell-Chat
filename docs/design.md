@@ -1,56 +1,59 @@
-# Design-System „Hub Center“
+# Design-System „Lounge & Glut“
 
-Futuristische Glasoberfläche vor einem fotografischen Raum (kreisrunde Halle mit Lichtringen). Die Glasflächen zeichnen den Raum weich, ein Schleier hält Text lesbar.
+Ein großer Glasrahmen schwebt vor einem fotografischen Raum: eine Lounge mit Pflanzen und warmen Lampen. Links schwebt eine runde Icon-Leiste. Im Rahmen liegen Debatten, Chat und Steuerung nebeneinander, getrennt durch feine Linien statt einzelner Kacheln. Hinter den Inhalten glimmt orange Glut.
 
-- **Hell (Standard ohne Systemvorgabe): „Frost & Kupfer“** – Sandstein, Elfenbein, Kupferakzent.
-- **Dunkel: „Basalt & Rost“** – warmer Stein, gedämpftes Rost.
+- **Hell: „Morgenlicht“** – Sand, Leinen, Terrakotta.
+- **Dunkel: „Glut“** – warmes Anthrazit, Orange.
 
-Referenzen (Mobbin): Leonardo AI (Icon-Leiste, zentraler Prompt), Emergent (Prompt auf atmosphärischem Grund), Supabase (Status-Kacheln, Knotenansicht), Artlist (schwebende Glaskarten), Neon (Kennzahlenleiste). Die Hintergrundfotos sind mit Higgscheap (Nano Banana Pro) erzeugt und liegen unter `public/bg/` (`hub-light.webp`, `hub-dark.webp`, je 2048 px).
+Referenzen:
+- „Glassy Dashboard“ (code.xr, vom Projektinhaber geschickt): Rahmen, Icon-Leiste mit orangem aktivem Kreis, Kennzahl-Pillen, oranges Glühen.
+- Mobbin: Leonardo AI (schmale Icon-Leiste), Sentry (Icon-Leiste plus Liste), hilos (Kennzahlen-Kacheln, Agentenliste, schwebender Composer), Origin (Kennzahlen mit Mono-Labels).
 
-Entwürfe aller Bereiche in beiden Themen: Design-Canvas „Multimodell Hub Center“ (Zeilen D und E).
+Die Hintergrundfotos sind mit Higgscheap (Nano Banana Pro) erzeugt und liegen unter `public/bg/` (`lounge-light.webp`, `lounge-dark.webp`, je 2048 px).
 
 ## Vorgaben des Projektinhabers
 - **Kein** Lila, Pink, Rosa, Blau oder Verwandtes; keine übersättigten Farben.
-- **Kein** reines oder tiefes Schwarz – dunkelste Fläche ist `canvas` (#2a2624).
+- **Kein** reines oder tiefes Schwarz. Die dunkelste Fläche ist `canvas-2` (#201e1c).
 
 ## Hell/Dunkel
 - Ohne Wahl folgt die App der Systemeinstellung (`prefers-color-scheme`).
-- Umschalter in der Seitenleiste (`components/ui/ThemeToggle.tsx`: Wie System · Hell · Dunkel) setzt `<html data-theme>` und merkt sich die Wahl in `localStorage` (`mm-theme`).
-- Ein kleines Inline-Skript mit CSP-Nonce (`lib/theme.ts`, eingebunden in `app/layout.tsx`) setzt `data-theme` vor dem ersten Zeichnen – kein Aufblitzen.
+- Der Umschalter (Wie System · Hell · Dunkel) sitzt in der Icon-Leiste, auf dem Handy in der Seitenleiste (`components/ui/ThemeToggle.tsx`).
+- Er setzt `<html data-theme>` und merkt sich die Wahl in `localStorage` (`mm-theme`).
+- Ein kleines Inline-Skript mit CSP-Nonce (`lib/theme.ts`) setzt das Thema vor dem ersten Zeichnen.
+
+## Aufbau
+| Baustein | Datei | Hinweis |
+|---|---|---|
+| Icon-Leiste | `components/shell/IconRail.tsx` | ab `md`; der aktive Punkt ist ein oranger Kreis mit Glühen |
+| Rahmen | Utility `frame` + `.glow-field` | umschließt Seitenleiste, Hauptbereich und Panel |
+| Kennzahl-Pillen | `StatPills` in `ChatWorkspace.tsx` | Tokens, Kosten, Antworten der Debatte |
+| Karten im Rahmen | Utility `card`; `.frame .glass` wird automatisch zur Karte | kein zweiter Blur |
+| Schubladen (Mobil) | Klasse `drawer` + `max-md:glass-strong` | behalten den echten Glas-Blur |
 
 ## Farben (Tokens in `app/globals.css`, als Tailwind-Klassen nutzbar)
 
 | Token | Hell | Dunkel | Verwendung |
 |---|---|---|---|
-| `canvas` / `canvas-2` | #e8e4dd / #efebe5 | #2a2624 / #24201e | Seitengrund unter dem Foto |
-| `surface` … `surface-3` | #f6f3ee … #e6dfd5 | #322d2a … #463f3b | feste Flächen, Hover |
-| `line` / `line-strong` | #d6cdc1 / #bfb3a4 | #4b433e / #615750 | Linien |
-| `ink` / `ink-2` / `muted` | #2c2925 / #3f3934 / #5c534a | #efe8e3 / #ddd3cb / #b6a99f | Text |
-| `accent` / `accent-strong` / `accent-deep` | #9d5532 / #6e361d / #b4673f | #d6a083 / #e8c0a8 / #a87459 | Kupfer bzw. Rost: Aktionen, Fokus, aktive Zustände |
-| `on-accent` | #fffaf4 | #2a1810 | Text auf Akzent |
-| `signal` | #4f7a3a | #b9cfa0 | Status-Punkte |
-| `danger` / `warn` | #a8382a / #6b4c0e | #e5826c / #e2c27a | Fehler, Warnungen |
-| `openai` / `anthropic` / `google` / `other` | #46632f / #66461b / #5f5a50 / #4f7a3a | #adc293 / #d8b07c / #cfc6b0 / #b9cfa0 | Agentenfarben (Salbei, Ocker, Stein, Moos) |
-| `on-agent` | #fffaf4 | #241d18 | Initialen auf Agenten-Avataren |
+| `canvas` / `canvas-2` | #ebe5dd / #f1ece5 | #252220 / #201e1c | Seitengrund unter dem Foto |
+| `surface` … `surface-3` | #f7f3ee … #e8e0d6 | #2e2b28 … #403b37 | feste Flächen, Hover |
+| `line` / `line-strong` | #d8cec2 / #c0b3a4 | #48423d / #5e5650 | Linien |
+| `ink` / `ink-2` / `muted` | #2b2723 / #3e3833 / #5b5148 | #f4efea / #ddd5cd / #b3a89e | Text |
+| `accent` / `accent-strong` / `accent-deep` | #b9581d / #873b0e / #d06f2c | #f08c4e / #f7b98f / #c9672e | Orange: Aktionen, Fokus, aktive Zustände |
+| `on-accent` | #fffaf5 | #2a1307 | Text auf Orange |
+| `signal` | #47733a | #a7cf8e | Status, „verbunden“ |
+| `danger` / `warn` | #a8382a / #6b4c0e | #ef8a72 / #e8c77d | Fehler, Warnungen |
+| `openai` / `anthropic` / `google` / `other` | #44622f / #7a4417 / #5c574d / #47733a | #abc994 / #eab98c / #d5cdbd / #a7cf8e | Agentenfarben (Salbei, Ocker, Stein, Moos) |
 
-Kontrast: Alle Texte auf Chat, Tarif, Datenschutz und Impressum wurden automatisch gegen den tatsächlich gerenderten Hintergrund (Foto + Glas) gemessen; Ziel WCAG AA (4,5:1, große Schrift 3:1).
+Glas, Rahmen, Karten und Glut haben pro Thema eigene Variablen (`--glass-*`, `--frame-*`, `--card-*`, `--glow-*`).
 
-## Glas-Bausteine (`@utility`)
-- `glass` – Standard-Panel (Seitenleiste, Kopfzeile, Karten, Nachrichten)
-- `glass-strong` – Dialoge, Composer, Schubladen
-- `glass-bar` – schmale Leisten
-- `btn-primary` – Hauptaktion (Kupfer- bzw. Rostverlauf) · `btn-ghost` – Nebenaktion
-- `field` – Eingabefelder · `text-gradient` – große Überschriften
-
-Die Glaswerte (`--glass-1`, `--glass-2`, `--glass-edge` …) sind pro Thema als CSS-Variablen definiert.
+Kontrast: Alle Texte auf Chat, Tarif und Datenschutz werden automatisch gegen den tatsächlich gerenderten Hintergrund gemessen (Foto, Rahmen, Karte). Ziel ist WCAG AA (4,5:1, große Schrift 3:1).
 
 ## Typografie
-- Geist Sans für Text und Überschriften (`font-display` = Geist, halbfett, enge Laufweite)
-- Geist Mono für Daten, Labels und Code
+- Geist Sans für Text und Überschriften (halbfett, enge Laufweite)
+- Geist Mono für Zahlen, Labels und Code
 
 ## Regeln
-- Schwebende Panels mit Abstand zum Rand (`md:m-3`, `rounded-2xl`); der Raum dahinter bleibt sichtbar.
-- Akzent nur für Interaktion und aktiven Zustand, nie als Fläche für Fließtext.
-- Neue Farben nur als Token in `app/globals.css` (beide Themen), keine festen Hex-/RGB-Werte in Komponenten.
-- Bewegung sparsam (Streaming-Cursor, Live-Punkt), `prefers-reduced-motion` wird respektiert.
+- Orange nur für Interaktion, aktiven Zustand und Glut, nie als Fläche für Fließtext.
+- Neue Farben nur als Token in `app/globals.css` (beide Themen), keine festen Hex- oder RGB-Werte in Komponenten.
+- Bewegung sparsam (Streaming-Cursor, Live-Punkt); `prefers-reduced-motion` wird respektiert.
 - Schriften und Bilder nur lokal (CSP `font-src 'self'`, `img-src 'self'`).

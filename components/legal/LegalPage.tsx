@@ -3,7 +3,7 @@ import Link from "next/link";
 export function LegalPage({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-5">
-      <Link href="/chat" className="text-[13px] text-accent-strong hover:underline">
+      <Link href="/chat" className="glass inline-flex rounded-full px-3 py-1.5 text-[13px] text-accent-strong hover:underline">
         ← Zurück zur App
       </Link>
       <h1 className="mt-4 font-display text-[28px] font-medium tracking-tight">{title}</h1>

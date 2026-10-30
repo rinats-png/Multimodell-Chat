@@ -20,6 +20,7 @@ export interface PlanDefinition {
   monthlyTokenLimit: number;
   /** Agenten-Antworten pro Minute */
   rateLimitPerMin: number;
+  /** Eigene Zugänge (OpenRouter, Gateway, Anbieter-Keys) erlaubt – derzeit in allen Tarifen. */
   byok: boolean;
   limits: PlanLimits;
   tagline: string;
@@ -38,11 +39,12 @@ export const PLANS: Record<SubscriptionTier, PlanDefinition> = {
     priceEur: 0,
     monthlyTokenLimit: 15_000,
     rateLimitPerMin: 5,
-    byok: false,
+    byok: true,
     limits: { maxActiveAgents: 3, maxAutoTurns: 3, maxSlidingWindow: 12, maxRooms: 5, runningSummary: false },
     tagline: "Zum Ausprobieren der ersten KI-Debatten.",
     features: [
-      "15.000 Tokens pro Monat",
+      "15.000 Start-Tokens pro Monat",
+      "Eigener Zugang: OpenRouter verbinden oder API-Keys",
       "5 KI-Antworten pro Minute",
       "3 KI-Agenten pro Raum, bis zu 5 Räume",
       "Router, Round-Robin & @Mentions",
@@ -54,11 +56,12 @@ export const PLANS: Record<SubscriptionTier, PlanDefinition> = {
     priceEur: 29,
     monthlyTokenLimit: 500_000,
     rateLimitPerMin: 15,
-    byok: false,
+    byok: true,
     limits: { maxActiveAgents: 6, maxAutoTurns: 10, maxSlidingWindow: 40, maxRooms: 100, runningSummary: true },
     tagline: "Für tägliche Strategie- und Architektur-Debatten.",
     features: [
-      "500.000 Tokens pro Monat",
+      "500.000 Tokens pro Monat inklusive",
+      "Eigener Zugang ohne Token-Deckel",
       "15 KI-Antworten pro Minute",
       "Bis zu 6 Agenten pro Raum, 100 Räume",
       "Agenten-Studio & Prompt-Inspector",
@@ -67,17 +70,17 @@ export const PLANS: Record<SubscriptionTier, PlanDefinition> = {
   },
   team: {
     tier: "team",
-    name: "Workspace / BYOK",
+    name: "Workspace",
     priceEur: 79,
     monthlyTokenLimit: 2_500_000,
     rateLimitPerMin: 60,
     byok: true,
     limits: { maxActiveAgents: 8, maxAutoTurns: 10, maxSlidingWindow: 40, maxRooms: 100, runningSummary: true },
-    tagline: "Eigener OpenRouter-Key, volle Kostenkontrolle.",
+    tagline: "Für Teams und Vielnutzer – volle Kostenkontrolle.",
     features: [
       "2,5 Mio. Tokens pro Monat inklusive",
       "60 KI-Antworten pro Minute",
-      "Bring Your Own OpenRouter Key – dann jedes Modell und kein Token-Deckel",
+      "Eigener Zugang: jedes Modell, kein Token-Deckel",
       "Bis zu 8 Agenten pro Raum",
       "Alles aus Pro",
     ],

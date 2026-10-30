@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "./auth-policy";
+import { PROVIDER_KEY_IDS } from "./types";
 
 export const uuidSchema = z.uuid();
 
@@ -50,6 +51,27 @@ export const openRouterKeySchema = z
   .string()
   .trim()
   .regex(/^sk-or-[A-Za-z0-9_-]{10,200}$/, "Ungültiger OpenRouter-Key (beginnt mit sk-or-)");
+
+/** Erkennungsmuster der Anbieter-Keys – nur Format, die Gültigkeit prüft der Anbieter. */
+export const PROVIDER_KEY_PATTERNS = {
+  gateway: /^[A-Za-z0-9_-]{20,300}$/,
+  openai: /^sk-[A-Za-z0-9_-]{20,300}$/,
+  anthropic: /^sk-ant-[A-Za-z0-9_-]{20,300}$/,
+  google: /^AIza[0-9A-Za-z_-]{30,60}$/,
+  xai: /^xai-[A-Za-z0-9_-]{20,300}$/,
+} as const;
+
+export const connectionPatchSchema = z
+  .object({
+    provider: z.enum(["openrouter", ...PROVIDER_KEY_IDS]),
+    key: z.string().trim().max(400).nullable(),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.key === null) return;
+    const ok = value.provider === "openrouter" ? openRouterKeySchema.safeParse(value.key).success : PROVIDER_KEY_PATTERNS[value.provider].test(value.key);
+    if (!ok) ctx.addIssue({ code: "custom", path: ["key"], message: "Dieser Key hat nicht das erwartete Format des Anbieters." });
+  });
 
 export const profilePatchSchema = z.object({ custom_openrouter_key: openRouterKeySchema.nullable() }).strict();
 

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { decryptSecret, encryptSecret } from "../crypto";
-import { DEFAULT_AGENTS } from "../default-agents";
+import { decryptProviderKeys, decryptSecret, encryptProviderKeys, encryptSecret } from "../crypto";
+import { defaultAgents } from "../default-agents";
 import type { ChatMessage, ChatRoom, RoomAgent, UserProfile } from "../types";
 import type { DataStore } from "./types";
 
@@ -14,8 +14,11 @@ function normalizeMessage(row: ChatMessage): ChatMessage {
   return { ...row, estimated_cost_usd: Number(row.estimated_cost_usd) };
 }
 
-function decryptedProfile(row: UserProfile): UserProfile {
-  return { ...row, custom_openrouter_key: decryptSecret(row.custom_openrouter_key) };
+/** Zeile aus der Datenbank: provider_keys ist dort ein verschlüsselter Text. */
+type ProfileRow = Omit<UserProfile, "provider_keys"> & { provider_keys?: string | null };
+
+function decryptedProfile(row: ProfileRow): UserProfile {
+  return { ...row, custom_openrouter_key: decryptSecret(row.custom_openrouter_key), provider_keys: decryptProviderKeys(row.provider_keys) };
 }
 
 /**
@@ -37,7 +40,7 @@ export function createSupabaseStore(user: SupabaseClient, admin: SupabaseClient,
       const { data, error } = await admin.rpc("roll_usage_period", { p_user_id: userId });
       if (error) throw new Error(`Profil laden: ${error.message}`);
       if (!data || !(data as UserProfile).id) throw new Error("Profil laden: kein Profil vorhanden");
-      return decryptedProfile(data as UserProfile);
+      return decryptedProfile(data as ProfileRow);
     },
     async setCustomKey(key) {
       return decryptedProfile(
@@ -47,7 +50,21 @@ export function createSupabaseStore(user: SupabaseClient, admin: SupabaseClient,
             .update({ custom_openrouter_key: key ? encryptSecret(key) : null })
             .eq("id", userId)
             .select("*")
-            .single<UserProfile>(),
+            .single<ProfileRow>(),
+          "API-Key speichern",
+        ),
+      );
+    },
+    async setProviderKey(id, key) {
+      const current = await store.getProfile();
+      return decryptedProfile(
+        unwrap(
+          await admin
+            .from("user_profiles")
+            .update({ provider_keys: encryptProviderKeys({ ...current.provider_keys, [id]: key ?? undefined }) })
+            .eq("id", userId)
+            .select("*")
+            .single<ProfileRow>(),
           "API-Key speichern",
         ),
       );
@@ -77,7 +94,7 @@ export function createSupabaseStore(user: SupabaseClient, admin: SupabaseClient,
           .single<ChatRoom>(),
         "Raum anlegen",
       );
-      const { error } = await user.from("room_agents").insert(DEFAULT_AGENTS.map((a) => ({ ...a, room_id: room.id })));
+      const { error } = await user.from("room_agents").insert(defaultAgents().map((a) => ({ ...a, room_id: room.id })));
       if (error) throw new Error(`Standard-Agenten anlegen: ${error.message}`);
       return room;
     },
@@ -158,14 +175,14 @@ export function createSupabaseStore(user: SupabaseClient, admin: SupabaseClient,
       };
     },
     async exportAccount() {
-      const { custom_openrouter_key, ...profile } = await store.getProfile();
+      const { custom_openrouter_key, provider_keys, ...profile } = await store.getProfile();
       const rooms = unwrap(
         await user.from("chat_rooms").select("*").order("created_at", { ascending: true }).returns<ChatRoom[]>(),
         "Räume exportieren",
       );
       return {
         exported_at: new Date().toISOString(),
-        profile: { ...profile, has_custom_key: Boolean(custom_openrouter_key) },
+        profile: { ...profile, has_custom_key: Boolean(custom_openrouter_key || Object.keys(provider_keys).length) },
         rooms: await Promise.all(
           rooms.map(async (room) => ({ ...room, agents: await store.listAgents(room.id), messages: await store.listMessages(room.id) })),
         ),

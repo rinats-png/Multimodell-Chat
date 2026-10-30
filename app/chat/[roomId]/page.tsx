@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
-import { resolveApiKey } from "@/lib/ai/provider";
-import { MODEL_CATALOG } from "@/lib/models";
+import { isLocalSubscriptionMode } from "@/lib/ai/local-cli";
+import { hasUniversalOwnAccess, resolveApiKey } from "@/lib/ai/provider";
+import { ABO_MODEL_LIST, MODEL_CATALOG } from "@/lib/models";
 import { PLANS } from "@/lib/plans";
 import { getSession, toPublicProfile } from "@/lib/session";
 import { uuidSchema } from "@/lib/validation";
@@ -22,6 +23,9 @@ export default async function ChatRoomPage({ params }: { params: Promise<{ roomI
     store.getProfile(),
   ]);
   const key = resolveApiKey(profile, { allowPlatformKey });
+  const publicProfile = toPublicProfile(profile);
+  const localMode = isLocalSubscriptionMode();
+  const catalog = [...(localMode ? ABO_MODEL_LIST : []), ...MODEL_CATALOG];
 
   return (
     <ChatWorkspace
@@ -29,14 +33,14 @@ export default async function ChatRoomPage({ params }: { params: Promise<{ roomI
       initialRoom={room}
       initialAgents={agents}
       initialMessages={messages}
-      initialProfile={toPublicProfile(profile)}
+      initialProfile={publicProfile}
       rooms={rooms}
       email={email}
       isDemoStore={isDemoStore}
-      isDemoModel={key.source === "demo"}
+      isDemoModel={key.source === "demo" && publicProfile.connections.length === 0 && !localMode}
       limits={PLANS[profile.subscription_tier].limits}
-      modelCatalog={MODEL_CATALOG.map((m) => ({ id: m.id, label: m.label }))}
-      freeModelChoice={key.source === "byok"}
+      modelCatalog={catalog.map((m) => ({ id: m.id, label: m.label }))}
+      freeModelChoice={hasUniversalOwnAccess(profile)}
     />
   );
 }

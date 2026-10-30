@@ -74,6 +74,9 @@ SELECT pg_temp.expect_denied($q$UPDATE public.chat_rooms SET running_summary = r
 SELECT pg_temp.expect_denied($q$UPDATE public.user_profiles SET custom_openrouter_key = ' '$q$, 'T-SEC-19 BYOK-Key setzen (Leerzeichen-Angriff)');
 SELECT pg_temp.expect_denied($q$UPDATE public.user_profiles SET subscription_tier = 'team', monthly_token_limit = 99999999$q$, 'T-SEC-19 Tarif selbst setzen');
 SELECT pg_temp.expect_denied($q$SELECT custom_openrouter_key FROM public.user_profiles$q$, 'T-SEC-19 BYOK-Spalte lesen');
+SELECT pg_temp.expect_denied($q$SELECT provider_keys FROM public.user_profiles$q$, 'T-SEC-19 Anbieter-Keys lesen');
+SELECT pg_temp.expect_denied($q$UPDATE public.user_profiles SET provider_keys = 'v1:iv:tag:data'$q$, 'T-SEC-19 Anbieter-Keys setzen');
+SELECT pg_temp.expect_denied($q$SELECT provider_keys FROM public.user_profiles WHERE id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'$q$, 'T-SEC-19 fremde Anbieter-Keys lesen');
 SELECT pg_temp.expect_denied($q$SELECT stripe_customer_id FROM public.user_profiles$q$, 'T-SEC-19 Stripe-ID lesen');
 SELECT pg_temp.expect_rows($q$SELECT subscription_tier, tokens_used_this_month FROM public.user_profiles$q$, 1, 'T-SEC-19 eigene Profilwerte lesbar');
 
@@ -141,12 +144,14 @@ BEGIN
   END IF;
   PERFORM public.apply_subscription_tier('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'free');
   SELECT * INTO prof FROM public.user_profiles WHERE id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
-  IF prof.monthly_token_limit <> 15000 OR prof.custom_openrouter_key IS NOT NULL OR prof.stripe_subscription_id IS NOT NULL THEN
-    RAISE EXCEPTION 'FEHLER Downgrade setzt Limits/Key nicht zurück';
+  -- 0005: Eigene Zugänge sind in jedem Tarif erlaubt – der Downgrade lässt den Key stehen.
+  IF prof.monthly_token_limit <> 15000 OR prof.custom_openrouter_key IS NULL OR prof.stripe_subscription_id IS NOT NULL THEN
+    RAISE EXCEPTION 'FEHLER Downgrade setzt Limits nicht zurück oder entfernt eigenen Key';
   END IF;
 END $$;
 -- T-SEC-19: Klartext-Key wird auch serverseitig von der DB abgelehnt
 SELECT pg_temp.expect_denied($q$UPDATE public.user_profiles SET custom_openrouter_key = 'sk-or-klartext' WHERE id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$q$, 'T-SEC-19 Klartext-Key');
+SELECT pg_temp.expect_denied($q$UPDATE public.user_profiles SET provider_keys = '{"openai":"sk-klartext"}' WHERE id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$q$, 'T-SEC-19 Klartext-Anbieter-Keys');
 ROLLBACK;
 
 -- ---------------------------------------------------------------------------

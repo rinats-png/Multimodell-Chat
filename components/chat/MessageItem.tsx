@@ -64,7 +64,7 @@ export function MessageItem({ message, agent, outsideWindow, onInspect }: Messag
           <span className={clsx("text-[13.5px] font-semibold", style.text)}>{message.sender_name}</span>
           {agent && <span className="text-[12px] text-muted">{agent.role_title}</span>}
           <span className="text-[11px] text-muted">· {formatTime(message.created_at)}</span>
-          <span className="rounded-md border border-accent/25 bg-accent/10 px-1.5 text-[9.5px] font-semibold uppercase tracking-[0.12em] text-accent-strong" title="Von KI erzeugt">
+          <span className="rounded-md bg-accent/12 px-1.5 text-[9.5px] font-semibold uppercase tracking-[0.12em] text-accent-strong" title="Von KI erzeugt">
             KI
           </span>
         </div>

@@ -1,6 +1,7 @@
 import { APICallError, streamText } from "ai";
 import { composeDemoReply, createDemoModel } from "./ai/demo-model";
-import { getLanguageModel, resolveApiKey, type ResolvedKey } from "./ai/provider";
+import { LocalCliError } from "./ai/local-cli";
+import { getLanguageModel, isOwnAccess, resolveModelAccess, ROUTER_MODEL, SUMMARY_MODEL, type ResolvedKey } from "./ai/provider";
 import { applySlidingWindow, buildAgentMessages, estimatePromptTokens, stripSpeakerPrefix } from "./context-builder";
 import { logError, securityLog } from "./log";
 import { approxTokens, estimateCostUsd, isPlatformModel, MAX_OUTPUT_TOKENS } from "./models";
@@ -54,7 +55,9 @@ export async function runOrchestration(input: OrchestrateInput): Promise<void> {
   const limits = PLANS[profile.subscription_tier].limits;
   const { maxTurns, windowSize } = effectiveRoomSettings(room, limits);
   const activeAgents = activeAgentsFor(input.agents, limits);
-  const key = resolveApiKey(profile, { allowPlatformKey: input.allowPlatformKey });
+  const accessFor = (modelId: string, p: UserProfile = profile) => resolveModelAccess(p, modelId, { allowPlatformKey: input.allowPlatformKey });
+  // Zugang des zuletzt aufgerufenen Modells – für verständliche Fehlermeldungen.
+  let key: ResolvedKey = accessFor(ROUTER_MODEL);
 
   if (activeAgents.length === 0) {
     emit({ type: "error", code: "no_agents", message: "In diesem Raum ist kein Agent aktiv." });
@@ -88,17 +91,20 @@ export async function runOrchestration(input: OrchestrateInput): Promise<void> {
     planner = async (turn) => {
       if (turn >= maxTurns) return null;
       let decision;
-      if (key.apiKey) {
-        assertQuota(profile, ROUTER_TOKEN_ESTIMATE);
+      const routerAccess = accessFor(ROUTER_MODEL);
+      const routerBooks = !isOwnAccess(routerAccess.source);
+      if (routerAccess.apiKey) {
+        key = routerAccess;
+        if (routerBooks) assertQuota(profile, ROUTER_TOKEN_ESTIMATE);
         try {
-          decision = await routeNextSpeaker(messages, activeAgents, key.apiKey, turn, signal);
+          decision = await routeNextSpeaker(messages, activeAgents, routerAccess, turn, signal);
         } catch (error) {
           // Z14-13: Abbruch während des Router-Aufrufs – Schätzung buchen, dann weiterreichen.
-          await store.incrementTokens(ROUTER_TOKEN_ESTIMATE);
+          if (routerBooks) await store.incrementTokens(ROUTER_TOKEN_ESTIMATE);
           throw error;
         }
         const routerTokens = decision.inputTokens + decision.outputTokens;
-        if (routerTokens > 0) {
+        if (routerTokens > 0 && routerBooks) {
           await store.incrementTokens(routerTokens);
           profile = { ...profile, tokens_used_this_month: profile.tokens_used_this_month + routerTokens };
         }
@@ -118,6 +124,7 @@ export async function runOrchestration(input: OrchestrateInput): Promise<void> {
       const agent = await planner(turn);
       if (!agent) break;
 
+      key = accessFor(agent.model_identifier);
       const result = await runAgentTurn({ store, room, agent, messages, profile, activeAgents, windowSize, key, emit, signal });
       profile = { ...profile, tokens_used_this_month: profile.tokens_used_this_month + result.tokens };
       if (result.message) messages = [...messages, result.message];
@@ -125,7 +132,7 @@ export async function runOrchestration(input: OrchestrateInput): Promise<void> {
     }
 
     if (!signal.aborted && limits.runningSummary) {
-      await maybeUpdateSummary({ store, room, messages, profile, key, windowSize, emit, signal });
+      await maybeUpdateSummary({ store, room, messages, profile, key: accessFor(SUMMARY_MODEL), windowSize, emit, signal });
     }
   } catch (error) {
     if (error instanceof UsageGuardError) {
@@ -141,10 +148,25 @@ export async function runOrchestration(input: OrchestrateInput): Promise<void> {
 }
 
 /** Verständliche, aber nicht technische Fehlermeldung (Regel 9.3, BF-10). */
+const SOURCE_NAMES: Partial<Record<ResolvedKey["source"], string>> = {
+  byok: "OpenRouter",
+  gateway: "Vercel AI Gateway",
+  openai: "OpenAI",
+  anthropic: "Anthropic",
+  google: "Google",
+  xai: "xAI",
+};
+
 export function userFacingModelError(error: unknown, key: ResolvedKey): string {
+  if (error instanceof LocalCliError) {
+    if (error.reason === "not_found") return `${error.message}. Installiere das Programm und melde dich dort einmal an (siehe „Tarif & Verbrauch“ → Abo-Modus).`;
+    if (error.reason === "timeout") return `${error.message}. Erhöhe bei Bedarf ABO_TIMEOUT_MS.`;
+    return `Das lokale Programm ist mit einem Fehler beendet worden: ${error.message}`;
+  }
   const status = APICallError.isInstance(error) ? error.statusCode : undefined;
-  if (key.source === "byok" && (status === 401 || status === 403)) return "Dein OpenRouter-Key wurde abgelehnt. Prüfe ihn unter „Tarif & Verbrauch“.";
-  if (key.source === "byok" && status === 402) return "Dein OpenRouter-Guthaben reicht für diese Anfrage nicht aus.";
+  const own = SOURCE_NAMES[key.source];
+  if (own && (status === 401 || status === 403)) return `Dein ${own}-Zugang wurde abgelehnt. Prüfe ihn unter „Tarif & Verbrauch“.`;
+  if (own && status === 402) return `Dein ${own}-Guthaben reicht für diese Anfrage nicht aus.`;
   if (status === 404) return "Für dieses Modell ist gerade kein Anbieter verfügbar, der deine Daten nicht speichert. Wähle im Agenten-Studio ein anderes Modell.";
   if (status === 429) return "Der KI-Anbieter ist gerade ausgelastet. Bitte versuche es in einer Minute erneut.";
   return "Das Modell konnte gerade nicht antworten. Bitte versuche es später erneut.";
@@ -177,7 +199,7 @@ async function runAgentTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
   if (key.source === "platform" && !isPlatformModel(agent.model_identifier)) {
     throw new UsageGuardError(
       "model_not_allowed",
-      `Das Modell „${agent.model_identifier}“ ist nur mit eigenem OpenRouter-Key (Workspace-Tarif) nutzbar. Wähle im Agenten-Studio ein Modell aus der Liste.`,
+      `Das Modell „${agent.model_identifier}“ ist nur mit eigenem Zugang nutzbar (OpenRouter verbinden oder API-Key). Wähle im Agenten-Studio ein Modell aus der Liste.`,
       403,
     );
   }
@@ -187,10 +209,11 @@ async function runAgentTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
     runningSummary: PLANS[profile.subscription_tier].limits.runningSummary ? room.running_summary : "",
   });
   const promptTokens = estimatePromptTokens(prompt);
-  await assertCanCallModel(profile, promptTokens + MAX_OUTPUT_TOKENS);
+  const ownAccess = isOwnAccess(key.source);
+  await assertCanCallModel(profile, promptTokens + MAX_OUTPUT_TOKENS, { ownAccess });
 
-  const model = key.apiKey
-    ? getLanguageModel(agent.model_identifier, key.apiKey)
+  const model = key.apiKey || key.source === "local"
+    ? getLanguageModel(agent.model_identifier, key)
     : createDemoModel(
         agent.model_identifier,
         composeDemoReply({
@@ -250,7 +273,8 @@ async function runAgentTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
     inputTokens = 0;
     outputTokens = 0;
   }
-  const tokens = inputTokens + outputTokens;
+  // Eigener Zugang bezahlt selbst – nur Plattform- und Demo-Verbrauch zählt gegen das Kontingent.
+  const tokens = ownAccess ? 0 : inputTokens + outputTokens;
   if (tokens > 0) await store.incrementTokens(tokens);
 
   let saved: ChatMessage | null = null;
@@ -299,11 +323,12 @@ async function maybeUpdateSummary({ store, room, messages, profile, key, windowS
   let called = false;
   try {
     const dropped = messages.slice(alreadySummarized, outsideWindow);
-    if (key.apiKey) assertQuota(profile, estimate);
-    called = Boolean(key.apiKey);
-    const result = await summarizeDroppedMessages(room.running_summary, dropped, key.apiKey, signal);
+    const books = !isOwnAccess(key.source);
+    if (key.apiKey && books) assertQuota(profile, estimate);
+    called = Boolean(key.apiKey) && books;
+    const result = await summarizeDroppedMessages(room.running_summary, dropped, key.apiKey ? key : null, signal);
     called = false;
-    const tokens = result.inputTokens + result.outputTokens;
+    const tokens = books ? result.inputTokens + result.outputTokens : 0;
     if (tokens > 0) await store.incrementTokens(tokens);
     await store.updateRoomSummary(room.id, result.summary, outsideWindow);
     emit({ type: "summary", summary: result.summary, summarizedCount: outsideWindow });

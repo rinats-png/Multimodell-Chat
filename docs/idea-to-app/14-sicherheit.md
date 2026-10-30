@@ -69,7 +69,8 @@ Zähler liegen in Upstash Redis (Produktion Pflicht, instanzübergreifend), loka
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | öffentlich (nur mit RLS) | Vercel Env | Server (Sitzung) |
 | `SUPABASE_SERVICE_ROLE_KEY` | **geheim** (umgeht RLS) | Vercel Env (Production/Preview getrennt) | Server: Ledger, Verbrauch, Profil, Konto löschen, Webhook |
 | `OPENROUTER_API_KEY` | **geheim** | Vercel Env | Server: Modellaufrufe mit Plattform-Key |
-| `BYOK_ENCRYPTION_KEY` | **geheim** (32 Byte base64) | Vercel Env | Server: Ver-/Entschlüsselung der Nutzer-Keys |
+| `BYOK_ENCRYPTION_KEY` | **geheim** (32 Byte base64) | Vercel Env | Server: Ver-/Entschlüsselung der Nutzer-Keys (OpenRouter-Spalte und `provider_keys` für Gateway/OpenAI/Anthropic/Google/xAI) |
+| `LOCAL_SUBSCRIPTION_MODE` | nicht geheim, Schalter | nur `.env.local` auf dem eigenen Rechner | Lokaler Abo-Modus (CLI-Brücke). Wirkt nur ohne `NODE_ENV=production` und ohne Supabase – nie auf einem Server setzen |
 | `UPSTASH_REDIS_REST_URL` / `_TOKEN` | **geheim** | Vercel Env | Server + Middleware: Rate-Limits, Sperren |
 | `STRIPE_SECRET_KEY` | **geheim** | Vercel Env | Server: Checkout, Portal, Abo-Abfrage, Kündigung |
 | `STRIPE_WEBHOOK_SECRET` | **geheim** | Vercel Env | Server: Signaturprüfung |
@@ -135,6 +136,10 @@ Getrennte Schlüssel für Entwicklung, Vorschau und Produktion. Bei Verdacht auf
 | T-SEC-20 | BD-03 | DB: Verbrauchs-/Tariffunktionen nur service_role |
 | T-SEC-21 | BD-04 | DB: Längengrenzen (System-Prompt, Window) |
 | T-SEC-22 | BD-02 | DB: Konto löschen entfernt alle eigenen Daten, fremde bleiben |
+| T-SEC-23 | BD-01 | Eigene Anbieter-Keys: ein anderer Nutzer sieht und nutzt sie nicht |
+| T-SEC-24 | BD-01 | Anbieter-Keys liegen im Speicher nur verschlüsselt; DB lehnt Klartext und Client-Zugriff ab |
+| T-SEC-25 | BD-01 | „Mit OpenRouter verbinden“: Rückleitung nur mit passendem state (PKCE, HttpOnly-Cookie) |
+| T-SEC-26 | BD-03 | Abo-Modelle laufen ohne Schalter nie über ein lokales Programm; Prompt nur über stdin |
 | T-SEC-23 | BD-08 | Login/Registrierung/Reset antworten einheitlich |
 | T-SEC-24 | BD-07 | 5 Fehlversuche → vorübergehende Sperre mit `Retry-After` |
 | T-SEC-25 | BD-12 | Webhook: falsche Signatur → 400; Event-ID nur einmal verarbeitet |
