@@ -58,6 +58,9 @@ export interface RoomAgent {
   sort_order: number;
 }
 
+/** Wie eine KI-Antwort auf die vorherige KI-Antwort Bezug nimmt. */
+export type Stance = "agree" | "disagree" | "extend" | "neutral";
+
 export interface ChatMessage {
   id: string;
   room_id: string;
@@ -68,10 +71,14 @@ export interface ChatMessage {
   input_tokens: number;
   output_tokens: number;
   estimated_cost_usd: number;
+  /** null: nicht bewertet (Antwort auf den Menschen oder noch offen) */
+  stance: Stance | null;
+  /** KI, auf die sich die Antwort bezieht (nur mit stance gesetzt) */
+  stance_target_id: string | null;
   created_at: string;
 }
 
-export type NewChatMessage = Omit<ChatMessage, "id" | "created_at">;
+export type NewChatMessage = Omit<ChatMessage, "id" | "created_at" | "stance" | "stance_target_id">;
 
 export type RoomSettingsPatch = Partial<
   Pick<ChatRoom, "title" | "orchestration_mode" | "sliding_window_size" | "max_auto_turns">
@@ -90,6 +97,7 @@ export type OrchestrateEvent =
   | { type: "turn-start"; tempId: string; agentId: string }
   | { type: "delta"; tempId: string; text: string }
   | { type: "turn-end"; tempId: string; message: ChatMessage | null }
+  | { type: "stance"; messageId: string; stance: Stance; targetId: string }
   | { type: "summary"; summary: string; summarizedCount: number }
   | { type: "usage"; profile: PublicProfile }
   | { type: "error"; code: string; message: string }

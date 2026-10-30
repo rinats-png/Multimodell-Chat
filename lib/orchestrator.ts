@@ -8,6 +8,7 @@ import { approxTokens, estimateCostUsd, isPlatformModel, MAX_OUTPUT_TOKENS } fro
 import { PLANS, type PlanLimits } from "./plans";
 import { findMentionedAgent, heuristicRoute, routeNextSpeaker, SUMMARY_MAX_OUTPUT_TOKENS, summarizeDroppedMessages } from "./router";
 import { toPublicProfile } from "./session";
+import { rateStance, stanceTarget } from "./stance";
 import type { DataStore } from "./store/types";
 import type { ChatMessage, ChatRoom, OrchestrateEvent, RoomAgent, UserProfile } from "./types";
 import { assertCanCallModel, assertQuota, UsageGuardError } from "./usage-guard";
@@ -30,6 +31,8 @@ export interface OrchestrateInput {
 const SUMMARY_BATCH = 4;
 /** Router-Aufruf: geschätzter Verbrauch für die Kontingentprüfung. */
 const ROUTER_TOKEN_ESTIMATE = 800;
+/** Bewertung einer Antwort: geschätzter Verbrauch für die Kontingentprüfung. */
+const STANCE_TOKEN_ESTIMATE = 700;
 
 /** Tarifgrenzen, die der Raum (über die REST-API veränderbar) nie überschreiten darf (BF-28). */
 export function effectiveRoomSettings(room: ChatRoom, limits: PlanLimits) {
@@ -127,6 +130,10 @@ export async function runOrchestration(input: OrchestrateInput): Promise<void> {
       key = accessFor(agent.model_identifier);
       const result = await runAgentTurn({ store, room, agent, messages, profile, activeAgents, windowSize, key, emit, signal });
       profile = { ...profile, tokens_used_this_month: profile.tokens_used_this_month + result.tokens };
+      if (result.message && result.completed) {
+        const rated = await rateAndStoreStance({ store, reply: result.message, previous: messages.at(-1), profile, access: accessFor(ROUTER_MODEL), emit, signal });
+        profile = { ...profile, tokens_used_this_month: profile.tokens_used_this_month + rated };
+      }
       if (result.message) messages = [...messages, result.message];
       if (!result.completed) break;
     }
@@ -299,6 +306,48 @@ async function runAgentTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
 
   if (failure && !aborted) throw failure;
   return { message: saved, tokens, completed: !aborted };
+}
+
+interface StanceInput {
+  store: DataStore;
+  reply: ChatMessage;
+  previous: ChatMessage | undefined;
+  profile: UserProfile;
+  access: ResolvedKey;
+  emit: (event: OrchestrateEvent) => void;
+  signal: AbortSignal;
+}
+
+/**
+ * Bewertet nach einer KI-Antwort, ob sie der vorherigen KI zustimmt oder widerspricht, und speichert das Ergebnis.
+ * Fehler beenden die Runde nie (die Antwort ist schon gespeichert). Gibt die gebuchten Tokens zurück.
+ */
+async function rateAndStoreStance({ store, reply, previous, profile, access, emit, signal }: StanceInput): Promise<number> {
+  if (!stanceTarget(reply, previous)) return 0;
+  const books = !isOwnAccess(access.source);
+  // Reicht das Kontingent nicht, wird ohne Modellaufruf per Schlüsselwörtern bewertet.
+  let usable: ResolvedKey | null = access.apiKey ? access : null;
+  if (usable && books) {
+    try {
+      assertQuota(profile, STANCE_TOKEN_ESTIMATE);
+    } catch {
+      usable = null;
+    }
+  }
+  try {
+    const rating = await rateStance(reply, previous, usable, signal);
+    if (!rating) return 0;
+    const tokens = books ? rating.inputTokens + rating.outputTokens : 0;
+    if (tokens > 0) await store.incrementTokens(tokens);
+    await store.setMessageStance(reply.id, rating.stance, rating.targetId);
+    reply.stance = rating.stance;
+    reply.stance_target_id = rating.targetId;
+    emit({ type: "stance", messageId: reply.id, stance: rating.stance, targetId: rating.targetId });
+    return tokens;
+  } catch (error) {
+    if (!signal.aborted) logError("stance", error, { roomId: reply.room_id });
+    return 0;
+  }
 }
 
 interface SummaryInput {

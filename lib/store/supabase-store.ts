@@ -153,6 +153,13 @@ export function createSupabaseStore(user: SupabaseClient, admin: SupabaseClient,
         unwrap(await admin.from("messages").insert(message).select("*").single<ChatMessage>(), "Nachricht speichern"),
       );
     },
+    async setMessageStance(messageId, stance, targetId) {
+      // Eigentum über RLS prüfen (user-Client sieht nur eigene Nachrichten), geschrieben wird mit dem Service-Role-Client.
+      const own = await user.from("messages").select("id").eq("id", messageId).maybeSingle();
+      if (own.error || !own.data) throw new Error("Nachricht nicht gefunden");
+      const { error } = await admin.from("messages").update({ stance, stance_target_id: targetId }).eq("id", messageId);
+      if (error) throw new Error(`Bewertung speichern: ${error.message}`);
+    },
     async clearMessages(roomId) {
       const { error } = await user.from("messages").delete().eq("room_id", roomId);
       if (error) throw new Error(`Verlauf löschen: ${error.message}`);

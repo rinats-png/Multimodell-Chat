@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ChatRoom } from "@/lib/types";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { EffectsToggle } from "@/components/ui/EffectsToggle";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface IconRailProps {
@@ -55,6 +56,8 @@ export function IconRail({ active, isDemoStore }: IconRailProps) {
       </RailItem>
       <div className="my-2 h-px w-7 bg-line/70" aria-hidden />
       <ThemeToggle vertical className="border-0 bg-transparent" />
+      <div className="my-1 h-px w-7 bg-line/70" aria-hidden />
+      <EffectsToggle vertical className="border-0 bg-transparent" />
       {!isDemoStore && (
         <>
           <div className="my-2 h-px w-7 bg-line/70" aria-hidden />

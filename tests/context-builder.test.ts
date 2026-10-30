@@ -26,6 +26,8 @@ const msg = (partial: Partial<ChatMessage>): ChatMessage => ({
   input_tokens: 0,
   output_tokens: 0,
   estimated_cost_usd: 0,
+  stance: null,
+  stance_target_id: null,
   created_at: new Date(2026, 0, 1, 0, 0, n).toISOString(),
   ...partial,
 });

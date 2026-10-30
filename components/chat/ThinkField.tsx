@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { motionAllowed } from "@/lib/effects";
 import type { ProviderKey } from "@/lib/models";
 
 export type FieldState = "idle" | "think" | "talk";
@@ -51,6 +52,12 @@ export function ThinkField({ state, provider, pulse, className }: ThinkFieldProp
   const ref = useRef<HTMLCanvasElement>(null);
   const live = useRef({ state, provider, pulse });
   live.current = { state, provider, pulse };
+  const kick = useRef<() => void>(() => {});
+
+  // Zustandswechsel: Zeichnen neu anstoßen (auch wenn es zuvor als Standbild ruhte)
+  useEffect(() => {
+    kick.current();
+  }, [state, provider]);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -93,7 +100,9 @@ export function ThinkField({ state, provider, pulse, className }: ThinkFieldProp
     function frame(now: number) {
       colors(now);
       const { state: st, provider: pv, pulse: pl } = live.current;
-      const t = (now - start) / 1000;
+      const animating = motionAllowed(document.documentElement, st !== "idle");
+      const ease = (k: number) => (animating ? k : 1);
+      const t = animating ? (now - start) / 1000 : 3;
       if (pl !== lastPulse) {
         lastPulse = pl;
         energy = 1;
@@ -102,12 +111,12 @@ export function ThinkField({ state, provider, pulse, className }: ThinkFieldProp
 
       const active = st !== "idle" && pv;
       const kind: Kind = active && pv ? KIND[pv] : "idle";
-      (Object.keys(weights) as Kind[]).forEach((k) => (weights[k] += ((k === kind ? 1 : 0) - weights[k]) * 0.06));
+      (Object.keys(weights) as Kind[]).forEach((k) => (weights[k] += ((k === kind ? 1 : 0) - weights[k]) * ease(0.06)));
       const target = active && pv ? (cache[pv] ?? rgb) : idleColor;
-      for (let i = 0; i < 3; i++) rgb[i] = (rgb[i] ?? 0) + ((target[i] ?? 0) - (rgb[i] ?? 0)) * 0.07;
+      for (let i = 0; i < 3; i++) rgb[i] = (rgb[i] ?? 0) + ((target[i] ?? 0) - (rgb[i] ?? 0)) * ease(0.07);
 
       const amplitude = st === "think" ? 0.62 + 0.2 * Math.sin(t * 7) : st === "talk" ? 0.5 + 0.5 * energy + 0.1 * Math.sin(t * 8) : 0.38;
-      amp += (amplitude - amp) * 0.12;
+      amp += (amplitude - amp) * ease(0.12);
 
       g.clearRect(0, 0, w, h);
       g.globalCompositeOperation = "lighter";
@@ -176,22 +185,31 @@ export function ThinkField({ state, provider, pulse, className }: ThinkFieldProp
         g.arc(cx + Math.cos(ma) * rx, cy + Math.sin(ma) * ry, 3.2, 0, 7);
         g.fill();
       }
-      if (!motion.matches) raf = requestAnimationFrame(frame);
+      if (animating) raf = requestAnimationFrame(frame);
     }
 
-    resize();
-    raf = requestAnimationFrame(frame);
-    const ro = new ResizeObserver(resize);
-    ro.observe(cv);
-    const onMotion = () => {
+    const restart = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(frame);
     };
-    motion.addEventListener("change", onMotion);
+    kick.current = restart;
+    resize();
+    restart();
+    const ro = new ResizeObserver(() => {
+      resize();
+      restart();
+    });
+    ro.observe(cv);
+    motion.addEventListener("change", restart);
+    // Einstellung „Bewegung“ am <html> geändert
+    const observer = new MutationObserver(restart);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-effects", "data-live", "data-theme"] });
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      motion.removeEventListener("change", onMotion);
+      observer.disconnect();
+      motion.removeEventListener("change", restart);
+      kick.current = () => {};
     };
   }, []);
 

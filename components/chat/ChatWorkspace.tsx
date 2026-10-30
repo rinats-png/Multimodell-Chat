@@ -128,6 +128,9 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         }
         break;
       }
+      case "stance":
+        setMessages((prev) => prev.map((m) => (m.id === event.messageId ? { ...m, stance: event.stance, stance_target_id: event.targetId } : m)));
+        break;
       case "summary":
         setRoom((prev) => ({ ...prev, running_summary: event.summary, summarized_message_count: event.summarizedCount }));
         break;
@@ -250,6 +253,14 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
     setRoom((prev) => ({ ...prev, running_summary: "", summarized_message_count: 0 }));
   }
 
+  // Bewegung (Hintergrund, Denkfeld) läuft standardmäßig nur, solange KIs antworten.
+  useEffect(() => {
+    document.documentElement.dataset.live = String(running);
+    return () => {
+      document.documentElement.dataset.live = "false";
+    };
+  }, [running]);
+
   // Auf sehr breiten Bildschirmen startet das Seitenpanel geöffnet; darunter nimmt die Denkfeld-Leiste den Platz.
   useEffect(() => {
     if (window.matchMedia("(min-width: 1680px)").matches) setPanel("controls");
@@ -277,6 +288,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         message={message}
         agent={agentById(message.agent_id)}
         outsideWindow={index < windowStart}
+        targetName={agentById(message.stance_target_id)?.display_name}
         onInspect={message.agent_id ? () => setInspector({ agentId: message.agent_id!, uptoIndex: index }) : undefined}
       />,
     );
@@ -564,7 +576,7 @@ function StatPills({ messages, className }: { messages: ChatMessage[]; className
             <Icon className="size-3.5" aria-hidden />
           </span>
           <span className="leading-tight">
-            <span className="block text-[10px] text-muted">{label}</span>
+            <span className="block text-[11px] text-muted">{label}</span>
             <span className="block font-mono text-[12px] font-medium text-ink">{value}</span>
           </span>
         </div>

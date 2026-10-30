@@ -11,6 +11,7 @@ import type { ChatRoom, PublicProfile } from "@/lib/types";
 import { LegalLinks } from "@/components/legal/LegalLinks";
 import { BrandMark, Wordmark } from "@/components/ui/BrandMark";
 import { Meter } from "@/components/ui/Meter";
+import { EffectsToggle } from "@/components/ui/EffectsToggle";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface SidebarProps {
@@ -109,7 +110,7 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
         </Link>
       </nav>
 
-      <div className="mt-5 flex items-center gap-2 px-5 text-[10.5px] font-medium uppercase tracking-[0.14em] text-muted">
+      <div className="mt-5 flex items-center gap-2 px-5 text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
         <MessagesSquare className="size-3.5" />
         Debatten
       </div>
@@ -170,7 +171,10 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
 
       <div className="flex items-center justify-between gap-2 px-5 pb-2">
         <LegalLinks />
-        <ThemeToggle className="md:hidden" />
+        <span className="flex gap-1.5 md:hidden">
+          <ThemeToggle />
+          <EffectsToggle />
+        </span>
       </div>
       <div className="flex items-center gap-2.5 border-t border-line/70 px-4 py-3">
         <span className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-surface-3 to-surface-2 text-[11px] font-semibold text-accent-strong ring-1 ring-accent/20">

@@ -8,7 +8,7 @@ interface AgentAvatarProps {
   className?: string;
 }
 
-const SIZES = { sm: "size-6 text-[10px]", md: "size-8 text-xs", lg: "size-10 text-sm" };
+const SIZES = { sm: "size-6 text-[11px]", md: "size-8 text-xs", lg: "size-10 text-sm" };
 
 export function AgentAvatar({ name, modelId, size = "md", className }: AgentAvatarProps) {
   const initials = name

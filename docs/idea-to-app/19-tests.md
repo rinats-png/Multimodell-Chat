@@ -169,6 +169,7 @@
 | T-SEC-32 | `misc-security.test.ts` | Demo-Bestand je Besucher, kein Zugriff ohne Cookie | BD-06 |
 | T-SEC-33 | `misc-security.test.ts` | Browser-Profil ohne Key/Stripe-IDs | BD-13 |
 | T-SEC-34 | `supabase-store.test.ts` | Service-Role nur nach Besitzprüfung, nur eigene ID | BD-03 |
+| T-SEC-35 | `stance.test.ts`, `rls.test.sql` | Bewertung (stance): fremde Nachrichten sind weder les- noch bewertbar; Clients dürfen stance nicht schreiben | F-19 |
 
 **Gegenprobe** (2026-10-29): Abbruchbuchung entfernt → T-SEC-02 rot; BYOK-Prüfung gelockert → T-SEC-04 rot (2 Tests); Origin-Prüfung entfernt → T-SEC-12 rot (2 Tests); `GRANT ALL ON messages` → T-SEC-19 rot. Nach Rücknahme alle grün.
 

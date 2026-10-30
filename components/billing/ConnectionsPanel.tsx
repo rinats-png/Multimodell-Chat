@@ -53,7 +53,7 @@ export function ConnectionsPanel({ profile, onSaved, connectState, localMode }: 
     <section className="mt-12" aria-labelledby="connections-title">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted">Deine KI-Zugänge</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">Deine KI-Zugänge</p>
           <h2 id="connections-title" className="mt-1 font-display text-[22px] font-semibold tracking-tight">
             Mit deinem eigenen Konto debattieren
           </h2>

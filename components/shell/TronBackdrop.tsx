@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { motionAllowed } from "@/lib/effects";
 
 type Rgb = [number, number, number];
 
@@ -18,6 +19,8 @@ const rgba = (c: Rgb, a: number) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
 
 interface Palette {
   on: boolean;
+  /** helle Farbwelt: schwächere Leuchtflächen, damit der Boden nicht schmutzig wirkt */
+  light: boolean;
   bg: string;
   hud: Rgb;
   trails: Rgb[];
@@ -26,13 +29,19 @@ interface Palette {
 function readPalette(): Palette {
   const cs = getComputedStyle(document.documentElement);
   const get = (name: string) => cs.getPropertyValue(name);
+  const bg = get("--color-canvas").trim() || "#0a1118";
+  const [r, g, b] = toRgb(bg);
   return {
     on: get("--backdrop-grid").trim() === "1",
-    bg: get("--color-canvas").trim() || "#0a1118",
+    light: r * 0.3 + g * 0.59 + b * 0.11 > 140,
+    bg,
     hud: toRgb(get("--color-accent")),
     trails: [get("--color-openai"), get("--color-anthropic"), get("--color-google")].map(toRgb),
   };
 }
+
+/** Zeitpunkt des Standbilds, wenn gerade nichts animiert wird. */
+const STILL_AT = 2.5;
 
 const TRAILS = [
   { c: 0, line: -3, speed: 0.11, offset: 0.1 },
@@ -44,8 +53,8 @@ const TRAILS = [
 
 /**
  * Tron-Gitterlandschaft hinter der ganzen App: leuchtender Horizont, Gitterboden, Lichtspuren in den Farben der KIs.
- * Nur aktiv, wenn die Farbwelt --backdrop-grid: 1 setzt (Eis, Zinn). Im hellen Modus bleibt das Foto.
- * Rein dekorativ (aria-hidden); bei „Bewegung reduzieren“ wird ein Standbild gezeichnet.
+ * Aktiv in allen Farbwelten, die --backdrop-grid: 1 setzen (Eis hell, Eis, Zinn).
+ * Rein dekorativ (aria-hidden). Bewegung nur nach Einstellung (lib/effects.ts): Standard nur, solange KIs antworten; sonst Standbild.
  */
 export function TronBackdrop() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -73,26 +82,27 @@ export function TronBackdrop() {
     }
 
     function draw(t: number) {
-      const { hud, bg, trails } = palette;
+      const { hud, bg, trails, light } = palette;
+      const k = light ? 0.55 : 1;
       const hz = h * 0.46;
       g.clearRect(0, 0, w, h);
 
       const sky = g.createLinearGradient(0, 0, 0, hz);
       sky.addColorStop(0, bg);
-      sky.addColorStop(1, rgba(hud, 0.2));
+      sky.addColorStop(1, rgba(hud, 0.2 * k));
       g.fillStyle = sky;
       g.fillRect(0, 0, w, hz);
 
       const floor = g.createLinearGradient(0, hz, 0, h);
-      floor.addColorStop(0, rgba(hud, 0.18));
+      floor.addColorStop(0, rgba(hud, 0.18 * k));
       floor.addColorStop(0.25, bg);
       floor.addColorStop(1, bg);
       g.fillStyle = floor;
       g.fillRect(0, hz, w, h - hz);
 
       const glow = g.createRadialGradient(w / 2, hz, 0, w / 2, hz, w * 0.55);
-      glow.addColorStop(0, rgba(hud, 0.5));
-      glow.addColorStop(0.4, rgba(hud, 0.12));
+      glow.addColorStop(0, rgba(hud, 0.5 * k));
+      glow.addColorStop(0.4, rgba(hud, 0.12 * k));
       glow.addColorStop(1, rgba(hud, 0));
       g.fillStyle = glow;
       g.fillRect(0, hz - w * 0.3, w, w * 0.6);
@@ -113,7 +123,7 @@ export function TronBackdrop() {
       for (let k = 0; k < rows; k++) {
         const z = (k + ((t * 0.35) % 1)) / rows;
         const y = hz + (h - hz) * Math.pow(z, 2.3);
-        g.strokeStyle = rgba(hud, 0.06 + 0.34 * z);
+        g.strokeStyle = rgba(hud, (0.06 + 0.34 * z) * (light ? 0.8 : 1));
         g.lineWidth = 0.6 + z * 1.1;
         g.beginPath();
         g.moveTo(0, y);
@@ -162,8 +172,9 @@ export function TronBackdrop() {
     }
 
     function frame(now: number) {
-      draw(motion.matches ? 0 : (now - start) / 1000);
-      if (!motion.matches && palette.on) raf = requestAnimationFrame(frame);
+      const animate = palette.on && motionAllowed(document.documentElement);
+      draw(animate ? (now - start) / 1000 : STILL_AT);
+      if (animate) raf = requestAnimationFrame(frame);
     }
 
     function refresh() {
@@ -182,7 +193,7 @@ export function TronBackdrop() {
     window.addEventListener("resize", onResize);
     // Farbwelt-Wechsel: data-theme am <html> bzw. Systemeinstellung
     const observer = new MutationObserver(refresh);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-effects", "data-live"] });
     const scheme = window.matchMedia("(prefers-color-scheme: dark)");
     scheme.addEventListener("change", refresh);
     motion.addEventListener("change", refresh);

@@ -165,5 +165,16 @@ SELECT pg_temp.expect_rows($q$SELECT * FROM public.messages WHERE content = 'Geh
 SELECT pg_temp.expect_rows($q$SELECT * FROM public.messages WHERE content = 'Geheim B'$q$, 1, 'T-SEC-22 fremde Daten unberührt');
 ROLLBACK;
 
+
+-- ---------------------------------------------------------------------------
+-- T-SEC-35: Bewertung (stance) – Clients dürfen sie lesen, aber nicht schreiben; fremde Nachrichten bleiben unsichtbar
+-- ---------------------------------------------------------------------------
+BEGIN;
+SET LOCAL ROLE authenticated;
+SET LOCAL request.jwt.claims = '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+SELECT pg_temp.expect_denied($q$UPDATE public.messages SET stance = 'disagree' WHERE content = 'Geheim A'$q$, 'T-SEC-35 Client darf stance nicht schreiben');
+SELECT pg_temp.expect_rows($q$SELECT stance FROM public.messages WHERE content = 'Geheim B'$q$, 0, 'T-SEC-35 fremde Nachricht samt Bewertung unsichtbar');
+ROLLBACK;
+
 \o
 \echo 'RLS-Tests: alle Erwartungen erfüllt'

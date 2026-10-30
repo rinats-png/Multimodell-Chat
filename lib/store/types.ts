@@ -7,6 +7,7 @@ import type {
   RoomAgent,
   ProviderKeyId,
   RoomSettingsPatch,
+  Stance,
   SubscriptionTier,
   UserProfile,
 } from "../types";
@@ -56,6 +57,8 @@ export interface DataStore {
 
   listMessages(roomId: string): Promise<ChatMessage[]>;
   insertMessage(message: NewChatMessage): Promise<ChatMessage>;
+  /** Hält fest, wie eine KI-Antwort auf eine andere Bezug nimmt. Nur eigene Nachrichten; sonst Fehler. */
+  setMessageStance(messageId: string, stance: Stance, targetId: string): Promise<void>;
   clearMessages(roomId: string): Promise<void>;
 
   getUsageTotals(): Promise<UsageTotals>;

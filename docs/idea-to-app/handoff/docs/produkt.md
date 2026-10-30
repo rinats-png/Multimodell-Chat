@@ -26,6 +26,7 @@ Multimodell-Chat: KI-Gruppendebatten mit ChatGPT, Claude, Gemini u. a. als SaaS 
 | F-16 | Konto endgültig löschen (inkl. Abo-Kündigung) | Muss | umgesetzt | 🔒 | BF-16 |
 | F-17 | Passwort vergessen / neues Passwort | Muss | umgesetzt | 🔒 | BF-13 |
 | F-18 | Impressum, Datenschutzerklärung, KI-Transparenzhinweis | Muss | umgesetzt | | BF-16, BF-17 |
+| F-19 | Zustimmung/Widerspruch: jede KI-Antwort auf eine andere KI wird bewertet (stimmt zu, widerspricht, baut weiter, neutral), als Chip an der Nachricht und im Konsens-Panel | Soll | umgesetzt | 🔒 | – |
 
 ## Nicht im Umfang (Parkplatz)
 - Router-Begründungen dauerhaft speichern (BF-19)

@@ -23,6 +23,8 @@ const reply = (agentIdx: number, content: string): ChatMessage => ({
   input_tokens: 0,
   output_tokens: 0,
   estimated_cost_usd: 0,
+  stance: null,
+  stance_target_id: null,
   created_at: "2026-10-30T00:00:00Z",
 });
 

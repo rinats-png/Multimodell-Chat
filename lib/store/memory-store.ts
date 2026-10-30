@@ -201,9 +201,14 @@ export function createMemoryStore(visitorId: string): DataStore {
     const lastTs = [...db().messages.values()].reduce((max, m) => (m.created_at > max ? m.created_at : max), "");
     let ts = new Date().toISOString();
     if (ts <= lastTs) ts = new Date(new Date(lastTs).getTime() + 1).toISOString();
-    const created: ChatMessage = { ...message, id: crypto.randomUUID(), created_at: ts };
+    const created: ChatMessage = { ...message, stance: null, stance_target_id: null, id: crypto.randomUUID(), created_at: ts };
     db().messages.set(created.id, created);
     return { ...created };
+  },
+  async setMessageStance(messageId, stance, targetId) {
+    const m = must(db().messages.get(messageId), "Nachricht");
+    m.stance = stance;
+    m.stance_target_id = targetId;
   },
   async clearMessages(roomId) {
     const d = db();

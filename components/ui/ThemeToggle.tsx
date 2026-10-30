@@ -19,7 +19,7 @@ function applyTheme(choice: ThemeChoice) {
 
 const OPTIONS: { value: ThemeChoice; label: string; Icon: typeof Sun }[] = [
   { value: "system", label: "Wie System", Icon: Monitor },
-  { value: "light", label: "Hell", Icon: Sun },
+  { value: "light", label: "Eis hell", Icon: Sun },
   { value: "eis", label: "Eis (dunkel)", Icon: Snowflake },
   { value: "zinn", label: "Zinn (dunkel)", Icon: Layers },
 ];
