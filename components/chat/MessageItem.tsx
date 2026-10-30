@@ -54,7 +54,7 @@ export function MessageItem({ message, agent, outsideWindow, onInspect }: Messag
   const style = agentStyle(modelId);
   return (
     <article
-      className={clsx("group glass flex gap-3 rounded-2xl p-4", outsideWindow && "opacity-50")}
+      className={clsx("scan-in group glass flex gap-3 rounded-2xl p-4", outsideWindow && "opacity-50")}
       data-ai-generated="true"
       aria-label={`KI-Antwort von ${message.sender_name}`}
     >

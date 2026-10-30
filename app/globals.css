@@ -418,6 +418,17 @@ body::after {
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
 }
 
+@property --trail-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes orbit {
+  to {
+    --trail-angle: 360deg;
+  }
+}
+
 @keyframes trail {
   from {
     background-position: 0% 0%;
@@ -621,4 +632,125 @@ body::after {
   border-right: 2px solid var(--tron);
   border-bottom: 2px solid var(--tron);
   border-bottom-right-radius: inherit;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Stufe 3: abgeschrägte Ecken, kreisende Lichtspur, Einblend-Effekt
+ * ------------------------------------------------------------------------- */
+
+/* Rahmen und Karten: oben links und unten rechts gekappt (Tron-Formsprache) */
+.frame {
+  --cut: 20px;
+  border-radius: 0 !important;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+}
+.frame .glass:not(.drawer),
+.frame .card,
+.btn-primary,
+.tron-edge {
+  --cut: 12px;
+  border-radius: 0 !important;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+}
+.btn-primary {
+  --cut: 9px;
+}
+.frame .card.rounded-full,
+.frame [class*="rounded-full"].card {
+  --cut: 10px;
+}
+
+/* Die Kappung schneidet die Kante ab – die Diagonale wird als Leuchtlinie nachgezogen */
+.frame .glass:not(.drawer):not(.absolute):not(.fixed)::before,
+.frame .glass:not(.drawer):not(.absolute):not(.fixed)::after {
+  width: var(--cut);
+  height: var(--cut);
+  border: 0 !important;
+  border-radius: 0 !important;
+  filter: drop-shadow(0 0 4px var(--tron-glow));
+}
+.frame .glass:not(.drawer):not(.absolute):not(.fixed)::before {
+  top: 0;
+  left: 0;
+  background: linear-gradient(135deg, transparent calc(50% - 0.5px), var(--tron) calc(50% - 0.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px));
+}
+.frame .glass:not(.drawer):not(.absolute):not(.fixed)::after {
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent calc(50% - 1.5px), var(--tron) calc(50% - 1.5px) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+}
+/* Diagonalen des großen Rahmens */
+.frame > .glow-field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(135deg, transparent calc(50% - 0.5px), var(--tron) calc(50% - 0.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px)) top left / 20px 20px no-repeat,
+    linear-gradient(135deg, transparent calc(50% - 1.5px), var(--tron) calc(50% - 1.5px) calc(50% + 0.5px), transparent calc(50% + 0.5px)) bottom right / 20px 20px no-repeat;
+  filter: drop-shadow(0 0 5px var(--tron-glow));
+}
+
+/* Während KIs antworten: helle Lichtspur kreist um den Rahmen, der Composer pulsiert */
+.frame[data-live="true"]::before {
+  padding: 2px;
+  background: conic-gradient(from var(--trail-angle), transparent 0 62%, var(--tron) 86%, rgb(255 238 220) 99%, transparent 100%);
+  background-size: auto;
+  animation: orbit 2.4s linear infinite;
+  filter: drop-shadow(0 0 6px var(--tron-glow));
+}
+.frame[data-live="true"] .tron-edge {
+  animation: pulse-edge 1.4s ease-in-out infinite alternate;
+}
+@keyframes pulse-edge {
+  from {
+    box-shadow: inset 0 1px 0 var(--glass-hl), 0 0 0 1px var(--tron-soft), 0 0 22px -10px var(--tron-glow);
+  }
+  to {
+    box-shadow: inset 0 1px 0 var(--glass-hl), 0 0 0 1px var(--tron), 0 0 40px -4px var(--tron-glow);
+  }
+}
+
+/* Neue Nachrichten werden von oben nach unten eingelesen */
+@keyframes scan-in {
+  from {
+    clip-path: inset(0 0 100% 0 round 0);
+    opacity: 0.2;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.scan-in {
+  animation: scan-in 0.45s ease-out both;
+}
+.scan-in.glass {
+  /* clip-path der Karte (Kappung) wird in der Animation kurz überschrieben, danach wieder gesetzt */
+  animation-name: scan-in-card;
+}
+@keyframes scan-in-card {
+  from {
+    opacity: 0.2;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* HUD-Statuszeile in der Kopfzeile */
+.hud-live {
+  color: var(--color-signal);
+}
+.hud-live::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  background: var(--color-signal);
+  box-shadow: 0 0 8px var(--color-signal);
+  vertical-align: 1px;
 }

@@ -285,7 +285,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
   return (
     <div className="flex h-dvh gap-3 overflow-hidden md:p-3">
       <IconRail active="chat" isDemoStore={props.isDemoStore} />
-      <div className="frame relative flex min-w-0 flex-1 overflow-hidden md:rounded-[10px]">
+      <div className="frame relative flex min-w-0 flex-1 overflow-hidden" data-live={running}>
       <div className="glow-field" aria-hidden />
       <Sidebar
         rooms={props.rooms.map((r) => (r.id === room.id ? { ...r, title: room.title } : r))}
@@ -315,13 +315,18 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
               className="field min-w-0 px-2.5 py-1 text-[14px] font-medium"
             />
           ) : (
-            <button
-              onClick={() => setEditingTitle(true)}
-              className="min-w-0 truncate rounded-lg px-2 py-1 font-display text-[14px] font-bold tracking-wide hover:bg-surface-3/50"
-              title="Titel bearbeiten"
-            >
-              {room.title}
-            </button>
+            <div className="min-w-0">
+              <button
+                onClick={() => setEditingTitle(true)}
+                className="block max-w-full truncate rounded-lg px-2 py-0.5 font-display text-[14px] font-bold tracking-wide hover:bg-surface-3/50"
+                title="Titel bearbeiten"
+              >
+                {room.title}
+              </button>
+              <div className={clsx("hud truncate px-2", running ? "hud-live" : "text-muted")} aria-live="polite">
+                {running ? "Übertragung läuft" : "Bereit"} // {activeAgents.length} Agenten // {room.orchestration_mode === "router" ? "Moderator" : room.orchestration_mode === "round-robin" ? "Reihum" : "Manuell"}
+              </div>
+            </div>
           )}
 
           <div className="hidden space-x-1 md:flex">

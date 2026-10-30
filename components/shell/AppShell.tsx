@@ -22,7 +22,7 @@ export function AppShell({ rooms, profile, email, isDemoStore, active, title, ch
   return (
     <div className="flex h-dvh gap-3 overflow-hidden md:p-3">
       <IconRail active={active} isDemoStore={isDemoStore} />
-      <div className="frame relative flex min-w-0 flex-1 overflow-hidden md:rounded-[10px]">
+      <div className="frame relative flex min-w-0 flex-1 overflow-hidden">
       <div className="glow-field" aria-hidden />
       <Sidebar
         rooms={rooms}
