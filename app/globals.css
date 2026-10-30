@@ -2,7 +2,7 @@
 
 /*
  * Designkonzept „Lounge & Glut“ – ein großer Glasrahmen schwebt vor einer futuristischen Szene
- * (Tron × Blade Runner 2049, Lichtbahnen in Bernstein; public/bg/neon-dark.webp, dust-light.webp). Orange Glut hinter den Karten,
+ * (Tron × Blade Runner 2049, Lichtbahnen in Bernstein; public/bg/tron-dark.webp, dust-light.webp). Orange Glut hinter den Karten,
  * schwebende Icon-Leiste links, Kennzahl-Pillen oben. Referenz: „Glassy Dashboard“ (code.xr) + Mobbin.
  * Hell: „Morgenlicht“ – Sand, Leinen, Terrakotta. Dunkel: „Glut“ – warmes Anthrazit, Orange.
  * Vorgaben: kein Lila/Pink/Rosa/Blau, keine übersättigten Farben, kein reines Schwarz.
@@ -11,7 +11,8 @@
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Tron-HUD: Orbitron (lokal über @fontsource) für Überschriften, Buttons und Marken */
+  --font-display: "Orbitron", var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 
   /* Hell – Morgenlicht */
   --color-canvas: #ebe5dd;
@@ -41,7 +42,7 @@
 
 :root {
   color-scheme: light;
-  --bg-image: url("/bg/dust-light.webp");
+  --bg-image: url("/bg/tron-light.webp");
   --bg-shade:
     linear-gradient(90deg, rgb(235 229 221 / 0.55), rgb(235 229 221 / 0.25) 55%, rgb(235 229 221 / 0.3)),
     linear-gradient(180deg, rgb(235 229 221 / 0.3), transparent 30%, transparent 65%, rgb(235 229 221 / 0.45));
@@ -58,6 +59,10 @@
   --card-1: rgb(255 255 255 / 0.62);
   --card-2: rgb(255 252 248 / 0.38);
   --card-edge: rgb(80 58 40 / 0.11);
+  --tron: rgb(222 104 28 / 0.6);
+  --tron-soft: rgb(222 104 28 / 0.22);
+  --tron-glow: rgb(255 138 61 / 0.4);
+  --grid-tron: rgb(200 90 20 / 0.07);
   --glow-1: rgb(214 112 45 / 0.2);
   --glow-2: rgb(224 150 80 / 0.16);
   --bar-bg: rgb(255 255 255 / 0.55);
@@ -99,7 +104,7 @@
     --color-google: #d5cdbd;
     --color-other: #a7cf8e;
     --color-on-agent: #221b16;
-    --bg-image: url("/bg/neon-dark.webp");
+    --bg-image: url("/bg/tron-dark.webp");
     --bg-shade:
       linear-gradient(90deg, rgb(37 34 32 / 0.5), rgb(37 34 32 / 0.25) 55%, rgb(37 34 32 / 0.35)),
       linear-gradient(180deg, rgb(37 34 32 / 0.35), transparent 30%, transparent 65%, rgb(37 34 32 / 0.55));
@@ -111,12 +116,20 @@
     --glass-edge: rgb(255 238 224 / 0.11);
     --glass-hl: rgb(255 255 255 / 0.07);
     --glass-drop: rgb(12 10 9 / 0.62);
-    --frame-1: rgb(48 44 41 / 0.42);
-    --frame-2: rgb(28 26 25 / 0.56);
+    --frame-1: rgb(34 31 29 / 0.6);
+    --frame-2: rgb(24 22 21 / 0.7);
     --card-1: rgb(50 46 43 / 0.62);
     --card-2: rgb(32 30 28 / 0.55);
     --card-edge: rgb(255 238 224 / 0.09);
-    --glow-1: rgb(240 130 60 / 0.26);
+    --tron: rgb(255 128 52 / 0.75);
+    --tron-soft: rgb(255 122 47 / 0.24);
+    --tron-glow: rgb(255 110 30 / 0.5);
+    --grid-tron: rgb(255 122 47 / 0.075);
+    --tron: rgb(255 128 52 / 0.75);
+  --tron-soft: rgb(255 122 47 / 0.24);
+  --tron-glow: rgb(255 110 30 / 0.5);
+  --grid-tron: rgb(255 122 47 / 0.075);
+  --glow-1: rgb(240 130 60 / 0.26);
     --glow-2: rgb(232 150 80 / 0.16);
     --bar-bg: rgb(37 34 32 / 0.55);
     --field-bg: rgb(30 28 27 / 0.55);
@@ -155,7 +168,7 @@
   --color-google: #d5cdbd;
   --color-other: #a7cf8e;
   --color-on-agent: #221b16;
-  --bg-image: url("/bg/neon-dark.webp");
+  --bg-image: url("/bg/tron-dark.webp");
   --bg-shade:
     linear-gradient(90deg, rgb(37 34 32 / 0.5), rgb(37 34 32 / 0.25) 55%, rgb(37 34 32 / 0.35)),
     linear-gradient(180deg, rgb(37 34 32 / 0.35), transparent 30%, transparent 65%, rgb(37 34 32 / 0.55));
@@ -167,11 +180,15 @@
   --glass-edge: rgb(255 238 224 / 0.11);
   --glass-hl: rgb(255 255 255 / 0.07);
   --glass-drop: rgb(12 10 9 / 0.62);
-  --frame-1: rgb(48 44 41 / 0.42);
-  --frame-2: rgb(28 26 25 / 0.56);
+  --frame-1: rgb(34 31 29 / 0.6);
+  --frame-2: rgb(24 22 21 / 0.7);
   --card-1: rgb(50 46 43 / 0.62);
   --card-2: rgb(32 30 28 / 0.55);
   --card-edge: rgb(255 238 224 / 0.09);
+  --tron: rgb(255 128 52 / 0.75);
+  --tron-soft: rgb(255 122 47 / 0.24);
+  --tron-glow: rgb(255 110 30 / 0.5);
+  --grid-tron: rgb(255 122 47 / 0.075);
   --glow-1: rgb(240 130 60 / 0.26);
   --glow-2: rgb(232 150 80 / 0.16);
   --bar-bg: rgb(37 34 32 / 0.55);
@@ -263,9 +280,10 @@ body::after {
 /* Großer Rahmen um die App (Referenz: Glassy Dashboard) */
 @utility frame {
   background: linear-gradient(150deg, var(--frame-1), var(--frame-2));
-  border: 1px solid var(--glass-edge);
+  border: 1px solid var(--tron-soft);
   box-shadow:
     inset 0 1px 0 var(--glass-hl),
+    0 0 42px -14px var(--tron-glow),
     0 40px 120px -40px var(--glass-drop);
   backdrop-filter: blur(16px) saturate(130%);
   -webkit-backdrop-filter: blur(16px) saturate(130%);
@@ -274,8 +292,8 @@ body::after {
 /* Karte innerhalb des Rahmens: heller Hauch statt zweiter Unschärfe */
 @utility card {
   background: linear-gradient(160deg, var(--card-1), var(--card-2));
-  border: 1px solid var(--card-edge);
-  box-shadow: inset 0 1px 0 var(--glass-hl);
+  border: 1px solid var(--tron-soft);
+  box-shadow: inset 0 1px 0 var(--tron-soft);
 }
 
 @utility glass-bar {
@@ -293,12 +311,15 @@ body::after {
   border-radius: 0.75rem;
   font-weight: 600;
   color: var(--color-on-accent);
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   background: linear-gradient(180deg, var(--btn-from), var(--btn-to));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 8px 24px -10px var(--btn-glow);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 0 0 1px var(--tron), 0 0 22px -4px var(--tron-glow);
   transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   &:hover {
     filter: brightness(1.05);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 10px 28px -8px var(--btn-glow);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 0 0 1px var(--tron), 0 0 30px -2px var(--tron-glow);
   }
   &:active {
     transform: translateY(1px);
@@ -367,6 +388,60 @@ body::after {
   z-index: -1;
   pointer-events: none;
   background: radial-gradient(60% 70% at 85% 0%, var(--glow-1), transparent 70%);
+}
+
+/* ---------------------------------------------------------------------------
+ * Tron-Schicht: Lichtkanten, Lichtgitter, HUD – auf dem bestehenden Aufbau
+ * ------------------------------------------------------------------------- */
+
+/* Lichtkante am Rahmen: hell an zwei Ecken, dazwischen ausgeblendet (wie eine Leuchtbahn) */
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: linear-gradient(115deg, var(--tron) 0%, transparent 24%, transparent 68%, var(--tron) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+/* Lichtgitter im Rahmen, nach unten stärker */
+.glow-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-tron) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-tron) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, transparent 0%, black 75%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, black 75%);
+}
+
+/* Leuchtende Kante für schwebende Elemente außerhalb des Rahmens (Icon-Leiste, Composer) */
+.tron-edge {
+  border-color: var(--tron-soft) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-hl),
+    0 0 0 1px var(--tron-soft),
+    0 0 30px -10px var(--tron-glow) !important;
+}
+
+/* Leuchtring für Agenten-Avatare */
+.tron-ring {
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.18), 0 0 14px -3px var(--tron-glow);
+}
+
+/* HUD-Zeile: Mono, gesperrt, Großbuchstaben */
+.hud {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
 }
 
 @utility text-gradient {
@@ -494,8 +569,37 @@ body::after {
 /* Glaskarten innerhalb des Rahmens: kein zweiter Blur, sondern ein heller Hauch (Schubladen ausgenommen) */
 .frame .glass:not(.drawer) {
   background: linear-gradient(160deg, var(--card-1), var(--card-2));
-  border-color: var(--card-edge);
-  box-shadow: inset 0 1px 0 var(--glass-hl);
+  border-color: var(--tron-soft);
+  box-shadow: inset 0 1px 0 var(--tron-soft), 0 0 24px -16px var(--tron-glow);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+
+/* Tron-HUD-Ecken an Karten im Rahmen (oben links, unten rechts) */
+.frame .glass:not(.drawer):not(.absolute):not(.fixed) {
+  position: relative;
+}
+.frame .glass:not(.drawer):not(.absolute):not(.fixed)::before,
+.frame .glass:not(.drawer):not(.absolute):not(.fixed)::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  border-color: var(--tron);
+  filter: drop-shadow(0 0 4px var(--tron-glow));
+}
+.frame .glass:not(.drawer):not(.absolute):not(.fixed)::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--tron);
+  border-left: 2px solid var(--tron);
+  border-top-left-radius: inherit;
+}
+.frame .glass:not(.drawer):not(.absolute):not(.fixed)::after {
+  right: -1px;
+  bottom: -1px;
+  border-right: 2px solid var(--tron);
+  border-bottom: 2px solid var(--tron);
+  border-bottom-right-radius: inherit;
 }

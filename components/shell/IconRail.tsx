@@ -40,7 +40,7 @@ export function IconRail({ active, isDemoStore }: IconRailProps) {
   }
 
   return (
-    <nav aria-label="Hauptbereiche" className="glass hidden w-[64px] shrink-0 flex-col items-center gap-2 self-center rounded-full py-3 md:flex">
+    <nav aria-label="Hauptbereiche" className="glass tron-edge hidden w-[64px] shrink-0 flex-col items-center gap-2 self-center rounded-full py-3 md:flex">
       <Link href="/chat" aria-label="Multimodell – Start" className="mb-2">
         <BrandMark className="size-10 rounded-full" />
       </Link>

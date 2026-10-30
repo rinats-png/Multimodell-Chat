@@ -20,7 +20,7 @@ export function AgentAvatar({ name, modelId, size = "md", className }: AgentAvat
   return (
     <span
       className={clsx(
-        "inline-flex shrink-0 select-none items-center justify-center rounded-xl font-semibold",
+        "tron-ring inline-flex shrink-0 select-none items-center justify-center rounded-xl font-display font-bold",
         agentStyle(modelId).avatar,
         SIZES[size],
         className,

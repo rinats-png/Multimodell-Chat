@@ -317,7 +317,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
           ) : (
             <button
               onClick={() => setEditingTitle(true)}
-              className="min-w-0 truncate rounded-lg px-2 py-1 text-[14px] font-semibold tracking-tight hover:bg-surface-3/50"
+              className="min-w-0 truncate rounded-lg px-2 py-1 font-display text-[14px] font-bold tracking-wide hover:bg-surface-3/50"
               title="Titel bearbeiten"
             >
               {room.title}

@@ -3,6 +3,8 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import { headers } from "next/headers";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import "@fontsource/orbitron/500.css";
+import "@fontsource/orbitron/700.css";
 import "./globals.css";
 
 // Alle Seiten dynamisch rendern: Die CSP nutzt eine Nonce pro Anfrage (siehe middleware.ts).

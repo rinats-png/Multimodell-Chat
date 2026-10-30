@@ -1,15 +1,17 @@
-# Design-System „Lounge & Glut“ (Hintergründe: Tron × Blade Runner 2049)
+# Design-System „Lounge & Glut“ mit Tron-Schicht
 
-Ein großer Glasrahmen schwebt vor einer futuristischen Szene im Stil von Tron und Blade Runner 2049: Lichtbahnen in Bernstein statt Cyan, oranger Staubdunst, eine leise verfallene Stadt. Post-apokalyptisch nur angedeutet. Links schwebt eine runde Icon-Leiste. Im Rahmen liegen Debatten, Chat und Steuerung nebeneinander, getrennt durch feine Linien statt einzelner Kacheln. Hinter den Inhalten glimmt orange Glut.
+Ein großer Glasrahmen schwebt vor einer Tron-Szene. Darüber liegt eine Tron-Schicht aus Lichtkanten in Orange (statt Cyan), einem Lichtgitter im Rahmen, leuchtenden HUD-Eckklammern an Karten, Orbitron als HUD-Schrift und leuchtenden Avatar-Ringen. Der Aufbau bleibt unverändert. Links schwebt eine runde Icon-Leiste. Im Rahmen liegen Debatten, Chat und Steuerung nebeneinander, getrennt durch feine Linien statt einzelner Kacheln. Hinter den Inhalten glimmt orange Glut.
 
-- **Hell: „Morgenlicht“** – Sand, Leinen, Terrakotta. Foto: blasse Monolithen im Aprikose-Staub (`public/bg/dust-light.webp`).
-- **Dunkel: „Glut“** – warmes Anthrazit, Orange. Foto: Lounge hoch in einem Turm, geschwungene Bernstein-Lichtbahnen, Pflanzen, verfallene Stadt im Dunst (`public/bg/neon-dark.webp`).
+- **Hell: „Morgenlicht“** – Sand, Leinen, Terrakotta. Hintergrund: weißer Tron-Digitalraum mit orangen Lichtlinien (`public/bg/tron-light.webp`).
+- **Dunkel: „Glut“** – warmes Anthrazit, Orange. Hintergrund: Tron-Gitterlandschaft mit Leuchtspuren (`public/bg/tron-dark.webp`).
 
 Referenzen:
 - „Glassy Dashboard“ (code.xr, vom Projektinhaber geschickt): Rahmen, Icon-Leiste mit orangem aktivem Kreis, Kennzahl-Pillen, oranges Glühen.
 - Mobbin: Leonardo AI (schmale Icon-Leiste), Sentry (Icon-Leiste plus Liste), hilos (Kennzahlen-Kacheln, Agentenliste, schwebender Composer), Origin (Kennzahlen mit Mono-Labels).
 
-Die Hintergrundbilder sind mit Higgscheap (Nano Banana Pro) gerendert, je 2048 px. Tron-Lichtlinien bewusst in Bernstein, weil Blau ausgeschlossen ist. Alternativen zum Tauschen liegen unter `docs/hintergruende/`: Kommandozentrale, Wüste mit Lichtgitter, Atrium. Zum Wechseln die Datei nach `public/bg/` kopieren und `--bg-image` in `app/globals.css` anpassen. Der Rahmen ist bewusst durchscheinend (`--frame-*`, Blur 16 px), die Karten im dunklen Thema dunkel getönt (`--card-*`), damit Text auch vor hellen Lichtbahnen lesbar bleibt.
+Die Hintergrundbilder sind mit Higgscheap (Nano Banana Pro) gerendert, je 2048 px. Tron-Lichtlinien bewusst in Orange, weil Blau ausgeschlossen ist (wie Clu in *Tron: Legacy*).
+
+**Tron-Schicht** (`app/globals.css`, Abschnitt „Tron-Schicht“): `--tron`, `--tron-soft`, `--tron-glow`, `--grid-tron` je Thema; `.frame::before` (Lichtkante), `.glow-field::after` (Lichtgitter), HUD-Ecken an `.frame .glass`, `.tron-edge` (Icon-Leiste, Composer), `.tron-ring` (Avatare), `.hud` (Mono-Statuszeile). `btn-primary` in Orbitron, Großbuchstaben, mit Leuchtkante. Schrift lokal über `@fontsource/orbitron`. Alternativen zum Tauschen liegen unter `docs/hintergruende/`: Kommandozentrale, Wüste mit Lichtgitter, Atrium. Zum Wechseln die Datei nach `public/bg/` kopieren und `--bg-image` in `app/globals.css` anpassen. Der Rahmen ist bewusst durchscheinend (`--frame-*`, Blur 16 px), die Karten im dunklen Thema dunkel getönt (`--card-*`), damit Text auch vor hellen Lichtbahnen lesbar bleibt.
 
 ## Vorgaben des Projektinhabers
 - **Kein** Lila, Pink, Rosa, Blau oder Verwandtes; keine übersättigten Farben.

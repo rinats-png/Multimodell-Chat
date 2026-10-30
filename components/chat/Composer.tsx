@@ -148,7 +148,7 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: 
 
         <div
           className={clsx(
-            "glass-strong rounded-2xl transition-shadow focus-within:shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-accent)_45%,transparent),0_18px_50px_-18px_color-mix(in_srgb,var(--color-accent)_55%,transparent)]",
+            "glass-strong tron-edge rounded-2xl transition-shadow focus-within:shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-accent)_45%,transparent),0_18px_50px_-18px_color-mix(in_srgb,var(--color-accent)_55%,transparent)]",
             firewall.flagged && "!border-danger/60",
           )}
         >

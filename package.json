@@ -17,6 +17,7 @@
     "@ai-sdk/openai": "^2.0.138",
     "@ai-sdk/provider": "^2.0.5",
     "@ai-sdk/xai": "^2.0.100",
+    "@fontsource/orbitron": "^5.3.0",
     "@openrouter/ai-sdk-provider": "^1.5.4",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",

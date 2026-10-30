@@ -75,7 +75,7 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
         <BrandMark className="size-9 md:hidden" />
         <div className="leading-tight">
           <Wordmark className="text-[15px] font-semibold" />
-          <div className="mt-0.5 text-[11px] text-muted">KI-Gruppendebatten</div>
+          <div className="hud mt-1 flex items-center gap-1.5 text-muted"><span className="live-dot size-1.5 rounded-full bg-signal" aria-hidden />Debatten // online</div>
         </div>
         {onMobileClose && (
           <button onClick={onMobileClose} className="ml-auto rounded-lg p-1.5 text-muted hover:bg-surface-3/60 hover:text-ink md:hidden" aria-label="Navigation schließen">
