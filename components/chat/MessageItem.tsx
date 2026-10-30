@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { ArrowDownRight, ArrowUpRight, ScanSearch } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Brain, ScanSearch } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { agentStyle } from "@/lib/agent-style";
@@ -41,7 +41,7 @@ export function MessageItem({ message, agent, outsideWindow, onInspect }: Messag
     return (
       <div className={clsx("flex justify-end", outsideWindow && "opacity-55")}>
         <div className="max-w-[80%]">
-          <div className="rounded-2xl rounded-br-md bg-surface-3 px-4 py-2.5 text-[14.5px] leading-relaxed text-ink ring-1 ring-line-strong">
+          <div className="rounded-2xl rounded-br-md border border-accent/25 bg-gradient-to-br from-accent/[0.16] to-accent/[0.05] px-4 py-2.5 text-[14.5px] leading-relaxed text-ink shadow-[0_8px_24px_-14px_rgb(79_216_255/0.6)] backdrop-blur">
             <p className="whitespace-pre-wrap">{message.content}</p>
           </div>
           <div className="mt-1 text-right text-[11px] text-muted">{formatTime(message.created_at)}</div>
@@ -54,7 +54,7 @@ export function MessageItem({ message, agent, outsideWindow, onInspect }: Messag
   const style = agentStyle(modelId);
   return (
     <article
-      className={clsx("group flex gap-3", outsideWindow && "opacity-55")}
+      className={clsx("group glass flex gap-3 rounded-2xl p-4", outsideWindow && "opacity-50")}
       data-ai-generated="true"
       aria-label={`KI-Antwort von ${message.sender_name}`}
     >
@@ -64,7 +64,7 @@ export function MessageItem({ message, agent, outsideWindow, onInspect }: Messag
           <span className={clsx("text-[13.5px] font-semibold", style.text)}>{message.sender_name}</span>
           {agent && <span className="text-[12px] text-muted">{agent.role_title}</span>}
           <span className="text-[11px] text-muted">· {formatTime(message.created_at)}</span>
-          <span className="rounded border border-line px-1 text-[10px] uppercase tracking-wide text-muted" title="Von KI erzeugt">
+          <span className="rounded-md border border-accent/25 bg-accent/10 px-1.5 text-[9.5px] font-semibold uppercase tracking-[0.12em] text-accent-strong" title="Von KI erzeugt">
             KI
           </span>
         </div>
@@ -72,15 +72,15 @@ export function MessageItem({ message, agent, outsideWindow, onInspect }: Messag
           <Markdown>{message.content}</Markdown>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-muted">
-          <span className="inline-flex items-center gap-0.5 rounded-md border border-line px-1.5 py-0.5" title="Input-Tokens">
+          <span className="inline-flex items-center gap-0.5 rounded-md border border-line/80 bg-canvas/40 px-1.5 py-0.5" title="Input-Tokens">
             <ArrowUpRight className="size-3" />
             {formatNumber(message.input_tokens)}
           </span>
-          <span className="inline-flex items-center gap-0.5 rounded-md border border-line px-1.5 py-0.5" title="Output-Tokens">
+          <span className="inline-flex items-center gap-0.5 rounded-md border border-line/80 bg-canvas/40 px-1.5 py-0.5" title="Output-Tokens">
             <ArrowDownRight className="size-3" />
             {formatNumber(message.output_tokens)}
           </span>
-          <span className="rounded-md border border-line px-1.5 py-0.5" title="Geschätzte Kosten">
+          <span className="rounded-md border border-line/80 bg-canvas/40 px-1.5 py-0.5" title="Geschätzte Kosten">
             {formatUsd(message.estimated_cost_usd)}
           </span>
           {agent && <span className="hidden px-1 sm:inline">{agent.model_identifier}</span>}
@@ -102,7 +102,7 @@ export function MessageItem({ message, agent, outsideWindow, onInspect }: Messag
 export function StreamingMessage({ agent, text }: { agent: RoomAgent; text: string }) {
   const style = agentStyle(agent.model_identifier);
   return (
-    <div className="flex gap-3">
+    <div className="glass flex gap-3 rounded-2xl p-4 ring-1 ring-accent/20">
       <AgentAvatar name={agent.display_name} modelId={agent.model_identifier} className="mt-0.5" />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
@@ -116,7 +116,7 @@ export function StreamingMessage({ agent, text }: { agent: RoomAgent; text: stri
             </div>
           ) : (
             <div className="flex items-center gap-1.5 py-2 text-[13px] text-muted">
-              <span className={clsx("size-1.5 animate-pulse rounded-full", style.dot)} />
+              <span className={clsx("live-dot size-2 rounded-full", style.dot)} />
               {agent.display_name} denkt nach…
             </div>
           )}
@@ -130,8 +130,8 @@ export function RouterNote({ agent, reason }: { agent: RoomAgent | undefined; re
   return (
     <div className="flex items-center gap-3 py-0.5 text-[12px] text-muted">
       <div className="h-px flex-1 bg-line" />
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1">
-        <span aria-hidden>🧠</span>
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-canvas-2/70 px-3 py-1 backdrop-blur">
+        <Brain className="size-3.5 text-accent" aria-hidden />
         Moderator{agent ? <> → <span className={agentStyle(agent.model_identifier).text}>{agent.display_name}</span></> : null}
         <span className="text-muted/80">· {reason}</span>
       </span>
@@ -142,10 +142,10 @@ export function RouterNote({ agent, reason }: { agent: RoomAgent | undefined; re
 
 export function WindowDivider({ size }: { size: number }) {
   return (
-    <div className="flex items-center gap-3 text-[11px] uppercase tracking-wider text-accent-strong/80">
-      <div className="h-px flex-1 border-t border-dashed border-accent/40" />
+    <div className="flex items-center gap-3 text-center text-[10.5px] uppercase tracking-[0.14em] text-accent-strong/80">
+      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-accent/50" />
       Sliding Window · nur die letzten {size} Nachrichten gehen an die Modelle
-      <div className="h-px flex-1 border-t border-dashed border-accent/40" />
+      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-accent/50" />
     </div>
   );
 }

@@ -15,7 +15,7 @@ export function RangeField({ label, hint, value, min, max, suffix, onChange }: R
     <label className="block">
       <div className="flex items-baseline justify-between">
         <span className="text-[13px] font-medium text-ink">{label}</span>
-        <span className="font-mono text-xs text-accent-strong">
+        <span className="rounded-md bg-accent/10 px-1.5 py-0.5 font-mono text-xs text-accent-strong">
           {value} {suffix}
         </span>
       </div>
@@ -25,7 +25,7 @@ export function RangeField({ label, hint, value, min, max, suffix, onChange }: R
         max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-2 w-full accent-[var(--color-accent)]"
+        className="mt-2.5 w-full accent-[var(--color-accent)]"
       />
       <p className="mt-1 text-xs leading-relaxed text-muted">{hint}</p>
     </label>

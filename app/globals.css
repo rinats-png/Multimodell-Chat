@@ -1,32 +1,74 @@
 @import "tailwindcss";
 
+/*
+ * Designkonzept „Tiefsee & Gletscher“
+ * Grund: tiefes Petrol-Navy (kein Schwarz) mit Polarlicht-Schein · Flächen: gefrostetes Glas
+ * Akzent: Gletscher-Cyan · Signal: Limette (sparsam, Status) · KIs: Mint / Amber / Himmelblau
+ */
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: "Unbounded Variable", var(--font-geist-sans), ui-sans-serif, sans-serif;
 
-  --color-canvas: #0a0a0c;
-  --color-surface: #111114;
-  --color-surface-2: #17171b;
-  --color-surface-3: #1e1e23;
-  --color-line: #26262c;
-  --color-line-strong: #34343c;
-  --color-ink: #ededf0;
-  --color-ink-2: #b4b4bd;
-  --color-muted: #7d7d88;
-  --color-accent: #8b7cf6;
-  --color-accent-strong: #a597ff;
+  --color-canvas: #071521;
+  --color-canvas-2: #0a1c2b;
+  --color-surface: #0d2131;
+  --color-surface-2: #112a3d;
+  --color-surface-3: #17344a;
+  --color-line: #1d3a51;
+  --color-line-strong: #2a4d68;
+  --color-ink: #e8f2f9;
+  --color-ink-2: #a9c1d3;
+  --color-muted: #7290a7;
+  --color-accent: #4fd8ff;
+  --color-accent-strong: #93e9ff;
+  --color-accent-deep: #1fa6d6;
+  --color-signal: #c9f36b;
+  --color-on-accent: #04202f;
 
-  --color-openai: #10a37f;
-  --color-anthropic: #d97757;
-  --color-google: #4f8ff7;
-  --color-other: #c084fc;
+  --color-openai: #3ee0a1;
+  --color-anthropic: #ffaf5f;
+  --color-google: #62a9ff;
+  --color-other: #c9f36b;
+
+  --shadow-glow: 0 0 0 1px rgb(79 216 255 / 0.35), 0 8px 30px -6px rgb(79 216 255 / 0.45);
 }
 
 html,
 body {
-  background: var(--color-canvas);
   color: var(--color-ink);
   color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-canvas);
+  min-height: 100dvh;
+}
+
+/* Polarlicht-Schein + feines Raster hinter allen Glasflächen */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 45% at 8% -5%, rgb(79 216 255 / 0.18), transparent 70%),
+    radial-gradient(45% 40% at 100% 105%, rgb(62 224 161 / 0.12), transparent 70%),
+    radial-gradient(35% 30% at 88% 6%, rgb(255 175 95 / 0.07), transparent 70%),
+    linear-gradient(180deg, var(--color-canvas) 0%, var(--color-canvas-2) 100%);
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgb(147 233 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(147 233 255 / 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(80% 70% at 50% 30%, black, transparent);
 }
 
 * {
@@ -35,11 +77,120 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Glas-Bausteine
+ * ------------------------------------------------------------------------- */
+
+@utility glass {
+  background: linear-gradient(180deg, rgb(26 58 82 / 0.42), rgb(13 33 49 / 0.36));
+  border: 1px solid rgb(147 233 255 / 0.1);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 10px 30px -12px rgb(2 10 18 / 0.7);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+@utility glass-strong {
+  background: linear-gradient(180deg, rgb(28 62 88 / 0.62), rgb(14 36 54 / 0.58));
+  border: 1px solid rgb(147 233 255 / 0.14);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 24px 60px -20px rgb(2 10 18 / 0.85);
+  backdrop-filter: blur(26px) saturate(160%);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+}
+
+@utility glass-bar {
+  background: rgb(9 26 39 / 0.55);
+  border-color: rgb(147 233 255 / 0.08);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  color: var(--color-on-accent);
+  background: linear-gradient(135deg, #8ff0ff 0%, var(--color-accent) 45%, var(--color-accent-deep) 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 6px 22px -8px rgb(79 216 255 / 0.65);
+  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  &:hover {
+    filter: brightness(1.06);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), 0 8px 28px -6px rgb(79 216 255 / 0.8);
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+  &:disabled {
+    filter: grayscale(0.7) brightness(0.6);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+}
+
+@utility btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0.75rem;
+  color: var(--color-ink);
+  background: rgb(147 233 255 / 0.06);
+  border: 1px solid rgb(147 233 255 / 0.14);
+  transition: background 0.15s ease, border-color 0.15s ease;
+  &:hover {
+    background: rgb(147 233 255 / 0.11);
+    border-color: rgb(147 233 255 / 0.24);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@utility field {
+  width: 100%;
+  border-radius: 0.7rem;
+  border: 1px solid rgb(147 233 255 / 0.12);
+  background: rgb(5 18 28 / 0.55);
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  &::placeholder {
+    color: var(--color-muted);
+  }
+  &:focus {
+    border-color: rgb(79 216 255 / 0.6);
+    box-shadow: 0 0 0 3px rgb(79 216 255 / 0.15);
+  }
+}
+
+@utility text-gradient {
+  background: linear-gradient(100deg, #e8f2f9 10%, var(--color-accent-strong) 55%, var(--color-openai) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+ * Chat-Typografie
+ * ------------------------------------------------------------------------- */
+
 .prose-chat {
-  line-height: 1.65;
+  line-height: 1.68;
   overflow-wrap: anywhere;
 }
 .prose-chat p + p,
@@ -60,6 +211,9 @@ body {
 .prose-chat li + li {
   margin-top: 0.2rem;
 }
+.prose-chat li::marker {
+  color: var(--color-accent);
+}
 .prose-chat strong {
   color: var(--color-ink);
   font-weight: 600;
@@ -67,15 +221,15 @@ body {
 .prose-chat code {
   font-family: var(--font-mono);
   font-size: 0.85em;
-  background: var(--color-surface-3);
-  border: 1px solid var(--color-line);
+  background: rgb(147 233 255 / 0.07);
+  border: 1px solid rgb(147 233 255 / 0.12);
   border-radius: 6px;
   padding: 0.05rem 0.3rem;
 }
 .prose-chat pre {
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
-  border-radius: 10px;
+  background: rgb(5 18 28 / 0.6);
+  border: 1px solid rgb(147 233 255 / 0.12);
+  border-radius: 12px;
   padding: 0.75rem 1rem;
   overflow-x: auto;
   margin: 0.6rem 0;
@@ -97,6 +251,13 @@ body {
   margin: 0.8rem 0 0.3rem;
 }
 
+/* Legal-Seiten */
+.legal a {
+  color: var(--color-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 @keyframes caret-blink {
   50% {
     opacity: 0;
@@ -109,6 +270,32 @@ body {
   height: 1em;
   margin-left: 2px;
   vertical-align: -0.15em;
-  background: currentColor;
+  border-radius: 2px;
+  background: var(--color-accent);
+  box-shadow: 0 0 10px rgb(79 216 255 / 0.8);
   animation: caret-blink 1s steps(1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgb(79 216 255 / 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgb(79 216 255 / 0);
+  }
+}
+.live-dot {
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .streaming-caret::after,
+  .live-dot {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
 }

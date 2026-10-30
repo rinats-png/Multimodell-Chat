@@ -69,7 +69,7 @@ export function AccountSection({ isDemoStore }: { isDemoStore: boolean }) {
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-line bg-surface p-5" aria-labelledby="account-heading">
+    <section className="glass mt-6 rounded-2xl p-5" aria-labelledby="account-heading">
       <h2 id="account-heading" className="text-[15px] font-semibold">
         Konto & Daten
       </h2>
@@ -78,7 +78,7 @@ export function AccountSection({ isDemoStore }: { isDemoStore: boolean }) {
         <button
           onClick={() => run("export")}
           disabled={busy}
-          className="inline-flex items-center gap-2 rounded-lg border border-line-strong px-3 py-2 text-[13px] text-ink hover:bg-surface-2 disabled:opacity-60"
+          className="btn-ghost px-3 py-2 text-[13px]"
         >
           <Download className="size-4" aria-hidden />
           Daten exportieren (JSON)
@@ -86,7 +86,7 @@ export function AccountSection({ isDemoStore }: { isDemoStore: boolean }) {
         <button
           onClick={() => setConfirmDelete(true)}
           disabled={busy}
-          className="inline-flex items-center gap-2 rounded-lg border border-red-500/40 px-3 py-2 text-[13px] text-red-300 hover:bg-red-500/10 disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-xl border border-red-400/40 px-3 py-2 text-[13px] text-red-200 transition-colors hover:bg-red-500/10 disabled:opacity-60"
         >
           <Trash2 className="size-4" aria-hidden />
           Konto löschen
@@ -105,7 +105,7 @@ export function AccountSection({ isDemoStore }: { isDemoStore: boolean }) {
             sich nicht rückgängig machen.
           </p>
           <div className="flex justify-end gap-2">
-            <button onClick={() => setConfirmDelete(false)} className="rounded-lg border border-line px-3 py-1.5">
+            <button onClick={() => setConfirmDelete(false)} className="btn-ghost px-3 py-1.5">
               Abbrechen
             </button>
             <button
@@ -113,7 +113,7 @@ export function AccountSection({ isDemoStore }: { isDemoStore: boolean }) {
                 setConfirmDelete(false);
                 void run("delete");
               }}
-              className="rounded-lg bg-red-500 px-3 py-1.5 font-semibold text-white hover:bg-red-400"
+              className="rounded-xl bg-gradient-to-b from-red-400 to-red-500 px-3 py-1.5 font-semibold text-white shadow-[0_8px_24px_-10px_rgb(248_113_113/0.8)] hover:brightness-110"
             >
               Endgültig löschen
             </button>
@@ -131,11 +131,11 @@ export function AccountSection({ isDemoStore }: { isDemoStore: boolean }) {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-line bg-surface-2 px-3 py-2 text-[14px] text-ink outline-none focus:border-accent/60"
+              className="field mt-1 px-3 py-2 text-[14px]"
             />
           </label>
           <div className="flex justify-end">
-            <button type="submit" disabled={busy} className="rounded-lg bg-ink px-3 py-1.5 text-[13px] font-semibold text-canvas disabled:opacity-60">
+            <button type="submit" disabled={busy} className="btn-primary px-3 py-1.5 text-[13px]">
               Bestätigen
             </button>
           </div>

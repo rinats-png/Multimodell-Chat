@@ -60,7 +60,7 @@ export function LoginForm({ linkInvalid, passwordChanged }: LoginFormProps) {
       title={signup ? "Konto erstellen" : "Willkommen zurück"}
       subtitle="Debattiere mit ChatGPT, Claude und Gemini in einem Raum."
     >
-      <form onSubmit={submit} className="mt-8 space-y-3 rounded-2xl border border-line bg-surface p-5" noValidate={false}>
+      <form onSubmit={submit} className="glass-strong mt-8 space-y-3 rounded-2xl p-5" noValidate={false}>
         <label className="block text-[12.5px] text-muted">
           E-Mail
           <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
@@ -94,14 +94,14 @@ export function LoginForm({ linkInvalid, passwordChanged }: LoginFormProps) {
           </label>
         )}
         {message && (
-          <p role={message.ok ? "status" : "alert"} className={`text-[12.5px] ${message.ok ? "text-openai" : "text-red-400"}`}>
+          <p role={message.ok ? "status" : "alert"} className={`text-[12.5px] ${message.ok ? "text-openai" : "text-red-300"}`}>
             {message.text}
           </p>
         )}
         <button
           type="submit"
           disabled={busy || (signup && !acceptTerms)}
-          className="w-full rounded-lg bg-ink py-2 text-[13.5px] font-semibold text-canvas hover:bg-ink-2 disabled:opacity-60"
+          className="btn-primary w-full py-2.5 text-[13.5px]"
         >
           {busy ? "Bitte warten…" : signup ? "Registrieren" : "Anmelden"}
         </button>

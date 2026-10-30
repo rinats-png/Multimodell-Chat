@@ -9,6 +9,7 @@ import { formatCompact } from "@/lib/format";
 import { PLANS } from "@/lib/plans";
 import type { ChatRoom, PublicProfile } from "@/lib/types";
 import { LegalLinks } from "@/components/legal/LegalLinks";
+import { BrandMark, Wordmark } from "@/components/ui/BrandMark";
 import { Meter } from "@/components/ui/Meter";
 
 interface SidebarProps {
@@ -59,41 +60,35 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
 
   return (
     <>
-    {mobileOpen && <div className="fixed inset-0 z-30 bg-black/60 md:hidden" onClick={onMobileClose} aria-hidden />}
+    {mobileOpen && <div className="fixed inset-0 z-30 bg-canvas/70 backdrop-blur-sm md:hidden" onClick={onMobileClose} aria-hidden />}
     <aside
       aria-label="Navigation"
       className={clsx(
-        "z-40 flex h-full w-[264px] shrink-0 flex-col border-r border-line bg-surface",
-        "fixed inset-y-0 left-0 transition-transform md:static md:translate-x-0",
-        mobileOpen ? "translate-x-0" : "-translate-x-full",
+        "glass z-40 flex w-[268px] shrink-0 flex-col rounded-2xl",
+        "fixed inset-y-2 left-2 transition-transform md:static md:inset-auto md:my-3 md:ml-3 md:h-[calc(100dvh-1.5rem)] md:translate-x-0",
+        mobileOpen ? "translate-x-0" : "-translate-x-[110%]",
       )}
     >
-      <div className="flex items-center gap-2.5 px-4 pb-3 pt-4">
-        <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-openai via-google to-anthropic">
-          <MessagesSquare className="size-4 text-white" />
-        </div>
+      <div className="flex items-center gap-3 px-4 pb-4 pt-4">
+        <BrandMark className="size-9" />
         <div className="leading-tight">
-          <div className="text-[14px] font-semibold">Multimodell</div>
-          <div className="text-[11px] text-muted">KI-Gruppendebatten</div>
+          <Wordmark className="text-[15px] font-semibold" />
+          <div className="mt-0.5 text-[11px] text-muted">KI-Gruppendebatten</div>
         </div>
         {onMobileClose && (
-          <button onClick={onMobileClose} className="ml-auto rounded-md p-1 text-muted hover:text-ink md:hidden" aria-label="Navigation schließen">
+          <button onClick={onMobileClose} className="ml-auto rounded-lg p-1.5 text-muted hover:bg-surface-3/60 hover:text-ink md:hidden" aria-label="Navigation schließen">
             <X className="size-4" />
           </button>
         )}
       </div>
 
       <div className="px-3">
-        <button
-          onClick={createRoom}
-          disabled={creating}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border border-line-strong bg-surface-2 px-3 py-2 text-[13px] font-medium hover:bg-surface-3 disabled:opacity-60"
-        >
+        <button onClick={createRoom} disabled={creating} className="btn-primary w-full px-3 py-2.5 text-[13px]">
           <Plus className="size-4" />
           Neue Debatte
         </button>
         {error && (
-          <p role="alert" className="mt-2 text-[12px] text-red-400">
+          <p role="alert" className="mt-2 text-[12px] text-red-300">
             {error}
           </p>
         )}
@@ -103,69 +98,77 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
         <Link
           href="/billing"
           className={clsx(
-            "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px]",
-            active === "billing" ? "bg-surface-3 text-ink" : "text-ink-2 hover:bg-surface-2",
+            "flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] transition-colors",
+            active === "billing" ? "bg-accent/12 text-ink ring-1 ring-accent/25" : "text-ink-2 hover:bg-surface-3/50 hover:text-ink",
           )}
         >
-          <CreditCard className="size-4 text-muted" />
+          <CreditCard className={clsx("size-4", active === "billing" ? "text-accent" : "text-muted")} />
           Tarif & Verbrauch
         </Link>
       </nav>
 
-      <div className="mt-5 px-4 text-[11px] font-medium uppercase tracking-wider text-muted">Debatten</div>
-      <ul className="mt-1.5 flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
-        {rooms.length === 0 && <li className="px-2.5 py-2 text-xs text-muted">Noch keine Debatten.</li>}
-        {rooms.map((room) => (
-          <li key={room.id} className="group relative">
-            <Link
-              href={`/chat/${room.id}`}
-              className={clsx(
-                "block truncate rounded-lg py-1.5 pl-2.5 pr-8 text-[13px]",
-                room.id === activeRoomId ? "bg-surface-3 text-ink" : "text-ink-2 hover:bg-surface-2",
-              )}
-            >
-              {room.title}
-            </Link>
-            <button
-              onClick={() => deleteRoom(room.id)}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-1 text-muted opacity-100 hover:text-red-400 focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100"
-              aria-label={`${room.title} löschen`}
-            >
-              <Trash2 className="size-3.5" />
-            </button>
-          </li>
-        ))}
+      <div className="mt-5 flex items-center gap-2 px-5 text-[10.5px] font-medium uppercase tracking-[0.14em] text-muted">
+        <MessagesSquare className="size-3.5" />
+        Debatten
+      </div>
+      <ul className="mt-2 flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
+        {rooms.length === 0 && <li className="px-3 py-2 text-xs text-muted">Noch keine Debatten.</li>}
+        {rooms.map((room) => {
+          const isActive = room.id === activeRoomId;
+          return (
+            <li key={room.id} className="group relative">
+              <Link
+                href={`/chat/${room.id}`}
+                aria-current={isActive ? "page" : undefined}
+                className={clsx(
+                  "flex items-center gap-2 truncate rounded-xl py-2 pl-3 pr-8 text-[13px] transition-colors",
+                  isActive ? "bg-accent/12 text-ink ring-1 ring-accent/25" : "text-ink-2 hover:bg-surface-3/50 hover:text-ink",
+                )}
+              >
+                <span className={clsx("size-1.5 shrink-0 rounded-full", isActive ? "bg-accent shadow-[0_0_8px_rgb(79_216_255/0.9)]" : "bg-line-strong")} />
+                <span className="truncate">{room.title}</span>
+              </Link>
+              <button
+                onClick={() => deleteRoom(room.id)}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted opacity-100 hover:text-red-300 focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                aria-label={`${room.title} löschen`}
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </li>
+          );
+        })}
       </ul>
 
-      <div className="m-3 rounded-xl border border-line bg-surface-2 p-3">
+      <div className="mx-3 mb-3 rounded-xl border border-accent/15 bg-gradient-to-b from-accent/[0.07] to-transparent p-3">
         <div className="flex items-center justify-between text-[12px]">
-          <span className="font-medium text-ink">{plan.name}</span>
-          <span className="text-muted">
+          <span className="inline-flex items-center gap-1.5 font-medium text-ink">
+            <span className="size-1.5 rounded-full bg-signal" />
+            {plan.name}
+          </span>
+          <span className="font-mono text-[11px] text-ink-2">
             {profile.has_custom_key
               ? "Eigener Key"
               : `${formatCompact(profile.tokens_used_this_month)} / ${formatCompact(profile.monthly_token_limit)}`}
           </span>
         </div>
         {!profile.has_custom_key && (
-          <Meter value={profile.tokens_used_this_month} max={profile.monthly_token_limit} className="mt-2" />
+          <Meter value={profile.tokens_used_this_month} max={profile.monthly_token_limit} className="mt-2.5" />
         )}
-        <div className="mt-1.5 text-[11px] text-muted">
+        <div className="mt-2 text-[11px] text-muted">
           Tokens diesen Monat · {profile.rate_limit_per_min} KI-Antworten/Min
         </div>
         {profile.subscription_tier !== "team" && (
-          <Link
-            href="/billing"
-            className="mt-3 flex items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-accent-strong"
-          >
-            <Sparkles className="size-3.5" />
+          <Link href="/billing" className="btn-ghost mt-3 w-full px-3 py-1.5 text-[12px] font-semibold">
+            <Sparkles className="size-3.5 text-accent" />
             Upgrade
           </Link>
         )}
       </div>
 
-      <LegalLinks className="px-4 pb-2" />
-      <div className="flex items-center gap-2.5 border-t border-line px-4 py-3">
-        <span className="flex size-7 items-center justify-center rounded-full bg-surface-3 text-[11px] font-semibold text-ink-2">
+      <LegalLinks className="px-5 pb-2" />
+      <div className="flex items-center gap-2.5 border-t border-line/70 px-4 py-3">
+        <span className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-surface-3 to-surface-2 text-[11px] font-semibold text-accent-strong ring-1 ring-accent/20">
           {(email ?? "?").slice(0, 2).toUpperCase()}
         </span>
         <div className="min-w-0 flex-1 leading-tight">
@@ -173,7 +176,7 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
           <div className="text-[11px] text-muted">{isDemoStore ? "Demo-Workspace" : plan.name}</div>
         </div>
         {!isDemoStore && (
-          <button onClick={signOut} className="rounded p-1 text-muted hover:text-ink" aria-label="Abmelden">
+          <button onClick={signOut} className="rounded-lg p-1.5 text-muted hover:bg-surface-3/60 hover:text-ink" aria-label="Abmelden">
             <LogOut className="size-4" />
           </button>
         )}

@@ -60,15 +60,15 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
-      <h1 className="text-2xl font-semibold tracking-tight">Tarif & Verbrauch</h1>
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 md:py-10">
+      <h1 className="font-display text-[26px] font-medium tracking-tight">Tarif & Verbrauch</h1>
       {checkoutState === "success" && (
         <p role="status" className="mt-3 rounded-lg border border-openai/30 bg-openai/10 px-3 py-2 text-[13px] text-openai">
           Danke! Die Zahlung wird bestätigt – dein Tarif wird in wenigen Sekunden freigeschaltet. Lade die Seite gleich neu.
         </p>
       )}
       {checkoutState === "cancelled" && (
-        <p role="status" className="mt-3 rounded-lg border border-line bg-surface px-3 py-2 text-[13px] text-muted">
+        <p role="status" className="glass mt-3 rounded-xl px-3 py-2 text-[13px] text-muted">
           Der Bezahlvorgang wurde abgebrochen. Es wurde nichts berechnet.
         </p>
       )}
@@ -77,10 +77,11 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
       </p>
 
       <section className="mt-8 grid gap-3 md:grid-cols-4">
-        <div className="rounded-2xl border border-line bg-surface p-4 md:col-span-2">
+        <div className="glass relative overflow-hidden rounded-2xl p-5 md:col-span-2">
+          <div className="pointer-events-none absolute -right-16 -top-20 size-56 rounded-full bg-accent/20 blur-3xl" aria-hidden />
           <div className="flex items-baseline justify-between">
             <span className="text-[13px] text-muted">Tokens diesen Monat</span>
-            <span className="rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-2">{plan.name}</span>
+            <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-[11px] font-medium text-accent-strong">{plan.name}</span>
           </div>
           {profile.has_custom_key ? (
             <>
@@ -89,7 +90,7 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
             </>
           ) : (
             <>
-              <div className="mt-2 text-2xl font-semibold">
+              <div className="mt-2 font-display text-3xl font-medium tabular-nums">
                 {formatNumber(profile.tokens_used_this_month)}
                 <span className="text-[15px] font-normal text-muted"> / {formatCompact(profile.monthly_token_limit)}</span>
               </div>
@@ -108,7 +109,9 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
       </section>
 
       <section className="mt-12">
-        <h2 className="text-center text-3xl font-semibold tracking-tight">Mehr Stimmen, mehr Perspektiven.</h2>
+        <h2 className="text-center font-display text-[28px] font-medium tracking-tight sm:text-[34px]">
+          <span className="text-gradient">Mehr Stimmen, mehr Perspektiven.</span>
+        </h2>
         <p className="mt-2 text-center text-[14px] text-muted">Wähle den Tarif, der zu deinen Debatten passt.</p>
         {error && <p className="mt-4 text-center text-[13px] text-red-400">{error}</p>}
 
@@ -121,31 +124,31 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
               <div
                 key={tier}
                 className={clsx(
-                  "flex flex-col rounded-2xl border p-5",
-                  highlighted ? "border-accent/60 bg-gradient-to-b from-accent/10 to-surface" : "border-line bg-surface",
+                  "relative flex flex-col overflow-hidden rounded-2xl p-5",
+                  highlighted ? "glass-strong ring-1 ring-accent/50 shadow-[0_0_60px_-20px_rgb(79_216_255/0.7)]" : "glass",
                 )}
               >
                 <div className="flex items-start justify-between">
                   <h3 className="text-[16px] font-semibold">{p.name}</h3>
                   {highlighted && (
-                    <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-white">Beliebt</span>
+                    <span className="rounded-full bg-gradient-to-r from-accent to-openai px-2.5 py-0.5 text-[11px] font-semibold text-on-accent">Beliebt</span>
                   )}
                 </div>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-4xl font-semibold tracking-tight">{p.priceEur} €</span>
+                  <span className="font-display text-4xl font-medium tracking-tight">{p.priceEur} €</span>
                   <span className="text-[13px] text-muted">/ Monat</span>
                 </div>
-                <p className="mt-2 border-b border-line pb-4 text-[13px] text-muted">{p.tagline}</p>
+                <p className="mt-2 border-b border-line/70 pb-4 text-[13px] text-muted">{p.tagline}</p>
                 <button
                   onClick={() => choosePlan(tier)}
                   disabled={current || busyTier !== null}
                   className={clsx(
-                    "mt-4 rounded-lg px-3 py-2 text-[13px] font-semibold transition-colors",
+                    "mt-4 px-3 py-2.5 text-[13px] font-semibold",
                     current
-                      ? "cursor-default border border-line text-muted"
+                      ? "cursor-default rounded-xl border border-line/80 text-muted"
                       : highlighted
-                        ? "bg-accent text-white hover:bg-accent-strong"
-                        : "bg-ink text-canvas hover:bg-ink-2",
+                        ? "btn-primary"
+                        : "btn-ghost",
                   )}
                 >
                   {current ? "Aktueller Tarif" : busyTier === tier ? "Wird geöffnet…" : `${p.name} wählen`}
@@ -187,9 +190,9 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
 
 function Stat({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="rounded-2xl border border-line bg-surface p-4">
+    <div className="glass rounded-2xl p-5">
       <div className="text-[13px] text-muted">{label}</div>
-      <div className="mt-2 text-2xl font-semibold">{value}</div>
+      <div className="mt-2 font-display text-2xl font-medium tabular-nums">{value}</div>
       <p className="mt-1 text-[12px] text-muted">{hint}</p>
     </div>
   );
@@ -215,10 +218,10 @@ function ByokForm({ profile, onSaved }: { profile: PublicProfile; onSaved: (p: P
   }
 
   return (
-    <section className="mt-12 rounded-2xl border border-line bg-surface p-5">
+    <section className="glass mt-12 rounded-2xl p-5">
       <div className="flex items-start gap-3">
-        <div className="flex size-9 items-center justify-center rounded-lg bg-surface-3">
-          <KeyRound className="size-4 text-ink-2" />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-accent/12 ring-1 ring-accent/25">
+          <KeyRound className="size-4 text-accent" />
         </div>
         <div className="flex-1">
           <h2 className="text-[15px] font-semibold">Bring Your Own Key</h2>
@@ -229,7 +232,7 @@ function ByokForm({ profile, onSaved }: { profile: PublicProfile; onSaved: (p: P
         </div>
       </div>
       {profile.has_custom_key && (
-        <div className="mt-4 flex items-center justify-between rounded-lg border border-line bg-surface-2 px-3 py-2">
+        <div className="mt-4 flex items-center justify-between rounded-xl border border-openai/25 bg-openai/[0.06] px-3 py-2">
           <span className="font-mono text-[12.5px] text-ink-2">{profile.custom_key_hint}</span>
           <button onClick={() => save(null)} className="text-[12px] text-muted hover:text-red-400">
             Entfernen
@@ -250,12 +253,12 @@ function ByokForm({ profile, onSaved }: { profile: PublicProfile; onSaved: (p: P
           value={key}
           onChange={(e) => setKey(e.target.value)}
           placeholder="sk-or-v1-…"
-          className="flex-1 rounded-lg border border-line bg-surface-2 px-3 py-2 font-mono text-[13px] outline-none focus:border-accent/60 disabled:opacity-50"
+          className="field flex-1 px-3 py-2 font-mono text-[13px] disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={!enabled || !key.trim()}
-          className="rounded-lg bg-ink px-4 py-2 text-[13px] font-semibold text-canvas disabled:bg-surface-3 disabled:text-muted"
+          className="btn-primary px-4 py-2 text-[13px]"
         >
           Speichern
         </button>

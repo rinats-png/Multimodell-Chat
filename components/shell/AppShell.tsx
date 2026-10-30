@@ -30,8 +30,8 @@ export function AppShell({ rooms, profile, email, isDemoStore, active, title, ch
         onMobileClose={() => setNavOpen(false)}
       />
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line px-2 md:hidden">
-          <button onClick={() => setNavOpen(true)} className="rounded-lg p-2 text-muted hover:bg-surface-2 hover:text-ink" aria-label="Navigation öffnen">
+        <header className="glass mx-2 mt-2 flex h-14 shrink-0 items-center gap-2 rounded-2xl px-2 md:hidden">
+          <button onClick={() => setNavOpen(true)} className="rounded-xl p-2 text-muted hover:bg-surface-3/60 hover:text-ink" aria-label="Navigation öffnen">
             <Menu className="size-4" />
           </button>
           <span className="text-[14px] font-medium">{title}</span>

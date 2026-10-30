@@ -292,8 +292,8 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         onMobileClose={() => setNavOpen(false)}
       />
 
-      <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line px-2 sm:gap-3 sm:px-4">
+      <main className="flex min-w-0 flex-1 flex-col md:py-3 md:pl-3 xl:pr-0">
+        <header className="glass mx-2 mt-2 flex h-14 shrink-0 items-center gap-2 rounded-2xl px-2 sm:gap-3 sm:px-3 md:mx-0 md:mt-0 md:mr-3">
           <IconButton label="Navigation öffnen" onClick={() => setNavOpen(true)} className="md:hidden">
             <Menu className="size-4" />
           </IconButton>
@@ -307,12 +307,12 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
                 if (title && title !== room.title) updateRoom({ title });
               }}
               onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-              className="min-w-0 rounded-md border border-line-strong bg-surface-2 px-2 py-1 text-[14px] font-medium outline-none"
+              className="field min-w-0 px-2.5 py-1 text-[14px] font-medium"
             />
           ) : (
             <button
               onClick={() => setEditingTitle(true)}
-              className="min-w-0 truncate rounded-md px-2 py-1 text-[14px] font-medium hover:bg-surface-2"
+              className="min-w-0 truncate rounded-lg px-2 py-1 text-[14px] font-semibold tracking-tight hover:bg-surface-3/50"
               title="Titel bearbeiten"
             >
               {room.title}
@@ -321,7 +321,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
 
           <div className="hidden -space-x-1.5 md:flex">
             {activeAgents.map((a) => (
-              <AgentAvatar key={a.id} name={a.display_name} modelId={a.model_identifier} size="sm" className="ring-2 ring-canvas" />
+              <AgentAvatar key={a.id} name={a.display_name} modelId={a.model_identifier} size="sm" className="ring-2 ring-surface" />
             ))}
           </div>
 
@@ -349,7 +349,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         </header>
 
         {props.isDemoModel && (
-          <div className="border-b border-amber-500/20 bg-amber-500/10 px-4 py-1.5 text-center text-[12px] text-amber-200/90">
+          <div className="mx-2 mt-2 rounded-xl border border-anthropic/25 bg-anthropic/10 px-4 py-1.5 text-center text-[12px] text-anthropic backdrop-blur md:mx-0 md:mr-3">
             Demo-Modus: Kein OpenRouter-Key konfiguriert – Antworten werden lokal simuliert. Setze{" "}
             <code className="font-mono">OPENROUTER_API_KEY</code> für echte Modelle.
           </div>
@@ -368,7 +368,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
 
         {error && (
           <div className="mx-auto mb-2 flex w-full max-w-3xl items-start gap-2 px-4">
-            <div className="flex w-full items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-[13px] text-red-300">
+            <div className="flex w-full items-start gap-2 rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-[13px] text-red-200 backdrop-blur">
               <TriangleAlert className="mt-0.5 size-4 shrink-0" />
               <span className="flex-1">{error}</span>
               <button onClick={() => setError(null)} aria-label="Fehler schließen">
@@ -388,13 +388,13 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         />
       </main>
 
-      {panel && <div className="fixed inset-0 z-30 bg-black/60 xl:hidden" onClick={() => setPanel(null)} aria-hidden />}
+      {panel && <div className="fixed inset-0 z-30 bg-canvas/70 backdrop-blur-sm xl:hidden" onClick={() => setPanel(null)} aria-hidden />}
       {panel && (
         <aside
           aria-label="Steuerung und Agenten-Studio"
-          className="fixed inset-y-0 right-0 z-40 flex w-[min(340px,100vw)] shrink-0 flex-col border-l border-line bg-surface xl:static xl:z-auto"
+          className="glass-strong fixed inset-y-2 right-2 z-40 flex w-[min(344px,calc(100vw-1rem))] shrink-0 flex-col rounded-2xl xl:static xl:z-auto xl:my-3 xl:mr-3 xl:h-[calc(100dvh-1.5rem)] xl:glass"
         >
-          <div className="flex h-14 shrink-0 items-center justify-between border-b border-line px-3">
+          <div className="flex h-14 shrink-0 items-center justify-between border-b border-line/70 px-3">
             <Segmented
               ariaLabel="Panel"
               size="sm"
@@ -453,8 +453,8 @@ function IconButton(props: {
       title={props.label}
       aria-label={props.label}
       className={clsx(
-        "rounded-lg p-2 text-muted hover:bg-surface-2 hover:text-ink disabled:opacity-40",
-        props.active && "bg-surface-2 text-ink",
+        "rounded-xl p-2 text-muted transition-colors hover:bg-surface-3/60 hover:text-ink disabled:opacity-40",
+        props.active && "bg-accent/12 text-accent ring-1 ring-accent/25",
         props.className,
       )}
     >
@@ -465,20 +465,23 @@ function IconButton(props: {
 
 function EmptyState({ agents, onPick }: { agents: RoomAgent[]; onPick: (prompt: string) => void }) {
   return (
-    <div className="flex flex-col items-center pt-[8vh] text-center">
-      <div className="flex -space-x-2">
+    <div className="flex flex-col items-center pt-[6vh] text-center">
+      <div className="relative flex -space-x-2">
+        <div className="absolute inset-0 -z-10 scale-150 rounded-full bg-accent/20 blur-2xl" aria-hidden />
         {agents.map((a) => (
-          <AgentAvatar key={a.id} name={a.display_name} modelId={a.model_identifier} size="lg" className="ring-4 ring-canvas" />
+          <AgentAvatar key={a.id} name={a.display_name} modelId={a.model_identifier} size="lg" className="ring-4 ring-canvas-2" />
         ))}
       </div>
-      <h1 className="mt-5 text-2xl font-semibold tracking-tight">Worüber sollen die KIs debattieren?</h1>
+      <h1 className="mt-6 font-display text-[26px] font-medium leading-tight tracking-tight sm:text-[30px]">
+        <span className="text-gradient">Worüber sollen die KIs debattieren?</span>
+      </h1>
       <p className="mt-2 max-w-md text-[14px] text-muted">
         {agents.map((a) => a.display_name).join(", ")} diskutieren mit dir – und miteinander. Jede KI vertritt eine
         eigene Fachrolle und widerspricht, statt nur zuzustimmen.
       </p>
       <div className="mt-6 grid w-full max-w-2xl gap-2 sm:grid-cols-3">
         {agents.map((a) => (
-          <div key={a.id} className="rounded-xl border border-line bg-surface p-3 text-left">
+          <div key={a.id} className="glass rounded-2xl p-3.5 text-left">
             <div className="flex items-center gap-2">
               <AgentAvatar name={a.display_name} modelId={a.model_identifier} size="sm" />
               <span className="text-[13px] font-medium">{a.display_name}</span>
@@ -487,8 +490,8 @@ function EmptyState({ agents, onPick }: { agents: RoomAgent[]; onPick: (prompt: 
           </div>
         ))}
       </div>
-      <p className="mt-6 flex max-w-2xl items-start gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-left text-[12.5px] text-muted">
-        <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+      <p className="mt-6 flex max-w-2xl items-start gap-2 rounded-xl border border-accent/15 bg-accent/[0.05] px-3 py-2 text-left text-[12.5px] text-ink-2">
+        <Info className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
         <span>
           Alle Antworten stammen von KI-Modellen. Deine Nachrichten gehen zur Beantwortung über OpenRouter an die jeweiligen
           Modellanbieter (OpenAI, Anthropic, Google u. a.). Bitte keine sensiblen Daten eingeben.{" "}
@@ -502,9 +505,10 @@ function EmptyState({ agents, onPick }: { agents: RoomAgent[]; onPick: (prompt: 
           <button
             key={p}
             onClick={() => onPick(p)}
-            className="rounded-xl border border-line px-4 py-2.5 text-left text-[13px] text-ink-2 hover:border-line-strong hover:bg-surface"
+            className="group flex items-center justify-between gap-3 rounded-xl border border-line/80 bg-surface/30 px-4 py-2.5 text-left text-[13px] text-ink-2 transition-colors hover:border-accent/40 hover:bg-accent/[0.06] hover:text-ink"
           >
-            {p}
+            <span>{p}</span>
+            <span className="text-accent opacity-0 transition-opacity group-hover:opacity-100" aria-hidden>→</span>
           </button>
         ))}
       </div>

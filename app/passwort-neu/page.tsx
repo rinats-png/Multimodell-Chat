@@ -24,7 +24,7 @@ export default function PasswortNeuPage() {
 
   return (
     <AuthCard title="Neues Passwort" subtitle="Danach werden alle anderen Geräte abgemeldet.">
-      <form onSubmit={submit} className="mt-8 space-y-3 rounded-2xl border border-line bg-surface p-5">
+      <form onSubmit={submit} className="glass-strong mt-8 space-y-3 rounded-2xl p-5">
         <label className="block text-[12.5px] text-muted">
           Neues Passwort
           <input
@@ -40,11 +40,11 @@ export default function PasswortNeuPage() {
           <span className="mt-1 block text-[11.5px]">Mindestens {PASSWORD_MIN_LENGTH} Zeichen.</span>
         </label>
         {error && (
-          <p role="alert" className="text-[12.5px] text-red-400">
+          <p role="alert" className="text-[12.5px] text-red-300">
             {error}
           </p>
         )}
-        <button type="submit" disabled={busy} className="w-full rounded-lg bg-ink py-2 text-[13.5px] font-semibold text-canvas disabled:opacity-60">
+        <button type="submit" disabled={busy} className="btn-primary w-full py-2.5 text-[13.5px]">
           {busy ? "Bitte warten…" : "Passwort speichern"}
         </button>
       </form>

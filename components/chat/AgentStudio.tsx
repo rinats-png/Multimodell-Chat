@@ -53,7 +53,7 @@ export function AgentStudio({ agents, onUpdate, onCreate, onDelete, modelCatalog
       ))}
       <button
         onClick={onCreate}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong py-2.5 text-[13px] text-ink-2 hover:bg-surface-2"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-accent/30 py-2.5 text-[13px] text-ink-2 transition-colors hover:bg-accent/[0.06] hover:text-ink"
       >
         <Plus className="size-4" />
         Agent hinzufügen
@@ -101,10 +101,10 @@ function AgentCard({ agent, open, onToggle, onUpdate, onToggleActive, onDelete, 
   }
 
   const inputCls =
-    "mt-1 w-full rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[13px] text-ink outline-none focus:border-accent/60";
+    "field mt-1 px-2.5 py-1.5 text-[13px]";
 
   return (
-    <div className={clsx("rounded-xl border bg-surface-2", open ? "border-line-strong" : "border-line")}>
+    <div className={clsx("rounded-xl border bg-canvas/35", open ? "border-accent/30 shadow-[0_0_24px_-12px_rgb(79_216_255/0.7)]" : "border-line/80")}>
       <div className="flex items-center gap-2.5 p-2.5">
         <button onClick={onToggle} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
           <AgentAvatar name={agent.display_name} modelId={agent.model_identifier} />
@@ -121,7 +121,7 @@ function AgentCard({ agent, open, onToggle, onUpdate, onToggleActive, onDelete, 
           onClick={onToggleActive}
           className={clsx(
             "relative h-5 w-9 shrink-0 rounded-full transition-colors",
-            agent.is_active ? "bg-accent" : "bg-surface-3 ring-1 ring-line-strong",
+            agent.is_active ? "bg-gradient-to-r from-accent-deep to-accent shadow-[0_0_12px_-2px_rgb(79_216_255/0.8)]" : "bg-surface-3 ring-1 ring-line-strong",
           )}
         >
           <span
@@ -134,7 +134,7 @@ function AgentCard({ agent, open, onToggle, onUpdate, onToggleActive, onDelete, 
       </div>
 
       {open && (
-        <div className="space-y-3 border-t border-line p-3">
+        <div className="space-y-3 border-t border-line/70 p-3">
           <div className="grid grid-cols-2 gap-2">
             <label className="text-[11.5px] text-muted">
               Name
@@ -192,7 +192,7 @@ function AgentCard({ agent, open, onToggle, onUpdate, onToggleActive, onDelete, 
             <button
               onClick={save}
               disabled={!dirty || saving}
-              className="rounded-lg bg-ink px-3 py-1.5 text-[12px] font-semibold text-canvas disabled:bg-surface-3 disabled:text-muted"
+              className="btn-primary px-3 py-1.5 text-[12px]"
             >
               {saving ? "Speichert…" : "Speichern"}
             </button>

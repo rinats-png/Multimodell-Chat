@@ -111,7 +111,7 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: 
               key={agent.id}
               disabled={running}
               onClick={() => onAskAgent(agent.id)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1 text-[12px] text-ink-2 transition-colors hover:border-line-strong hover:bg-surface-2 hover:text-ink disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-line/80 bg-canvas-2/60 px-3 py-1 text-[12px] text-ink-2 backdrop-blur transition-colors hover:border-accent/40 hover:bg-accent/[0.08] hover:text-ink disabled:opacity-50"
             >
               <span className={clsx("size-1.5 rounded-full", agentStyle(agent.model_identifier).dot)} />
               Lass {agent.display_name} antworten
@@ -122,7 +122,7 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: 
 
       <div className="relative">
         {mentionOptions.length > 0 && (
-          <ul className="absolute bottom-full left-3 mb-2 w-64 overflow-hidden rounded-xl border border-line-strong bg-surface-2 p-1 shadow-2xl">
+          <ul className="glass-strong absolute bottom-full left-3 mb-2 w-64 overflow-hidden rounded-xl p-1">
             {mentionOptions.map((agent, i) => (
               <li key={agent.id}>
                 <button
@@ -132,7 +132,7 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: 
                   }}
                   className={clsx(
                     "flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left",
-                    i === mentionIndex ? "bg-surface-3" : "hover:bg-surface-3",
+                    i === mentionIndex ? "bg-accent/15 ring-1 ring-accent/30" : "hover:bg-surface-3/60",
                   )}
                 >
                   <AgentAvatar name={agent.display_name} modelId={agent.model_identifier} size="sm" />
@@ -148,8 +148,8 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: 
 
         <div
           className={clsx(
-            "rounded-2xl border bg-surface-2 shadow-[0_8px_30px_rgb(0_0_0/0.35)] transition-colors focus-within:border-line-strong",
-            firewall.flagged ? "border-red-500/60" : "border-line",
+            "glass-strong rounded-2xl transition-shadow focus-within:shadow-[0_0_0_1px_rgb(79_216_255/0.45),0_18px_50px_-18px_rgb(79_216_255/0.55)]",
+            firewall.flagged && "!border-red-400/60",
           )}
         >
           <textarea
@@ -163,11 +163,11 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: 
               resize();
             }}
             onKeyDown={onKeyDown}
-            className="block max-h-[220px] w-full resize-none bg-transparent px-4 pt-3.5 text-[14.5px] text-ink outline-none placeholder:text-muted"
+            className="block max-h-[220px] w-full resize-none bg-transparent px-4 pt-3.5 text-[14.5px] text-ink outline-none placeholder:text-muted focus-visible:outline-none"
           />
           <div className="flex items-center gap-3 px-3 pb-2.5 pt-1.5">
             {firewall.flagged ? (
-              <span className="inline-flex items-center gap-1.5 text-[12px] text-red-400">
+              <span className="inline-flex items-center gap-1.5 text-[12px] text-red-300">
                 <ShieldAlert className="size-3.5" />
                 Prompt-Firewall: {firewall.matches.join(", ")}
               </span>
@@ -180,7 +180,7 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: 
             {running ? (
               <button
                 onClick={onStop}
-                className="flex size-8 items-center justify-center rounded-lg bg-ink text-canvas hover:bg-ink-2"
+                className="btn-ghost size-9"
                 aria-label="Stoppen"
               >
                 <Square className="size-3.5 fill-current" />
@@ -189,7 +189,7 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: 
               <button
                 onClick={submit}
                 disabled={!value.trim() || firewall.flagged}
-                className="flex size-8 items-center justify-center rounded-lg bg-ink text-canvas hover:bg-ink-2 disabled:bg-surface-3 disabled:text-muted"
+                className="btn-primary size-9"
                 aria-label="Senden"
               >
                 <ArrowUp className="size-4" />

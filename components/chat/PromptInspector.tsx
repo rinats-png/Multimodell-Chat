@@ -61,14 +61,14 @@ export function PromptInspector({ target, onClose, room, agents, messages }: Pro
           : "Payload, der beim nächsten Turn an das Modell gehen würde"
       }
     >
-      <div className="flex flex-wrap items-center gap-2 border-b border-line px-5 py-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-line/70 px-5 py-3">
         {agents.map((a) => (
           <button
             key={a.id}
             onClick={() => setAgentId(a.id)}
             className={clsx(
               "inline-flex items-center gap-2 rounded-lg border px-2 py-1 text-[12.5px]",
-              a.id === selectedId ? "border-line-strong bg-surface-3 text-ink" : "border-line text-muted hover:text-ink-2",
+              a.id === selectedId ? "border-accent/40 bg-accent/12 text-ink" : "border-line/80 text-muted hover:text-ink-2",
             )}
           >
             <AgentAvatar name={a.display_name} modelId={a.model_identifier} size="sm" />
@@ -86,8 +86,8 @@ export function PromptInspector({ target, onClose, room, agents, messages }: Pro
       {payload && (
         <div className="space-y-2.5 p-5">
           {[{ role: "system" as const, content: payload.system }, ...payload.messages].map((m, i) => (
-            <div key={i} className="overflow-hidden rounded-xl border border-line">
-              <div className="flex items-center justify-between border-b border-line bg-surface-2 px-3 py-1.5">
+            <div key={i} className="overflow-hidden rounded-xl border border-line/80 bg-canvas/40">
+              <div className="flex items-center justify-between border-b border-line/70 bg-surface/50 px-3 py-1.5">
                 <span className={clsx("rounded-md border px-1.5 py-0.5 font-mono text-[11px]", ROLE_STYLE[m.role])}>
                   role: &quot;{m.role}&quot;
                 </span>

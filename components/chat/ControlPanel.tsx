@@ -47,7 +47,7 @@ export function ControlPanel({ room, messages, onChange, limits }: ControlPanelP
   return (
     <div className="space-y-6 p-4">
       <section>
-        <h3 className="text-[11px] font-medium uppercase tracking-wider text-muted">Orchestrierung</h3>
+        <h3 className="text-[10.5px] font-medium uppercase tracking-[0.14em] text-muted">Orchestrierung</h3>
         <div className="mt-2 space-y-1.5">
           {MODES.map(({ value, title, description, icon: Icon }) => (
             <button
@@ -55,8 +55,8 @@ export function ControlPanel({ room, messages, onChange, limits }: ControlPanelP
               onClick={() => onChange({ orchestration_mode: value })}
               className={`flex w-full gap-3 rounded-xl border p-3 text-left transition-colors ${
                 room.orchestration_mode === value
-                  ? "border-accent/60 bg-accent/10"
-                  : "border-line bg-surface-2 hover:border-line-strong"
+                  ? "border-accent/50 bg-gradient-to-br from-accent/15 to-accent/[0.03] shadow-[0_0_24px_-10px_rgb(79_216_255/0.8)]"
+                  : "border-line/80 bg-canvas/30 hover:border-accent/30"
               }`}
             >
               <Icon className={`mt-0.5 size-4 shrink-0 ${room.orchestration_mode === value ? "text-accent-strong" : "text-muted"}`} />
@@ -70,7 +70,7 @@ export function ControlPanel({ room, messages, onChange, limits }: ControlPanelP
       </section>
 
       <section className="space-y-5">
-        <h3 className="text-[11px] font-medium uppercase tracking-wider text-muted">Kosten-Bremse</h3>
+        <h3 className="text-[10.5px] font-medium uppercase tracking-[0.14em] text-muted">Kosten-Bremse</h3>
         <RangeField
           label="Sliding Window"
           hint="Nur die letzten N Nachrichten werden an jedes Modell geschickt. Ältere landen im Langzeitgedächtnis."
@@ -92,14 +92,14 @@ export function ControlPanel({ room, messages, onChange, limits }: ControlPanelP
       </section>
 
       <section>
-        <h3 className="text-[11px] font-medium uppercase tracking-wider text-muted">Token-Ledger dieser Debatte</h3>
+        <h3 className="text-[10.5px] font-medium uppercase tracking-[0.14em] text-muted">Token-Ledger dieser Debatte</h3>
         <dl className="mt-2 grid grid-cols-3 gap-2">
           {[
             ["Input", formatNumber(totals.input)],
             ["Output", formatNumber(totals.output)],
             ["Kosten", formatUsd(totals.cost)],
           ].map(([label, value]) => (
-            <div key={label} className="rounded-xl border border-line bg-surface-2 px-3 py-2.5">
+            <div key={label} className="rounded-xl border border-line/80 bg-canvas/40 px-3 py-2.5">
               <dt className="text-[11px] text-muted">{label}</dt>
               <dd className="mt-0.5 font-mono text-[13px] text-ink">{value}</dd>
             </div>
@@ -108,8 +108,8 @@ export function ControlPanel({ room, messages, onChange, limits }: ControlPanelP
       </section>
 
       <section>
-        <h3 className="text-[11px] font-medium uppercase tracking-wider text-muted">Langzeitgedächtnis</h3>
-        <div className="mt-2 rounded-xl border border-line bg-surface-2 p-3 text-[12.5px] leading-relaxed text-ink-2">
+        <h3 className="text-[10.5px] font-medium uppercase tracking-[0.14em] text-muted">Langzeitgedächtnis</h3>
+        <div className="mt-2 rounded-xl border border-openai/20 bg-gradient-to-br from-openai/[0.07] to-transparent p-3 text-[12.5px] leading-relaxed text-ink-2">
           {!limits.runningSummary ? (
             <p className="text-muted">Das Langzeitgedächtnis ist ab dem Pro-Tarif verfügbar.</p>
           ) : room.running_summary ? (

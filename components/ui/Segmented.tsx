@@ -19,7 +19,7 @@ interface SegmentedProps<T extends string> {
 
 export function Segmented<T extends string>({ value, options, onChange, size = "md", ariaLabel }: SegmentedProps<T>) {
   return (
-    <div role="radiogroup" aria-label={ariaLabel} className="inline-flex rounded-full border border-line bg-surface-2 p-0.5">
+    <div role="radiogroup" aria-label={ariaLabel} className="inline-flex rounded-full border border-line/80 bg-canvas/50 p-0.5 backdrop-blur">
       {options.map(({ value: v, label, icon: Icon }) => (
         <button
           key={v}
@@ -29,7 +29,9 @@ export function Segmented<T extends string>({ value, options, onChange, size = "
           className={clsx(
             "inline-flex items-center gap-1.5 rounded-full font-medium transition-colors",
             size === "sm" ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-[13px]",
-            v === value ? "bg-surface-3 text-ink shadow-sm ring-1 ring-line-strong" : "text-muted hover:text-ink-2",
+            v === value
+              ? "bg-gradient-to-b from-accent/25 to-accent/10 text-ink shadow-[0_0_16px_-6px_rgb(79_216_255/0.8)] ring-1 ring-accent/40"
+              : "text-muted hover:text-ink-2",
           )}
         >
           {Icon && <Icon className="size-3.5" />}
