@@ -10,7 +10,7 @@ function fakeClient(results: Record<string, unknown>) {
   const builder = (table: string) => {
     const chain: string[] = [`from(${table})`];
     const api: Record<string, unknown> = {};
-    for (const m of ["select", "insert", "update", "delete", "eq", "order", "limit", "returns"]) {
+    for (const m of ["select", "insert", "update", "delete", "eq", "order", "limit", "range", "returns"]) {
       api[m] = (...args: unknown[]) => {
         chain.push(`${m}(${JSON.stringify(args)})`);
         return api;
@@ -71,5 +71,27 @@ describe("Supabase-Store: Service-Role nur nach Besitzprüfung (Z14-16)", () => 
     expect(admin.calls[0]).not.toContain("abcdefghijklmnop");
     expect(admin.calls[0]).toContain('"custom_openrouter_key":"v1:');
     expect(admin.calls[0]).toContain(`eq(["id","${USER}"])`);
+  });
+
+  it("TEST-STORE-1: Nachrichten werden seitenweise geladen, auch über 1000 Zeilen", async () => {
+    const pages = [Array.from({ length: 1000 }, (_, i) => ({ id: `a${i}`, estimated_cost_usd: "0" })), [{ id: "last", estimated_cost_usd: "0" }]];
+    let call = 0;
+    const calls: string[] = [];
+    const builder = () => {
+      const api: Record<string, unknown> = {};
+      for (const m of ["select", "eq", "order", "returns"]) api[m] = () => api;
+      api.range = (from: number, to: number) => {
+        calls.push(`${from}-${to}`);
+        return api;
+      };
+      api.then = (resolve: (v: unknown) => void) => resolve({ data: pages[call++] ?? [], error: null });
+      return api;
+    };
+    const user = { from: builder } as unknown as SupabaseClient;
+    const store = createSupabaseStore(user, user, USER);
+    const rows = await store.listMessages(message.room_id);
+    expect(rows).toHaveLength(1001);
+    expect(rows.at(-1)?.id).toBe("last");
+    expect(calls).toEqual(["0-999", "1000-1999"]);
   });
 });

@@ -171,8 +171,15 @@ export function TronBackdrop() {
       }
     }
 
+    let lastDraw = 0;
     function frame(now: number) {
       const animate = palette.on && motionAllowed(document.documentElement);
+      // Bewegung mit höchstens ~30 Bildern pro Sekunde: spart Akku und Grafikleistung
+      if (animate && now - lastDraw < 33) {
+        raf = requestAnimationFrame(frame);
+        return;
+      }
+      lastDraw = now;
       draw(animate ? (now - start) / 1000 : STILL_AT);
       if (animate) raf = requestAnimationFrame(frame);
     }
@@ -187,6 +194,8 @@ export function TronBackdrop() {
     resize();
     refresh();
     const onResize = () => {
+      // Mobile Adressleiste ändert nur die Höhe: dann nicht neu anlegen
+      if (window.innerWidth === w && Math.abs(window.innerHeight - h) < 150) return;
       resize();
       refresh();
     };

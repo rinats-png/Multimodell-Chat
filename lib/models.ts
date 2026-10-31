@@ -51,7 +51,7 @@ export function isPlatformModel(modelId: string): boolean {
 /** Obergrenze für generierte Tokens pro Agenten-Antwort. */
 export const MAX_OUTPUT_TOKENS = 700;
 
-export function getModelInfo(modelId: string): ModelInfo | undefined {
+function getModelInfo(modelId: string): ModelInfo | undefined {
   return MODEL_CATALOG.find((m) => m.id === modelId);
 }
 

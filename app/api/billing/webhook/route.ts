@@ -30,13 +30,14 @@ export async function POST(request: Request) {
   }
 
   const admin = getSupabaseAdmin();
-  const { error: dupError } = await admin.from("billing_events").insert({ id: event.id, type: event.type });
-  if (dupError) {
-    // 23505 = bereits verarbeitet → idempotent bestätigen
-    if (dupError.code === "23505") return new Response("ok", { status: 200 });
-    logError("webhook.idempotency", dupError);
+  // Bereits verarbeitet? → idempotent bestätigen. Das Ereignis wird erst NACH erfolgreicher Verarbeitung gemerkt:
+  // Bricht die Funktion mittendrin ab (Zeitlimit, Absturz), liefert Stripe es erneut zu und der Tarif wird doch noch gesetzt.
+  const { data: seen, error: seenError } = await admin.from("billing_events").select("id").eq("id", event.id).maybeSingle();
+  if (seenError) {
+    logError("webhook.idempotency", seenError);
     return new Response("error", { status: 500 });
   }
+  if (seen) return new Response("ok", { status: 200 });
 
   try {
     if (event.type === "checkout.session.completed") {
@@ -50,13 +51,16 @@ export async function POST(request: Request) {
       if (!userId) throw new Error("Abo ohne Nutzer-ID");
       await syncSubscription(userId, sub.id, { allowNew: false });
     }
-    return new Response("ok", { status: 200 });
   } catch (error) {
-    // Event wieder freigeben, damit Stripe es erneut zustellen kann.
-    await admin.from("billing_events").delete().eq("id", event.id);
+    // Nicht gemerkt: Stripe stellt das Ereignis erneut zu.
     logError("webhook", error, { type: event.type });
     return new Response("error", { status: 500 });
   }
+  // syncSubscription liest den aktuellen Stand bei Stripe und ist daher wiederholbar; schlägt das Merken fehl,
+  // läuft eine erneute Zustellung einfach noch einmal durch.
+  const { error: recordError } = await admin.from("billing_events").insert({ id: event.id, type: event.type });
+  if (recordError && recordError.code !== "23505") logError("webhook.record", recordError);
+  return new Response("ok", { status: 200 });
 }
 
 async function syncSubscription(userId: string, subscriptionId: string, options: { allowNew: boolean }): Promise<void> {

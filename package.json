@@ -8,7 +8,9 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:rls": "bash scripts/test-rls.sh"
+    "test:rls": "bash scripts/test-rls.sh",
+    "a11y": "node scripts/a11y-check.cjs",
+    "smoke": "node scripts/smoke-browser.cjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.110",

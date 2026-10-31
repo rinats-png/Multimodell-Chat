@@ -78,7 +78,7 @@ export function isRecentSignIn(session: Pick<AppSession, "lastSignInAt" | "isDem
 }
 
 /** Allowlist der Profilfelder für den Browser – nie Key oder Stripe-IDs (Z14-06). */
-const hintOf = (key: string) => `${key.slice(0, 6)}…${key.slice(-4)}`;
+const hintOf = (key: string, onlyEnd = false) => (onlyEnd ? `…${key.slice(-4)}` : `${key.slice(0, 6)}…${key.slice(-4)}`);
 
 export function toPublicProfile(profile: UserProfile): PublicProfile {
   const key = effectiveCustomKey(profile);
@@ -86,7 +86,8 @@ export function toPublicProfile(profile: UserProfile): PublicProfile {
   if (key) connections.push({ id: "openrouter", hint: hintOf(key) });
   for (const id of PROVIDER_KEY_IDS) {
     const value = effectiveProviderKey(profile, id);
-    if (value) connections.push({ id, hint: hintOf(value) });
+    // Gateway-Keys haben kein festes Präfix: nur das Ende zeigen, damit vom Key nicht die Hälfte im Browser steht
+    if (value) connections.push({ id, hint: hintOf(value, id === "gateway") });
   }
   return {
     id: profile.id,

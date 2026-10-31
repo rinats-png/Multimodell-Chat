@@ -59,7 +59,7 @@ interface StreamingTurn {
 
 const MODE_OPTIONS = [
   { value: "router" as const, label: "Moderator", icon: Brain },
-  { value: "round-robin" as const, label: "Round-Robin", icon: Repeat2 },
+  { value: "round-robin" as const, label: "Reihum", icon: Repeat2 },
   { value: "manual" as const, label: "Manuell", icon: Hand },
 ];
 
@@ -91,6 +91,11 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
   const messageCount = useRef(messages.length);
   const settingsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingPatch = useRef<RoomSettingsPatch>({});
+  // Stand vor der ersten ungespeicherten Änderung: bei einem Fehler wird nur zurückgesetzt, was geändert wurde
+  const settingsBefore = useRef<ChatRoom | null>(null);
+
+  // Verlässt man den Raum, wird eine laufende Antwort abgebrochen (spart Kosten, kein Weiterlesen im Hintergrund)
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const agentById = useCallback((id: string | null) => agents.find((a) => a.id === id), [agents]);
 
@@ -190,12 +195,15 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
   // ---- Einstellungen & Agenten --------------------------------------------
 
   function updateRoom(patch: RoomSettingsPatch) {
+    if (!settingsBefore.current) settingsBefore.current = room;
     setRoom((prev) => ({ ...prev, ...patch }));
     pendingPatch.current = { ...pendingPatch.current, ...patch };
     if (settingsTimer.current) clearTimeout(settingsTimer.current);
     settingsTimer.current = setTimeout(async () => {
       const merged = pendingPatch.current;
+      const before = settingsBefore.current;
       pendingPatch.current = {};
+      settingsBefore.current = null;
       const res = await fetch(`/api/rooms/${room.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -204,7 +212,10 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
         setError(data.error ?? "Einstellung konnte nicht gespeichert werden");
-        setRoom(props.initialRoom);
+        if (before) {
+          const restored = Object.fromEntries(Object.keys(merged).map((k) => [k, before[k as keyof ChatRoom]]));
+          setRoom((prev) => ({ ...prev, ...restored }));
+        }
       } else if (merged.title) router.refresh();
     }, 350);
   }
@@ -324,6 +335,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
       />
 
       <main className="relative flex min-w-0 flex-1 flex-col">
+        <h1 className="sr-only">{room.title}</h1>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b border-line/50 px-2 sm:gap-3 sm:px-4">
           <IconButton label="Navigation öffnen" onClick={() => setNavOpen(true)} className="md:hidden">
             <Menu className="size-4" />
@@ -397,7 +409,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
           </div>
         )}
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto">
+        <div ref={scrollRef} role="log" aria-live="polite" aria-label="Verlauf der Debatte" className="flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8">
             {messages.length === 0 && !running ? (
               <EmptyState agents={activeAgents} onPick={(p) => orchestrate({ content: p })} />
@@ -409,7 +421,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         </div>
 
         {error && (
-          <div className="mx-auto mb-2 flex w-full max-w-3xl items-start gap-2 px-4">
+          <div role="alert" className="mx-auto mb-2 flex w-full max-w-3xl items-start gap-2 px-4">
             <div className="flex w-full items-start gap-2 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-[13px] text-danger backdrop-blur">
               <TriangleAlert className="mt-0.5 size-4 shrink-0" />
               <span className="flex-1">{error}</span>
@@ -515,9 +527,9 @@ function EmptyState({ agents, onPick }: { agents: RoomAgent[]; onPick: (prompt: 
           <AgentAvatar key={a.id} name={a.display_name} modelId={a.model_identifier} size="lg" className="ring-4 ring-canvas-2" />
         ))}
       </div>
-      <h1 className="mt-6 font-display text-[26px] font-medium leading-tight tracking-tight sm:text-[30px]">
+      <h2 className="mt-6 font-display text-[26px] font-medium leading-tight tracking-tight sm:text-[30px]">
         <span className="text-gradient">Worüber sollen die KIs debattieren?</span>
-      </h1>
+      </h2>
       <p className="mt-2 max-w-md text-[14px] text-muted">
         {agents.map((a) => a.display_name).join(", ")} diskutieren mit dir – und miteinander. Jede KI vertritt eine
         eigene Fachrolle und widerspricht, statt nur zuzustimmen.

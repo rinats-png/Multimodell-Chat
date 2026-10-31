@@ -45,7 +45,10 @@ describe("Orchestrierung (F-03, F-04)", () => {
     const msg = await userMessage(room.id, "Welche Datenbank-Architektur?");
     const { events, emit } = collector();
     await runOrchestration({ store: memoryStore, room, agents, forcedAgentId: null, userMessage: msg, allowPlatformKey: false, emit, signal: new AbortController().signal });
-    expect(events.filter((e) => e.type === "router")).toHaveLength(2);
+    const routerEvents = events.filter((e) => e.type === "router");
+    expect(routerEvents).toHaveLength(2);
+    // jede Wahl ist begründet
+    expect(routerEvents.every((e) => e.type === "router" && e.reason.trim().length > 0)).toBe(true);
     expect((await memoryStore.listMessages(room.id)).filter((m) => m.sender_type === "agent")).toHaveLength(2);
   });
 

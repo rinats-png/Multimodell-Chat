@@ -35,7 +35,7 @@ describe("Eigene Zugänge (F-13)", () => {
     expect((await patchConnection(jsonRequest("/api/connections", "PATCH", { provider: "openai", key: "sk-abcdefghijklmnopqrstuv", extra: 1 }))).status).toBe(400);
   });
 
-  it("T-SEC-23: ein anderer Nutzer sieht und nutzt fremde Keys nicht", async () => {
+  it("T-SEC-36: ein anderer Nutzer sieht und nutzt fremde Keys nicht", async () => {
     await memoryStore.setProviderKey("anthropic", ANTHROPIC_KEY);
     await memoryStore.setCustomKey("sk-or-v1-abcdefghijklmnop");
     const other = createMemoryStore("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
@@ -46,7 +46,7 @@ describe("Eigene Zugänge (F-13)", () => {
     expect(toPublicProfile(otherProfile).connections).toEqual([]);
   });
 
-  it("T-SEC-24: Keys liegen im Speicher nur verschlüsselt", async () => {
+  it("T-SEC-37: Keys liegen im Speicher nur verschlüsselt", async () => {
     await memoryStore.setProviderKey("openai", "sk-proj-abcdefghijklmnopqrstuvwxyz");
     const raw = JSON.stringify((globalThis as unknown as { __mmchatMemoryDbs: Map<string, unknown> }).__mmchatMemoryDbs.get("local"));
     expect(raw).not.toContain("abcdefghijklmnopqrstuvwxyz");
@@ -75,7 +75,7 @@ describe("Mit OpenRouter verbinden (OAuth PKCE)", () => {
     expect(pkce.verifier.length).toBeGreaterThanOrEqual(43);
   });
 
-  it("T-SEC-25: Rückleitung nur mit passendem state", () => {
+  it("T-SEC-38: Rückleitung nur mit passendem state", () => {
     const pkce = createPkce();
     expect(verifierFromCookie(pkce.cookieValue, pkce.state)).toBe(pkce.verifier);
     expect(verifierFromCookie(pkce.cookieValue, "fremder-state")).toBeNull();
@@ -116,7 +116,7 @@ describe("Lokaler Abo-Modus (CLI-Brücke)", () => {
     delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   });
 
-  it("T-SEC-26: ohne Schalter laufen Abo-Modelle nie über ein lokales Programm", () => {
+  it("T-SEC-39: ohne Schalter laufen Abo-Modelle nie über ein lokales Programm", () => {
     const p = { subscription_tier: "free" as const, custom_openrouter_key: null, provider_keys: {} };
     expect(resolveModelAccess(p, "abo/claude", { allowPlatformKey: true }).source).toBe("demo");
     process.env.LOCAL_SUBSCRIPTION_MODE = "true";

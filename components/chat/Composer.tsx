@@ -156,6 +156,7 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: 
             ref={textareaRef}
             value={value}
             rows={1}
+            aria-label="Nachricht an die Runde"
             placeholder="Stelle eine Frage an die Runde – oder erwähne eine KI mit @Claude …"
             onChange={(e) => {
               setValue(e.target.value);

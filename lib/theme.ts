@@ -1,4 +1,4 @@
-/** system = Systemeinstellung (dunkel → Eis), light = Morgenlicht, eis/zinn = die beiden dunklen Farbwelten. */
+/** system = Systemeinstellung (dunkel → Eis), light = Eis hell, eis/zinn = die beiden dunklen Farbwelten. */
 export type ThemeChoice = "system" | "light" | "eis" | "zinn";
 
 export const THEME_STORAGE_KEY = "mm-theme";

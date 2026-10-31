@@ -33,6 +33,8 @@ const SUMMARY_BATCH = 4;
 const ROUTER_TOKEN_ESTIMATE = 800;
 /** Bewertung einer Antwort: geschätzter Verbrauch für die Kontingentprüfung. */
 const STANCE_TOKEN_ESTIMATE = 700;
+/** Zeitbudget einer Runde, nach dem keine weitere KI mehr beginnt (Funktionslimit 120 s). */
+const ROUND_TIME_BUDGET_MS = 90_000;
 
 /** Tarifgrenzen, die der Raum (über die REST-API veränderbar) nie überschreiten darf (BF-28). */
 export function effectiveRoomSettings(room: ChatRoom, limits: PlanLimits) {
@@ -122,8 +124,12 @@ export async function runOrchestration(input: OrchestrateInput): Promise<void> {
 
   // ---- Turn-Schleife ------------------------------------------------------
   try {
+    const startedAt = Date.now();
     for (let turn = 0; ; turn++) {
       if (signal.aborted) break;
+      // Nach ~90 s keine neue Antwort mehr beginnen: die Funktion darf höchstens 120 s laufen, ein Abbruch mittendrin
+      // würde Verbrauch ungebucht lassen und die Runde bis zum Ablauf der Sperre blockieren.
+      if (turn > 0 && Date.now() - startedAt > ROUND_TIME_BUDGET_MS) break;
       const agent = await planner(turn);
       if (!agent) break;
 
@@ -345,6 +351,11 @@ async function rateAndStoreStance({ store, reply, previous, profile, access, emi
     emit({ type: "stance", messageId: reply.id, stance: rating.stance, targetId: rating.targetId });
     return tokens;
   } catch (error) {
+    // Abbruch während des Modellaufrufs: der Anbieter hat ihn womöglich schon berechnet → Schätzung buchen (wie beim Router)
+    if (signal.aborted && usable && books) {
+      await store.incrementTokens(STANCE_TOKEN_ESTIMATE).catch((e) => logError("stance.book", e));
+      return STANCE_TOKEN_ESTIMATE;
+    }
     if (!signal.aborted) logError("stance", error, { roomId: reply.room_id });
     return 0;
   }

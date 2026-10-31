@@ -117,7 +117,7 @@ function AgentCard({ agent, open, onToggle, onUpdate, onToggleActive, onDelete, 
         <button
           role="switch"
           aria-checked={agent.is_active}
-          aria-label={`${agent.display_name} ${agent.is_active ? "deaktivieren" : "aktivieren"}`}
+          aria-label={`${agent.display_name} aktiv`}
           onClick={onToggleActive}
           className={clsx(
             "relative h-5 w-9 shrink-0 rounded-full transition-colors",
@@ -126,7 +126,8 @@ function AgentCard({ agent, open, onToggle, onUpdate, onToggleActive, onDelete, 
         >
           <span
             className={clsx(
-              "absolute top-0.5 size-4 rounded-full bg-white transition-all",
+              "absolute top-0.5 size-4 rounded-full transition-all",
+              agent.is_active ? "bg-on-accent" : "bg-ink",
               agent.is_active ? "left-[18px]" : "left-0.5",
             )}
           />

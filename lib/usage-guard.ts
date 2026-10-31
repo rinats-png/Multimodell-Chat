@@ -44,7 +44,7 @@ export function assertQuota(profile: UserProfile, estimatedTokens: number): void
     throw new UsageGuardError(
       "quota_exceeded",
       quota.remainingTokens > 0
-        ? `Dein restliches Kontingent (${quota.remainingTokens} Tokens) reicht für diese Antwort nicht aus (≈ ${estimatedTokens} Tokens). Verkleinere das Sliding Window oder upgrade deinen Tarif.`
+        ? `Dein restliches Kontingent (${quota.remainingTokens} Tokens) reicht für diese Antwort nicht aus (≈ ${estimatedTokens} Tokens). Verkleinere das Kontextfenster oder upgrade deinen Tarif.`
         : "Dein monatliches Token-Kontingent ist aufgebraucht. Verbinde dein OpenRouter-Konto oder hinterlege einen eigenen API-Key.",
       402,
     );

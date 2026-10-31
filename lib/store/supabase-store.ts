@@ -141,11 +141,25 @@ export function createSupabaseStore(user: SupabaseClient, admin: SupabaseClient,
     },
 
     async listMessages(roomId) {
-      const rows = unwrap(
-        await user.from("messages").select("*").eq("room_id", roomId).order("created_at", { ascending: true }).returns<ChatMessage[]>(),
-        "Nachrichten laden",
-      );
-      return rows.map(normalizeMessage);
+      // PostgREST liefert höchstens 1000 Zeilen je Abruf: seitenweise laden, sonst fehlen in langen Debatten die neuesten Nachrichten.
+      const PAGE = 1000;
+      const all: ChatMessage[] = [];
+      for (let from = 0; ; from += PAGE) {
+        const rows = unwrap(
+          await user
+            .from("messages")
+            .select("*")
+            .eq("room_id", roomId)
+            .order("created_at", { ascending: true })
+            .order("id", { ascending: true })
+            .range(from, from + PAGE - 1)
+            .returns<ChatMessage[]>(),
+          "Nachrichten laden",
+        );
+        all.push(...rows);
+        if (rows.length < PAGE) break;
+      }
+      return all.map(normalizeMessage);
     },
     async insertMessage(message) {
       await assertOwnRoom(message.room_id);

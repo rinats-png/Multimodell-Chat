@@ -55,7 +55,7 @@ Neue Debatten starten dann mit ChatGPT, Claude, Gemini und Kimi über `abo/chatg
 
 ## Produktiv einrichten
 
-1. **Supabase** (Pro-Plan empfohlen, Region EU): Migrationen ausführen (`supabase db push` oder der Reihe nach im SQL-Editor: `supabase/migrations/0001_init.sql`, `0002_hardening.sql`, `0003_billing.sql`, `0004_limits.sql`).
+1. **Supabase** (Pro-Plan empfohlen, Region EU): Migrationen ausführen (`supabase db push` oder der Reihe nach im SQL-Editor: alle Dateien in `supabase/migrations/` aufsteigend, zuletzt `0005_connections.sql`, `0006_stance.sql`, `0007_message_fk_indexes.sql`).
    Im Dashboard: „Confirm email“ an, Mindestlänge 15, „Leaked password protection“ an, Email-OTP-Ablauf 1800 s, Session-Time-box 90 Tage, Redirect-URL `https://<domain>/auth/callback`.
 2. **Upstash Redis** anlegen (Pflicht in Produktion für instanzübergreifende Limits).
 3. **OpenRouter**: Key anlegen, Credit-Limit setzen, unter Privacy „data collection“ verbieten.
@@ -70,7 +70,8 @@ Neue Debatten starten dann mit ChatGPT, Claude, Gemini und Kimi über `abo/chatg
 | `npm run typecheck` | TypeScript |
 | `npm test` | Vitest: Unit, Integration, Route-Handler, Middleware, Auth, Webhook |
 | `npm run test:rls` | RLS- und Rechte-Tests gegen PostgreSQL (temporärer Cluster oder `DATABASE_URL`) |
-| `node scripts/smoke-browser.cjs` | Browser-Smoke-Test (Playwright) gegen einen laufenden Server |
+| `node scripts/smoke-browser.cjs` | Browser-Smoke-Test gegen einen laufenden Server (braucht Playwright + Chromium: `npm i -D playwright && npx playwright install chromium`) |
+| `npm run build && node scripts/a11y-check.cjs` | Barrierefreiheits-Prüfung (Namen, Kontrast, Fokus, Überlauf) in allen Farbwelten und Breiten; startet die gebaute App selbst, braucht Playwright |
 
 CI (`.github/workflows/ci.yml`): Typecheck, Tests, Build, `npm audit`, RLS-Tests mit PostgreSQL-Service, gitleaks.
 

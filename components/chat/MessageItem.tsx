@@ -165,7 +165,7 @@ export function WindowDivider({ size }: { size: number }) {
   return (
     <div className="flex items-center gap-3 text-center text-[11px] uppercase tracking-[0.14em] text-accent-strong/80">
       <div className="h-px flex-1 bg-gradient-to-r from-transparent to-accent/50" />
-      Sliding Window · nur die letzten {size} Nachrichten gehen an die Modelle
+      Kontextfenster · nur die letzten {size} Nachrichten gehen an die Modelle
       <div className="h-px flex-1 bg-gradient-to-l from-transparent to-accent/50" />
     </div>
   );

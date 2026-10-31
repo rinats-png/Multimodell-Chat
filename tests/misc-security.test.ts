@@ -36,8 +36,11 @@ describe("weitere Sicherheitstests", () => {
     expect(a.userId).toBe("11111111-2222-4333-8444-555555555555");
     expect(await createMemoryStore("99999999-2222-4333-8444-555555555555").listRooms()).toEqual([]);
     demoCookie.value = undefined;
-    await expect(getSession()).rejects.toThrow();
-    demoCookie.value = "11111111-2222-4333-8444-555555555555";
+    try {
+      await expect(getSession()).rejects.toThrow();
+    } finally {
+      demoCookie.value = "11111111-2222-4333-8444-555555555555"; // auch bei fehlgeschlagener Prüfung wiederherstellen
+    }
   });
 
   it("T-SEC-33: Browser-Profil enthält weder Key noch Stripe-IDs", () => {

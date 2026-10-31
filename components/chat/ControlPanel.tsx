@@ -22,7 +22,7 @@ const MODES: { value: OrchestrationMode; title: string; description: string; ico
   },
   {
     value: "round-robin",
-    title: "Round-Robin",
+    title: "Reihum",
     description: "Alle aktiven KIs antworten nacheinander, bis Max-Auto-Turns erreicht ist.",
     icon: Repeat2,
   },
@@ -52,6 +52,7 @@ export function ControlPanel({ room, messages, onChange, limits }: ControlPanelP
           {MODES.map(({ value, title, description, icon: Icon }) => (
             <button
               key={value}
+              aria-pressed={room.orchestration_mode === value}
               onClick={() => onChange({ orchestration_mode: value })}
               className={`flex w-full gap-3 rounded-xl border p-3 text-left transition-colors ${
                 room.orchestration_mode === value
@@ -72,7 +73,7 @@ export function ControlPanel({ room, messages, onChange, limits }: ControlPanelP
       <section className="space-y-5">
         <h3 className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Kosten-Bremse</h3>
         <RangeField
-          label="Sliding Window"
+          label="Kontextfenster"
           hint="Nur die letzten N Nachrichten werden an jedes Modell geschickt. Ältere landen im Langzeitgedächtnis."
           value={Math.min(room.sliding_window_size, limits.maxSlidingWindow)}
           min={2}
@@ -92,7 +93,7 @@ export function ControlPanel({ room, messages, onChange, limits }: ControlPanelP
       </section>
 
       <section>
-        <h3 className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Token-Ledger dieser Debatte</h3>
+        <h3 className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Verbrauch dieser Debatte</h3>
         <dl className="mt-2 grid grid-cols-3 gap-2">
           {[
             ["Input", formatNumber(totals.input)],
@@ -121,7 +122,7 @@ export function ControlPanel({ room, messages, onChange, limits }: ControlPanelP
             </>
           ) : (
             <p className="text-muted">
-              Noch leer. Sobald Nachrichten aus dem Sliding Window fallen, fasst ein Mini-Modell sie in 3 Sätzen zusammen.
+              Noch leer. Sobald Nachrichten aus dem Kontextfenster fallen, fasst ein Mini-Modell sie in 3 Sätzen zusammen.
             </p>
           )}
         </div>

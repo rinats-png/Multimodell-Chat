@@ -76,7 +76,7 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
         </p>
       )}
       <p className="mt-1 text-[14px] text-muted">
-        Abrechnungszeitraum seit {new Date(profile.usage_period_start).toLocaleDateString("de-DE")} · Reset am Monatsanfang
+        Abrechnungszeitraum seit {new Date(profile.usage_period_start).toLocaleDateString("de-DE", { timeZone: "Europe/Berlin" })} · Reset am Monatsanfang
       </p>
 
       <section className="mt-8 grid gap-3 md:grid-cols-4">
@@ -107,8 +107,8 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
       </section>
 
       <section className="mt-3 grid gap-3 md:grid-cols-2">
-        <Stat label="Input-Tokens (Ledger)" value={formatNumber(totals.input)} hint="Kontext inkl. Sliding Window" />
-        <Stat label="Output-Tokens (Ledger)" value={formatNumber(totals.output)} hint="Generierte Antworten" />
+        <Stat label="Eingabe-Tokens" value={formatNumber(totals.input)} hint="Kontext inkl. Kontextfenster" />
+        <Stat label="Ausgabe-Tokens" value={formatNumber(totals.output)} hint="Generierte Antworten" />
       </section>
 
       <ConnectionsPanel profile={profile} onSaved={setProfile} connectState={connectState} localMode={localMode} />

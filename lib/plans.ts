@@ -89,6 +89,3 @@ export const PLANS: Record<SubscriptionTier, PlanDefinition> = {
 
 export const PLAN_ORDER: SubscriptionTier[] = ["free", "pro", "team"];
 
-export function planOf(tier: SubscriptionTier): PlanDefinition {
-  return PLANS[tier];
-}

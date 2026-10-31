@@ -20,13 +20,14 @@ Multimodell-Chat: KI-Gruppendebatten mit ChatGPT, Claude, Gemini u. a. als SaaS 
 | F-10 | Agenten-Studio (Rolle, Modell aus Katalog, System-Prompt, aktiv, hinzufügen/entfernen) | Muss | umgesetzt | 🔒 | BF-02, BF-28 |
 | F-11 | API-Prompt-Inspector | Soll | umgesetzt | | – |
 | F-12 | Tarife: Checkout, Webhook, Kundenportal, Verbrauchs-Dashboard | Muss | umgesetzt | 🔒 | BF-27 |
-| F-13 | Bring Your Own Key (verschlüsselt, nur Workspace-Tarif) | Muss | umgesetzt | 🔒 | BF-08, BF-24 |
+| F-13 | Eigene Zugänge (OpenRouter per OAuth, weitere Anbieter-Keys; verschlüsselt; in jedem Tarif) | Muss | umgesetzt | 🔒 | BF-08, BF-24 |
 | F-14 | Demo-Workspace (lokal, simuliertes Modell) | Kann | umgesetzt | | BF-01 |
 | F-15 | Datenexport der eigenen Daten (JSON) | Muss | umgesetzt | 🔒 | BF-16 |
 | F-16 | Konto endgültig löschen (inkl. Abo-Kündigung) | Muss | umgesetzt | 🔒 | BF-16 |
 | F-17 | Passwort vergessen / neues Passwort | Muss | umgesetzt | 🔒 | BF-13 |
 | F-18 | Impressum, Datenschutzerklärung, KI-Transparenzhinweis | Muss | umgesetzt | | BF-16, BF-17 |
 | F-19 | Zustimmung/Widerspruch: jede KI-Antwort auf eine andere KI wird bewertet (stimmt zu, widerspricht, baut weiter, neutral), als Chip an der Nachricht und im Konsens-Panel | Soll | umgesetzt | 🔒 | – |
+| F-20 | Lokaler Abo-Modus: Modelle `abo/*` über Claude Code, Codex, Gemini CLI, Kimi CLI auf dem eigenen Rechner (nur Entwicklung, ohne Supabase) | Kann | umgesetzt | 🔒 | – |
 
 ## Nicht im Umfang (Parkplatz)
 - Router-Begründungen dauerhaft speichern (BF-19)

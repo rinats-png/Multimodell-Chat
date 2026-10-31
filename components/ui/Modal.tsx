@@ -14,6 +14,10 @@ interface ModalProps {
 
 export function Modal({ open, onClose, title, subtitle, children, wide }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  // onClose ist bei den Aufrufern meist eine neue Funktion je Zeichnen; der Fokus-Effekt darf davon nicht abhängen,
+  // sonst springt der Fokus bei jedem Tastendruck zurück zum Schließen-Knopf.
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
 
   // Fokus in den Dialog setzen, darin halten und beim Schließen zurückgeben (Barrierefreiheit).
   useEffect(() => {
@@ -23,7 +27,7 @@ export function Modal({ open, onClose, title, subtitle, children, wide }: ModalP
       Array.from(dialogRef.current?.querySelectorAll<HTMLElement>("button, [href], input, textarea, select, [tabindex]:not([tabindex='-1'])") ?? []);
     focusables()[0]?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") return onClose();
+      if (e.key === "Escape") return closeRef.current();
       if (e.key !== "Tab") return;
       const items = focusables();
       if (items.length === 0) return;
@@ -42,7 +46,7 @@ export function Modal({ open, onClose, title, subtitle, children, wide }: ModalP
       window.removeEventListener("keydown", onKey);
       previous?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
   return (

@@ -98,6 +98,8 @@ export function ThinkField({ state, provider, pulse, className }: ThinkFieldProp
     }
 
     function frame(now: number) {
+      // Unsichtbar (Leiste ausgeblendet, 0×0): nichts zeichnen; ein ResizeObserver stößt neu an
+      if (w === 0 || h === 0) return;
       colors(now);
       const { state: st, provider: pv, pulse: pl } = live.current;
       const animating = motionAllowed(document.documentElement, st !== "idle");

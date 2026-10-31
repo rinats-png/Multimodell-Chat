@@ -19,16 +19,22 @@ interface IconRailProps {
 export function IconRail({ active, isDemoStore }: IconRailProps) {
   const router = useRouter();
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   async function createRoom() {
     setCreating(true);
+    setCreateError(null);
     try {
       const res = await fetch("/api/rooms", { method: "POST" });
-      const data = (await res.json().catch(() => ({}))) as { room?: ChatRoom };
+      const data = (await res.json().catch(() => ({}))) as { room?: ChatRoom; error?: string };
       if (res.ok && data.room) {
         router.push(`/chat/${data.room.id}`);
         router.refresh();
+      } else {
+        setCreateError(data.error ?? "Debatte konnte nicht angelegt werden");
       }
+    } catch {
+      setCreateError("Keine Verbindung. Bitte erneut versuchen.");
     } finally {
       setCreating(false);
     }
@@ -48,7 +54,7 @@ export function IconRail({ active, isDemoStore }: IconRailProps) {
       <RailItem label="Debatten" href="/chat" active={active === "chat"}>
         <MessagesSquare className="size-[18px]" />
       </RailItem>
-      <RailItem label="Neue Debatte" onClick={createRoom} disabled={creating}>
+      <RailItem label={createError ? `Neue Debatte – ${createError}` : "Neue Debatte"} onClick={createRoom} disabled={creating}>
         <Plus className="size-[18px]" />
       </RailItem>
       <RailItem label="Tarif & Verbrauch" href="/billing" active={active === "billing"}>

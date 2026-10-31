@@ -136,10 +136,10 @@ Getrennte Schlüssel für Entwicklung, Vorschau und Produktion. Bei Verdacht auf
 | T-SEC-20 | BD-03 | DB: Verbrauchs-/Tariffunktionen nur service_role |
 | T-SEC-21 | BD-04 | DB: Längengrenzen (System-Prompt, Window) |
 | T-SEC-22 | BD-02 | DB: Konto löschen entfernt alle eigenen Daten, fremde bleiben |
-| T-SEC-23 | BD-01 | Eigene Anbieter-Keys: ein anderer Nutzer sieht und nutzt sie nicht |
-| T-SEC-24 | BD-01 | Anbieter-Keys liegen im Speicher nur verschlüsselt; DB lehnt Klartext und Client-Zugriff ab |
-| T-SEC-25 | BD-01 | „Mit OpenRouter verbinden“: Rückleitung nur mit passendem state (PKCE, HttpOnly-Cookie) |
-| T-SEC-26 | BD-03 | Abo-Modelle laufen ohne Schalter nie über ein lokales Programm; Prompt nur über stdin |
+| T-SEC-36 | BD-01 | Eigene Anbieter-Keys: ein anderer Nutzer sieht und nutzt sie nicht |
+| T-SEC-37 | BD-01 | Anbieter-Keys liegen im Speicher nur verschlüsselt; DB lehnt Klartext und Client-Zugriff ab |
+| T-SEC-38 | BD-01 | „Mit OpenRouter verbinden“: Rückleitung nur mit passendem state (PKCE, HttpOnly-Cookie) |
+| T-SEC-39 | BD-03 | Abo-Modelle laufen ohne Schalter nie über ein lokales Programm; Prompt nur über stdin |
 | T-SEC-23 | BD-08 | Login/Registrierung/Reset antworten einheitlich |
 | T-SEC-24 | BD-07 | 5 Fehlversuche → vorübergehende Sperre mit `Retry-After` |
 | T-SEC-25 | BD-12 | Webhook: falsche Signatur → 400; Event-ID nur einmal verarbeitet |

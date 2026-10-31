@@ -22,7 +22,12 @@ export function AuthCard({ title, subtitle, children }: { title: string; subtitl
 export const inputCls = "field mt-1 px-3 py-2.5 text-[14px]";
 
 export async function postJson(url: string, body: unknown): Promise<{ ok: boolean; data: { error?: string; code?: string; signedIn?: boolean } }> {
-  const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  const data = (await res.json().catch(() => ({}))) as { error?: string; code?: string; signedIn?: boolean };
-  return { ok: res.ok, data };
+  try {
+    const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const data = (await res.json().catch(() => ({}))) as { error?: string; code?: string; signedIn?: boolean };
+    return { ok: res.ok, data };
+  } catch {
+    // Offline oder Verbindung abgebrochen: Formular nicht in „Bitte warten…“ hängen lassen
+    return { ok: false, data: { error: "Keine Verbindung. Bitte prüfe dein Netz und versuche es erneut." } };
+  }
 }

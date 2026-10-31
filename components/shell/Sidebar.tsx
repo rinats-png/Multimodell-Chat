@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { CreditCard, LogOut, MessagesSquare, Plus, Sparkles, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatCompact } from "@/lib/format";
 import { PLANS } from "@/lib/plans";
 import type { ChatRoom, PublicProfile } from "@/lib/types";
@@ -30,6 +30,14 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
   const router = useRouter();
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Mobile Schublade: Escape schließt sie
+  useEffect(() => {
+    if (!mobileOpen || !onMobileClose) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onMobileClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileOpen, onMobileClose]);
   const plan = PLANS[profile.subscription_tier];
 
   async function createRoom() {
@@ -49,7 +57,11 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
 
   async function deleteRoom(roomId: string) {
     if (!confirm("Diese Debatte inklusive Verlauf löschen?")) return;
-    await fetch(`/api/rooms/${roomId}`, { method: "DELETE" });
+    const res = await fetch(`/api/rooms/${roomId}`, { method: "DELETE" }).catch(() => null);
+    if (!res?.ok) {
+      setError("Die Debatte konnte nicht gelöscht werden. Bitte versuche es erneut.");
+      return;
+    }
     if (roomId === activeRoomId) router.push("/chat");
     router.refresh();
   }
@@ -67,9 +79,10 @@ export function Sidebar({ rooms, activeRoomId, profile, email, isDemoStore, acti
       aria-label="Navigation"
       className={clsx(
         "drawer z-40 flex w-[264px] shrink-0 flex-col max-md:glass-strong",
-        "fixed inset-y-2 left-2 rounded-2xl transition-transform",
+        "fixed inset-y-2 left-2 rounded-2xl transition-[transform,visibility] duration-200",
         "md:relative md:inset-auto md:z-auto md:translate-x-0 md:rounded-none md:border-r md:border-line/50",
-        mobileOpen ? "translate-x-0" : "-translate-x-[110%]",
+        // Geschlossen: unsichtbar, damit die Schublade weder per Tab noch vom Screenreader erreichbar ist
+        mobileOpen ? "translate-x-0" : "-translate-x-[110%] max-md:invisible",
       )}
     >
       <div className="flex items-center gap-3 px-4 pb-4 pt-4">

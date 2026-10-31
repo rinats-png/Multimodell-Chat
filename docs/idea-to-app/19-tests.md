@@ -1,6 +1,6 @@
 # Qualität & Tests
 
-> Stand 2026-10-30: `npm test` → 13 Testdateien, 78 Tests grün · `npm run test:rls` → alle Erwartungen erfüllt (PostgreSQL 16). Testnamen enthalten die IDs, Fundstelle `tests/*.test.ts` bzw. `supabase/tests/rls.test.sql`.
+> Stand 2026-10-30: `npm test` → 17 Testdateien, 110 Tests grün · `npm run test:rls` → alle Erwartungen erfüllt (PostgreSQL 16). Testnamen enthalten die IDs, Fundstelle `tests/*.test.ts` bzw. `supabase/tests/rls.test.sql`.
 
 ## Akzeptanzkriterien und Tests
 
@@ -72,7 +72,7 @@
 | ID | Kriterium | Test | Ebene |
 |---|---|---|---|
 | AK-F13-1 | Key wird nur verschlüsselt gespeichert | TEST-F13-1 | Unit (`tests/crypto.test.ts`) |
-| AK-F13-2 | Nur im Workspace-Tarif; Antwort enthält nie den Klartext | TEST-F13-2 | Integration |
+| AK-F13-2 | In jedem Tarif (Antwort enthält nie den Klartext); Antwort enthält nie den Klartext | TEST-F13-2 | Integration |
 
 ### F-15 Datenexport
 | ID | Kriterium | Test | Ebene |
@@ -153,10 +153,10 @@
 | T-SEC-20 | `rls.test.sql` | Funktionen nur service_role | BD-03 |
 | T-SEC-21 | `rls.test.sql` | Längengrenzen in der DB | BD-04 |
 | T-SEC-22 | `rls.test.sql` | Kaskadenlöschung | BD-02 |
-| T-SEC-23 | `connections.test.ts` | Fremde Keys unsichtbar und ungenutzt | BD-01 |
-| T-SEC-24 | `connections.test.ts`, `rls.test.sql` | Keys nur verschlüsselt; kein Client-Grant auf `provider_keys` | BD-01 |
-| T-SEC-25 | `connections.test.ts` | OAuth-state-Prüfung | BD-01 |
-| T-SEC-26 | `connections.test.ts` | Abo-Modus nur mit Schalter; stdin statt Argument | BD-03 |
+| T-SEC-36 | `connections.test.ts` | Fremde Keys unsichtbar und ungenutzt | BD-01 |
+| T-SEC-37 | `connections.test.ts`, `rls.test.sql` | Keys nur verschlüsselt; kein Client-Grant auf `provider_keys` | BD-01 |
+| T-SEC-38 | `connections.test.ts` | OAuth-state-Prüfung | BD-01 |
+| T-SEC-39 | `connections.test.ts` | Abo-Modus nur mit Schalter; stdin statt Argument | BD-03 |
 | T-SEC-23 | `auth.test.ts` | keine Enumeration | BD-08 |
 | T-SEC-24 | `auth.test.ts` | Fehlversuchs-Sperre | BD-07 |
 | T-SEC-25 | `webhook.test.ts` | Signatur + Idempotenz | BD-12 |

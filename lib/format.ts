@@ -17,5 +17,6 @@ export function formatUsd(n: number): string {
 }
 
 export function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  // Feste Zeitzone: Server und Browser müssen denselben Text erzeugen (sonst Hydration-Fehler).
+  return new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin" });
 }

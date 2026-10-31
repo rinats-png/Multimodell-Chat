@@ -16,7 +16,7 @@ const admin = {
           inserted.push(row.id);
           return { error: null };
         },
-        delete: () => ({ eq: async () => ({ error: null }) }),
+        select: () => ({ eq: (_col: string, id: string) => ({ maybeSingle: async () => ({ data: inserted.includes(id) ? { id } : null, error: null }) }) }),
       };
     }
     return {
@@ -106,5 +106,17 @@ describe("Stripe-Webhook (F-12)", () => {
     state.storedSubscription = null;
     await POST(signedRequest(subEvent("evt_7", "customer.subscription.updated", "sub_alt")));
     expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("TEST-F12-4: schlägt die Verarbeitung fehl, wird das Ereignis nicht gemerkt – die erneute Zustellung klappt", async () => {
+    rpc.mockResolvedValueOnce({ error: { message: "db down" } });
+    live("sub_1", "active");
+    const first = await POST(signedRequest(subEvent("evt_retry", "customer.subscription.updated")));
+    expect(first.status).toBe(500);
+    expect(inserted).not.toContain("evt_retry");
+    rpc.mockResolvedValue({ error: null });
+    const second = await POST(signedRequest(subEvent("evt_retry", "customer.subscription.updated")));
+    expect(second.status).toBe(200);
+    expect(inserted).toContain("evt_retry");
   });
 });

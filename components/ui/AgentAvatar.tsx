@@ -31,17 +31,3 @@ export function AgentAvatar({ name, modelId, size = "md", className }: AgentAvat
     </span>
   );
 }
-
-export function UserAvatar({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
-  return (
-    <span
-      className={clsx(
-        "inline-flex shrink-0 items-center justify-center rounded-xl bg-accent/15 font-semibold text-accent-strong ring-1 ring-accent/30",
-        SIZES[size],
-      )}
-      aria-hidden
-    >
-      DU
-    </span>
-  );
-}
