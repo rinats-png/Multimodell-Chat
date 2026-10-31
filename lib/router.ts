@@ -45,6 +45,11 @@ export function heuristicRoute(messages: ChatMessage[], agents: RoomAgent[], tur
 
   let agent: RoomAgent | undefined;
   let reason = "";
+  // Offener Streit zwischen zwei KIs: eine dritte Perspektive zuerst, sie kann vermitteln.
+  if (last?.sender_type === "agent" && last.stance === "disagree" && last.stance_target_id) {
+    const mediator = agents.find((a) => a.id !== last.agent_id && a.id !== last.stance_target_id);
+    if (mediator) return { nextSpeakerId: mediator.id, reason: "Streitpunkt: dritte Perspektive gefragt", inputTokens: 0, outputTokens: 0 };
+  }
   if (/architekt|sicherheit|security|skalier|risiko|datenbank|api|backend/.test(text)) {
     agent = pick(/architekt|kritisch/i, "anthropic");
     reason = "Es geht um Architektur und Risiken";
@@ -89,8 +94,9 @@ export async function routeNextSpeaker(
         "Du bist der Moderator eines Gruppenchats zwischen einem Menschen und mehreren KIs. " +
         "Wähle anhand der letzten Nachrichten, welche KI fachlich als Nächstes am meisten beitragen kann. " +
         "Wähle nie dieselbe KI, die gerade gesprochen hat. " +
+        "Steht bei der letzten Nachricht ein offener Widerspruch, wähle bevorzugt eine KI, die an diesem Streit noch nicht beteiligt war. " +
         `Gib "${USER_TURN}" zurück, wenn die Frage beantwortet ist und der Mensch entscheiden sollte.`,
-      prompt: `Verfügbare KIs:\n${roster}\n\nLetzte Nachrichten:\n${buildTranscript(recent.map(truncateMessage))}`,
+      prompt: `Verfügbare KIs:\n${roster}\n\nLetzte Nachrichten:\n${buildTranscript(recent.map(truncateMessage))}${stanceNote(recent, agents)}`,
     });
     const valid = object.nextSpeakerId === USER_TURN || agents.some((a) => a.id === object.nextSpeakerId);
     if (!valid) return heuristicRoute(messages, agents, turnIndex);
@@ -106,6 +112,15 @@ export async function routeNextSpeaker(
     // Z14-13: Der fehlgeschlagene Aufruf kann Kosten verursacht haben – Eingabe schätzen und buchen lassen.
     return { ...heuristicRoute(messages, agents, turnIndex), inputTokens: approxTokens(buildTranscript(recent.map(truncateMessage))) + 200 };
   }
+}
+
+/** Kurzer Hinweis auf bewertete Bezüge der letzten Nachrichten („Claude widerspricht ChatGPT“) für den Router. */
+function stanceNote(recent: ChatMessage[], agents: RoomAgent[]): string {
+  const label: Record<string, string> = { agree: "stimmt zu", disagree: "widerspricht", extend: "baut weiter auf" };
+  const lines = recent
+    .filter((m) => m.stance && m.stance !== "neutral" && m.stance_target_id)
+    .map((m) => `- ${m.sender_name} ${label[m.stance!]} ${agents.find((a) => a.id === m.stance_target_id)?.display_name ?? "einer KI"}`);
+  return lines.length ? `\n\nBewertete Bezüge:\n${lines.join("\n")}` : "";
 }
 
 /** Router & Summary sehen jede Nachricht höchstens in dieser Länge (Kosten-Bremse, BF-29). */

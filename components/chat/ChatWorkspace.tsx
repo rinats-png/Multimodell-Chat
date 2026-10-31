@@ -96,7 +96,8 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    // Leerer Raum: oben bleiben, damit die Überschrift der Startseite sichtbar ist.
+    if (el && (messages.length > 0 || streaming)) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages.length, streaming?.text, notes.length]);
 
   // ---- Orchestrierung ----------------------------------------------------

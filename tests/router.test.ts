@@ -48,3 +48,17 @@ describe("Moderator-Heuristik (F-04)", () => {
     expect(findMentionedAgent("ohne Erwähnung", agents)).toBeNull();
   });
 });
+
+describe("Moderator bei Streit (F-19)", () => {
+  it("TEST-F19-5: nach einem Widerspruch wählt die Heuristik die dritte KI", () => {
+    const fight = { ...reply(1, "Das halte ich für zu knapp."), stance: "disagree" as const, stance_target_id: agents[0]!.id };
+    const decision = heuristicRoute([fight], agents, 0);
+    expect(decision.nextSpeakerId).toBe(agents[2]!.id);
+    expect(decision.reason).toMatch(/Streit/);
+  });
+
+  it("TEST-F19-6: ohne Widerspruch bleibt die bisherige Wahl unverändert", () => {
+    const calm = { ...reply(1, "Einverstanden."), stance: "agree" as const, stance_target_id: agents[0]!.id };
+    expect(heuristicRoute([calm], agents, 0).reason).not.toMatch(/Streit/);
+  });
+});
