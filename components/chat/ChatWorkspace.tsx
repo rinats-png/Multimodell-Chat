@@ -17,16 +17,16 @@ import type {
   RoomAgent,
   RoomSettingsPatch,
 } from "@/lib/types";
-import { IconRail } from "@/components/shell/IconRail";
-import { Sidebar } from "@/components/shell/Sidebar";
+import { AppHeader } from "@/components/shell/AppHeader";
 import { AgentAvatar } from "@/components/ui/AgentAvatar";
 import { Segmented } from "@/components/ui/Segmented";
 import { AgentStudio } from "./AgentStudio";
 import { Composer } from "./Composer";
 import { ControlPanel } from "./ControlPanel";
-import { HudRail } from "./HudRail";
+import { AgentTiles } from "./AgentTiles";
 import { MessageItem, RouterNote, StreamingMessage, WindowDivider } from "./MessageItem";
 import { PromptInspector, type InspectorTarget } from "./PromptInspector";
+import { SideTile } from "./SideTile";
 
 interface ChatWorkspaceProps {
   initialRoom: ChatRoom;
@@ -80,7 +80,6 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [panel, setPanel] = useState<"controls" | "agents" | null>(null);
-  const [navOpen, setNavOpen] = useState(false);
   const [inspector, setInspector] = useState<InspectorTarget | null>(null);
   const [editingTitle, setEditingTitle] = useState(false);
 
@@ -265,19 +264,6 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
     setRoom((prev) => ({ ...prev, running_summary: "", summarized_message_count: 0 }));
   }
 
-  // Bewegung (Hintergrund, Denkfeld) läuft standardmäßig nur, solange KIs antworten.
-  useEffect(() => {
-    document.documentElement.dataset.live = String(running);
-    return () => {
-      document.documentElement.dataset.live = "false";
-    };
-  }, [running]);
-
-  // Auf sehr breiten Bildschirmen startet das Seitenpanel geöffnet; darunter nimmt die Denkfeld-Leiste den Platz.
-  useEffect(() => {
-    if (window.matchMedia("(min-width: 1680px)").matches) setPanel("controls");
-  }, []);
-
   // ---- Render ---------------------------------------------------------------
 
   const activeAgents = agents.filter((a) => a.is_active);
@@ -307,147 +293,131 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
   });
   notesAt(messages.length);
 
-  return (
-    <div className="flex h-dvh gap-3 overflow-hidden md:p-3">
-      <IconRail active="chat" isDemoStore={props.isDemoStore} />
-      <div className="frame relative flex min-w-0 flex-1 overflow-hidden" data-live={running}>
-      <div className="glow-field" aria-hidden />
-      <Sidebar
-        rooms={props.rooms.map((r) => (r.id === room.id ? { ...r, title: room.title } : r))}
-        activeRoomId={room.id}
-        profile={profile}
-        email={props.email}
-        isDemoStore={props.isDemoStore}
-        mobileOpen={navOpen}
-        onMobileClose={() => setNavOpen(false)}
-      />
+  const modeLabel = room.orchestration_mode === "router" ? "Moderator" : room.orchestration_mode === "round-robin" ? "Reihum" : "Manuell";
+  const statusText = running
+    ? streamingAgent
+      ? `${streamingAgent.display_name} ${streaming && streaming.text ? "antwortet" : "denkt"}`
+      : "Übertragung läuft"
+    : "Bereit";
 
-      <HudRail
+  const title = editingTitle ? (
+    <input
+      autoFocus
+      defaultValue={room.title}
+      aria-label="Titel der Debatte"
+      onBlur={(e) => {
+        setEditingTitle(false);
+        const t = e.target.value.trim();
+        if (t && t !== room.title) updateRoom({ title: t });
+      }}
+      onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+      className="field min-w-0 px-2.5 py-1 text-[15px] font-medium"
+    />
+  ) : (
+    <div className="min-w-0">
+      <button onClick={() => setEditingTitle(true)} className="block max-w-full truncate rounded-lg px-1 font-display text-[22px] leading-tight hover:bg-surface-3/50" title="Titel bearbeiten">
+        {room.title}
+      </button>
+      <div className={clsx("truncate px-1 text-[12px]", running ? "hud-live" : "text-muted")} aria-live="polite">
+        {statusText} · {activeAgents.length} {activeAgents.length === 1 ? "KI" : "KIs"} · {modeLabel}
+      </div>
+    </div>
+  );
+
+  const actions = (
+    <>
+      <Segmented<OrchestrationMode>
+        ariaLabel="Orchestrierungs-Modus"
+        size="sm"
+        value={room.orchestration_mode}
+        options={MODE_OPTIONS}
+        onChange={(v) => updateRoom({ orchestration_mode: v })}
+      />
+      <IconButton label="API-Prompt Inspector" onClick={() => setInspector({ agentId: activeAgents[0]?.id ?? agents[0]?.id ?? "" })}>
+        <ScanSearch className="size-4" />
+      </IconButton>
+      <IconButton label="Verlauf leeren" onClick={clearHistory} disabled={running || messages.length === 0}>
+        <Eraser className="size-4" />
+      </IconButton>
+      <IconButton label="Steuerung & Agenten-Studio" onClick={() => setPanel(panel ? null : "controls")} active={panel !== null}>
+        <PanelRight className="size-4" />
+      </IconButton>
+    </>
+  );
+
+  return (
+    <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-3.5 p-3 sm:p-4 lg:h-dvh lg:overflow-hidden">
+      <AppHeader active="chat" email={props.email} isDemoStore={props.isDemoStore} title={title} actions={actions} />
+
+      {props.isDemoModel && (
+        <div className="glass tile px-4 py-2 text-center text-[12.5px] text-ink-2">
+          Demo-Modus: Antworten werden simuliert.{" "}
+          <a href="/billing" className="font-semibold underline underline-offset-2">
+            Verbinde OpenRouter oder einen API-Key
+          </a>{" "}
+          für echte Modelle.
+        </div>
+      )}
+
+      <AgentTiles
         agents={agents}
         messages={messages}
-        windowStart={windowStart}
-        windowSize={room.sliding_window_size}
         streamingAgentId={streaming?.agentId ?? null}
         streamingLength={streaming?.text.length ?? 0}
-        running={running}
         canAsk={!running && room.orchestration_mode === "manual"}
         onAsk={(agentId) => orchestrate({ agentId })}
+        onToggle={(agent) => updateAgent(agent.id, { is_active: !agent.is_active }).catch((e: unknown) => setError(e instanceof Error ? e.message : "Speichern fehlgeschlagen"))}
       />
 
-      <main className="relative flex min-w-0 flex-1 flex-col">
-        <h1 className="sr-only">{room.title}</h1>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-line/50 px-2 sm:gap-3 sm:px-4">
-          <IconButton label="Navigation öffnen" onClick={() => setNavOpen(true)} className="md:hidden">
-            <Menu className="size-4" />
-          </IconButton>
-          {editingTitle ? (
-            <input
-              autoFocus
-              defaultValue={room.title}
-              onBlur={(e) => {
-                setEditingTitle(false);
-                const title = e.target.value.trim();
-                if (title && title !== room.title) updateRoom({ title });
-              }}
-              onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-              className="field min-w-0 px-2.5 py-1 text-[14px] font-medium"
-            />
-          ) : (
-            <div className="min-w-0">
-              <button
-                onClick={() => setEditingTitle(true)}
-                className="block max-w-full truncate rounded-lg px-2 py-0.5 font-display text-[14px] font-bold tracking-wide hover:bg-surface-3/50"
-                title="Titel bearbeiten"
-              >
-                {room.title}
-              </button>
-              <div className={clsx("hud truncate px-2", running ? "hud-live" : "text-muted")} aria-live="polite">
-                {running ? (streamingAgent ? `${streamingAgent.display_name} ${streaming && streaming.text ? "antwortet" : "denkt"}` : "Übertragung läuft") : "Bereit"} // {activeAgents.length} Agenten // {room.orchestration_mode === "router" ? "Moderator" : room.orchestration_mode === "round-robin" ? "Reihum" : "Manuell"}
+      <div className="grid min-h-0 flex-1 gap-3.5 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+        <main className="glass tile relative flex min-h-[70dvh] min-w-0 flex-col overflow-hidden lg:min-h-0">
+          <div ref={scrollRef} role="log" aria-live="polite" aria-label="Verlauf der Debatte" className="flex-1 overflow-y-auto">
+            <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6">
+              {messages.length === 0 && !running ? (
+                <EmptyState agents={activeAgents} onPick={(p) => orchestrate({ content: p })} />
+              ) : (
+                timeline
+              )}
+              {streaming && streamingAgent && <StreamingMessage agent={streamingAgent} text={streaming.text} />}
+            </div>
+          </div>
+
+          {error && (
+            <div role="alert" className="mx-auto mb-2 flex w-full max-w-3xl items-start gap-2 px-4">
+              <div className="flex w-full items-start gap-2 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-[13px] text-danger backdrop-blur">
+                <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+                <span className="flex-1">{error}</span>
+                <button onClick={() => setError(null)} aria-label="Fehler schließen">
+                  <X className="size-4" />
+                </button>
               </div>
             </div>
           )}
 
-          <div className="hidden space-x-1 md:flex">
-            {activeAgents.map((a) => (
-              <AgentAvatar key={a.id} name={a.display_name} modelId={a.model_identifier} size="sm" className="ring-2 ring-surface" />
-            ))}
-          </div>
+          <Composer
+            agents={agents}
+            mode={room.orchestration_mode}
+            running={running}
+            onSend={(content) => orchestrate({ content })}
+            onAskAgent={(agentId) => orchestrate({ agentId })}
+            onStop={() => abortRef.current?.abort()}
+          />
+        </main>
 
-          {/* Mit offenem Panel (dort steht der Modus) zeigt die Kopfzeile die Kennzahlen. */}
-          <StatPills messages={messages} className={clsx("ml-auto", panel ? "hidden xl:flex" : "hidden 2xl:flex")} />
-
-          <div className={clsx("mx-auto 2xl:mx-0", panel ? "hidden 2xl:block" : "hidden lg:block")}>
-            <Segmented<OrchestrationMode>
-              ariaLabel="Orchestrierungs-Modus"
-              size="sm"
-              value={room.orchestration_mode}
-              options={MODE_OPTIONS}
-              onChange={(v) => updateRoom({ orchestration_mode: v })}
-            />
-          </div>
-
-          <div className="ml-auto flex items-center gap-1 lg:ml-0">
-            <IconButton label="API-Prompt Inspector" onClick={() => setInspector({ agentId: activeAgents[0]?.id ?? agents[0]?.id ?? "" })}>
-              <ScanSearch className="size-4" />
-            </IconButton>
-            <IconButton label="Verlauf leeren" onClick={clearHistory} disabled={running || messages.length === 0}>
-              <Eraser className="size-4" />
-            </IconButton>
-            <IconButton label="Steuerung & Agenten-Studio" onClick={() => setPanel(panel ? null : "controls")} active={panel !== null}>
-              <PanelRight className="size-4" />
-            </IconButton>
-          </div>
-        </header>
-
-        {props.isDemoModel && (
-          <div className="mx-3 mt-3 rounded-xl border border-anthropic/25 bg-anthropic/10 px-4 py-1.5 text-center text-[12px] text-anthropic">
-            Demo-Modus: Antworten werden simuliert.{" "}
-            <a href="/billing" className="font-medium underline underline-offset-2">
-              Verbinde OpenRouter oder einen API-Key
-            </a>{" "}
-            für echte Modelle.
-          </div>
-        )}
-
-        <div ref={scrollRef} role="log" aria-live="polite" aria-label="Verlauf der Debatte" className="flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8">
-            {messages.length === 0 && !running ? (
-              <EmptyState agents={activeAgents} onPick={(p) => orchestrate({ content: p })} />
-            ) : (
-              timeline
-            )}
-            {streaming && streamingAgent && <StreamingMessage agent={streamingAgent} text={streaming.text} />}
-          </div>
-        </div>
-
-        {error && (
-          <div role="alert" className="mx-auto mb-2 flex w-full max-w-3xl items-start gap-2 px-4">
-            <div className="flex w-full items-start gap-2 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-[13px] text-danger backdrop-blur">
-              <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-              <span className="flex-1">{error}</span>
-              <button onClick={() => setError(null)} aria-label="Fehler schließen">
-                <X className="size-4" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        <Composer
+        <SideTile
           agents={agents}
-          mode={room.orchestration_mode}
-          running={running}
-          onSend={(content) => orchestrate({ content })}
-          onAskAgent={(agentId) => orchestrate({ agentId })}
-          onStop={() => abortRef.current?.abort()}
+          messages={messages}
+          profile={profile}
+          rooms={props.rooms.map((r) => (r.id === room.id ? { ...r, title: room.title } : r))}
+          activeRoomId={room.id}
+          windowStart={windowStart}
+          windowSize={room.sliding_window_size}
         />
-      </main>
+      </div>
 
-      {panel && <div className="fixed inset-0 z-30 bg-canvas/70 backdrop-blur-sm xl:hidden" onClick={() => setPanel(null)} aria-hidden />}
+      {panel && <div className="fixed inset-0 z-30 bg-canvas/60 backdrop-blur-sm" onClick={() => setPanel(null)} aria-hidden />}
       {panel && (
-        <aside
-          aria-label="Steuerung und Agenten-Studio"
-          className="drawer fixed inset-y-2 right-2 z-40 flex w-[min(344px,calc(100vw-1rem))] shrink-0 flex-col rounded-2xl max-xl:glass-strong xl:relative xl:inset-auto xl:z-auto xl:rounded-none xl:border-l xl:border-line/50"
-        >
+        <aside aria-label="Steuerung und Agenten-Studio" className="glass-strong fixed inset-y-3 right-3 z-40 flex w-[min(380px,calc(100vw-1.5rem))] flex-col rounded-3xl">
           <div className="flex h-16 shrink-0 items-center justify-between border-b border-line/50 px-3">
             <Segmented
               ariaLabel="Panel"
@@ -459,7 +429,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
               ]}
               onChange={setPanel}
             />
-            <IconButton label="Panel schließen" onClick={() => setPanel(null)} className="xl:hidden">
+            <IconButton label="Panel schließen" onClick={() => setPanel(null)}>
               <X className="size-4" />
             </IconButton>
           </div>
@@ -480,15 +450,8 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
           </div>
         </aside>
       )}
-      </div>
 
-      <PromptInspector
-        target={inspector}
-        onClose={() => setInspector(null)}
-        room={room}
-        agents={agents}
-        messages={messages}
-      />
+      <PromptInspector target={inspector} onClose={() => setInspector(null)} room={room} agents={agents} messages={messages} />
     </div>
   );
 }
@@ -567,33 +530,6 @@ function EmptyState({ agents, onPick }: { agents: RoomAgent[]; onPick: (prompt: 
           </button>
         ))}
       </div>
-    </div>
-  );
-}
-
-/** Kennzahlen der Debatte als Pillen-Gruppe (Referenz: Glassy Dashboard). */
-function StatPills({ messages, className }: { messages: ChatMessage[]; className?: string }) {
-  const replies = messages.filter((m) => m.sender_type === "agent");
-  const tokens = replies.reduce((sum, m) => sum + m.input_tokens + m.output_tokens, 0);
-  const cost = replies.reduce((sum, m) => sum + m.estimated_cost_usd, 0);
-  const items = [
-    { icon: Coins, label: "Tokens", value: formatCompact(tokens) },
-    { icon: Receipt, label: "Kosten", value: formatUsd(cost) },
-    { icon: MessagesSquare, label: "Antworten", value: String(replies.length) },
-  ];
-  return (
-    <div className={clsx("card items-center rounded-[8px] p-1", className)} aria-label="Kennzahlen dieser Debatte">
-      {items.map(({ icon: Icon, label, value }, i) => (
-        <div key={label} className={clsx("flex items-center gap-2 px-3 py-1", i > 0 && "border-l border-line/50")}>
-          <span className="flex size-6 items-center justify-center rounded-[4px] bg-accent/12 text-accent">
-            <Icon className="size-3.5" aria-hidden />
-          </span>
-          <span className="leading-tight">
-            <span className="block text-[11px] text-muted">{label}</span>
-            <span className="block font-mono text-[12px] font-medium text-ink">{value}</span>
-          </span>
-        </div>
-      ))}
     </div>
   );
 }

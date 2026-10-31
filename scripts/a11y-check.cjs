@@ -1,5 +1,5 @@
 // Barrierefreiheits- und Darstellungsprüfung im Browser (Playwright + Chromium nötig).
-// Startet die gebaute App selbst (Demo-Modus, freier Port) und prüft Seiten in allen drei Farbwelten auf
+// Startet die gebaute App selbst (Demo-Modus, freier Port) und prüft Seiten in Hell und Dunkel auf
 // Desktop- und Handybreite: Sprache/Titel, Namen für Bedienelemente, Bild-Alternativtexte, seitliches Scrollen,
 // Konsolen-/CSP-Fehler, sichtbarer Tastaturfokus und grob den Textkontrast.
 // Aufruf: npm run build && node scripts/a11y-check.cjs
@@ -9,9 +9,9 @@ const net = require('node:net');
 const { chromium } = require('playwright');
 
 const THEMES = [
-  { name: 'eis-hell', scheme: 'light', stored: null },
-  { name: 'eis', scheme: 'dark', stored: null },
-  { name: 'zinn', scheme: 'dark', stored: 'zinn' },
+  { name: 'hell', scheme: 'light', stored: null },
+  { name: 'dunkel', scheme: 'dark', stored: null },
+  { name: 'dunkel-gewaehlt', scheme: 'light', stored: 'dark' },
 ];
 const WIDTHS = [1440, 390];
 const PATHS = ['/billing', '/datenschutz', '/impressum', '/login'];

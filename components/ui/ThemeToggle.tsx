@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Monitor, Snowflake, Sun, Layers } from "lucide-react";
+import { Monitor, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { THEME_STORAGE_KEY, type ThemeChoice } from "@/lib/theme";
 
@@ -19,22 +19,21 @@ function applyTheme(choice: ThemeChoice) {
 
 const OPTIONS: { value: ThemeChoice; label: string; Icon: typeof Sun }[] = [
   { value: "system", label: "Wie System", Icon: Monitor },
-  { value: "light", label: "Eis hell", Icon: Sun },
-  { value: "eis", label: "Eis (dunkel)", Icon: Snowflake },
-  { value: "zinn", label: "Zinn (dunkel)", Icon: Layers },
+  { value: "light", label: "Hell", Icon: Sun },
+  { value: "dark", label: "Dunkel", Icon: Moon },
 ];
 
-/** Darstellung wählen: wie System (Standard), hell oder eine der beiden dunklen Farbwelten. */
-export function ThemeToggle({ className, vertical = false }: { className?: string; vertical?: boolean }) {
+/** Darstellung wählen: wie System (Standard), hell oder dunkel. */
+export function ThemeToggle({ className }: { className?: string }) {
   const [choice, setChoice] = useState<ThemeChoice>("system");
 
   useEffect(() => {
     const t = document.documentElement.dataset.theme;
-    if (t === "light" || t === "eis" || t === "zinn") setChoice(t);
+    if (t === "light" || t === "dark") setChoice(t);
   }, []);
 
   return (
-    <div role="radiogroup" aria-label="Darstellung" className={clsx("inline-flex rounded-xl border border-line/70 bg-canvas/30 p-0.5", vertical && "flex-col rounded-[6px]", className)}>
+    <div role="radiogroup" aria-label="Darstellung" className={clsx("inline-flex rounded-full border border-line/70 bg-surface/40 p-0.5", className)}>
       {OPTIONS.map(({ value, label, Icon }) => (
         <button
           key={value}
@@ -48,9 +47,8 @@ export function ThemeToggle({ className, vertical = false }: { className?: strin
             applyTheme(value);
           }}
           className={clsx(
-            "flex size-7 items-center justify-center transition-colors",
-            vertical ? "rounded-[4px]" : "rounded-lg",
-            choice === value ? "bg-accent/15 text-accent ring-1 ring-accent/30" : "text-muted hover:text-ink",
+            "flex size-7 items-center justify-center rounded-full transition-colors",
+            choice === value ? "bg-accent text-on-accent" : "text-muted hover:text-ink",
           )}
         >
           <Icon className="size-3.5" />

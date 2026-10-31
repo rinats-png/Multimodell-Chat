@@ -8,12 +8,12 @@ export const dynamic = "force-dynamic";
 
 export default async function BillingPage({ searchParams }: { searchParams: Promise<{ checkout?: string; verbunden?: string; verbindung?: string }> }) {
   const { store, email, isDemoStore } = await getSession();
-  const [profile, rooms, totals] = await Promise.all([store.getProfile(), store.listRooms(), store.getUsageTotals()]);
+  const [profile, totals] = await Promise.all([store.getProfile(), store.getUsageTotals()]);
   const publicProfile = toPublicProfile(profile);
   const { checkout, verbunden, verbindung } = await searchParams;
 
   return (
-    <AppShell rooms={rooms} profile={publicProfile} email={email} isDemoStore={isDemoStore} active="billing" title="Tarif & Verbrauch">
+    <AppShell email={email} isDemoStore={isDemoStore} active="billing">
       <BillingDashboard
         profile={publicProfile}
         totals={totals}
