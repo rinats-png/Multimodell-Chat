@@ -15,7 +15,7 @@ beforeEach(() => resetMemoryDb());
 
 describe("Vorgefertigte Räte", () => {
   it("jeder Rat ist gültig: Grenzen der Agenten-Felder, Katalog-Modelle, eindeutige Namen, Starttext mit Optionen", () => {
-    expect(COUNCIL_PRESETS.length).toBeGreaterThanOrEqual(6);
+    expect(COUNCIL_PRESETS.length).toBeGreaterThanOrEqual(8);
     expect(new Set(COUNCIL_PRESETS.map((p) => p.id)).size).toBe(COUNCIL_PRESETS.length);
     for (const preset of COUNCIL_PRESETS) {
       expect(preset.agents.length).toBeGreaterThanOrEqual(5);
