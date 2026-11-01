@@ -45,8 +45,12 @@ export const orchestrateSchema = z
     roomId: uuidSchema,
     content: z.string().trim().max(4000).optional(),
     agentId: uuidSchema.optional(),
+    /** Ratssitzung: Runde 1 (Eröffnung), 2 (Streit) oder 3 (Abstimmung). */
+    round: z.number().int().min(1).max(3).optional(),
   })
-  .strict();
+  .strict()
+  .refine((v) => v.round === undefined || v.agentId === undefined, { message: "Runde und Agent schließen sich aus" })
+  .refine((v) => v.round === undefined || v.round === 1 || v.content === undefined, { message: "Nur Runde 1 nimmt eine Nachricht an" });
 
 export const openRouterKeySchema = z
   .string()

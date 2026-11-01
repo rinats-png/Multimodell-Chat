@@ -30,6 +30,7 @@ Multimodell-Chat: KI-Gruppendebatten mit ChatGPT, Claude, Gemini u. a. als SaaS 
 | F-20 | Lokaler Abo-Modus: Modelle `abo/*` über Claude Code, Codex, Gemini CLI, Kimi CLI auf dem eigenen Rechner (nur Entwicklung, ohne Supabase) | Kann | umgesetzt | 🔒 | – |
 | F-21 | Entscheidungsbericht: aus einer Debatte entsteht ein bewerteter Bericht (Optionen mit Wertung jeder KI, Einigkeit, Widerspruch, stärkster Einwand, Bedingungen, nächste Schritte, günstigster Test, Abbruchkriterien) – Zahlen rechnet die App aus den Wertungen; Link zum Teilen (widerrufbar, nur Hash gespeichert) und Druck/PDF; Entscheidungsvorlagen für den Start | Muss | umgesetzt | 🔒 | – |
 | F-22 | Vorgefertigte Räte: sechs Richtungen (Entscheidungsrat, App-Aufbau, Roast mich, Launch & Marketing, Preis & Angebot, Karriere & Job) mit fertigen Rollen, Modus und Starttext, per Klick in einer leeren Debatte; Rollen sind erfundene Denkschulen, keine echten Personen | Soll | umgesetzt | 🔒 | – |
+| F-23 | Automatische Ratssitzung: Schalter „Ratssitzung“ im Eingabefeld; alle aktiven KIs beraten in drei Runden (Eröffnung, Streit, Abstimmung) mit je eigener Aufgabe und Wertung je Option, danach entsteht der Entscheidungsbericht; jede Runde ist eine eigene Anfrage (Zeitlimit), Starts begrenzt auf 6 je Stunde | Soll | umgesetzt | 🔒 | – |
 
 ## Nicht im Umfang (Parkplatz)
 - Router-Begründungen dauerhaft speichern (BF-19)

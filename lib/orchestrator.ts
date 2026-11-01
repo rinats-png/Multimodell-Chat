@@ -190,7 +190,7 @@ export function userFacingModelError(error: unknown, key: ResolvedKey): string {
   return "Das Modell konnte gerade nicht antworten. Bitte versuche es später erneut.";
 }
 
-interface AgentTurnInput {
+export interface AgentTurnInput {
   store: DataStore;
   room: ChatRoom;
   agent: RoomAgent;
@@ -201,9 +201,13 @@ interface AgentTurnInput {
   key: ResolvedKey;
   emit: (event: OrchestrateEvent) => void;
   signal: AbortSignal;
+  /** Aufgabe für diese Antwort (Ratssitzung). */
+  instruction?: string;
+  /** Antworten innerhalb einer Ratssitzungs-Runde zählen nicht einzeln gegen das Minutenlimit. */
+  skipRateLimit?: boolean;
 }
 
-interface AgentTurnResult {
+export interface AgentTurnResult {
   message: ChatMessage | null;
   /** Gebuchte Tokens dieses Turns */
   tokens: number;
@@ -211,7 +215,7 @@ interface AgentTurnResult {
   completed: boolean;
 }
 
-async function runAgentTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
+export async function runAgentTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
   const { store, room, agent, messages, profile, activeAgents, windowSize, key, emit, signal } = input;
 
   if (key.source === "platform" && !isPlatformModel(agent.model_identifier)) {
@@ -225,12 +229,13 @@ async function runAgentTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
   const prompt = buildAgentMessages(agent, messages, windowSize, {
     agents: activeAgents,
     runningSummary: PLANS[profile.subscription_tier].limits.runningSummary ? room.running_summary : "",
+    roundInstruction: input.instruction,
   });
   const promptTokens = estimatePromptTokens(prompt);
   const ownAccess = isOwnAccess(key.source);
   // Harter Stopp: Ist die Obergrenze für den Plattform-Key erreicht, entsteht kein weiterer Aufruf.
   if (key.source === "platform") await assertPlatformBudget(store, profile);
-  await assertCanCallModel(profile, promptTokens + MAX_OUTPUT_TOKENS, { ownAccess });
+  await assertCanCallModel(profile, promptTokens + MAX_OUTPUT_TOKENS, { ownAccess, skipRateLimit: input.skipRateLimit });
 
   const model = key.apiKey || key.source === "local"
     ? getLanguageModel(agent.model_identifier, key)
@@ -322,7 +327,7 @@ async function runAgentTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
   return { message: saved, tokens, completed: !aborted };
 }
 
-interface StanceInput {
+export interface StanceInput {
   store: DataStore;
   reply: ChatMessage;
   previous: ChatMessage | undefined;
@@ -336,7 +341,7 @@ interface StanceInput {
  * Bewertet nach einer KI-Antwort, ob sie der vorherigen KI zustimmt oder widerspricht, und speichert das Ergebnis.
  * Fehler beenden die Runde nie (die Antwort ist schon gespeichert). Gibt die gebuchten Tokens zurück.
  */
-async function rateAndStoreStance({ store, reply, previous, profile, access, emit, signal }: StanceInput): Promise<number> {
+export async function rateAndStoreStance({ store, reply, previous, profile, access, emit, signal }: StanceInput): Promise<number> {
   if (!stanceTarget(reply, previous)) return 0;
   const books = !isOwnAccess(access.source);
   // Reicht das Kontingent nicht, wird ohne Modellaufruf per Schlüsselwörtern bewertet.

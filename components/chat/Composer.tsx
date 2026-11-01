@@ -18,6 +18,11 @@ interface ComposerProps {
   onStop: () => void;
   /** Vorlage, die ins Eingabefeld übernommen werden soll (neue `id` = neue Vorlage). */
   draft?: { text: string; id: number } | null;
+  /** Ratssitzung: drei Runden und Bericht statt einer einzelnen Antwortrunde. */
+  council?: boolean;
+  onCouncilChange?: (value: boolean) => void;
+  /** Fortschritt der laufenden Ratssitzung, z. B. „Runde 2 von 3“. */
+  councilStep?: string | null;
 }
 
 const MODE_HINT: Record<OrchestrationMode, string> = {
@@ -26,7 +31,7 @@ const MODE_HINT: Record<OrchestrationMode, string> = {
   manual: "Nur per @Mention oder Schnell-Button",
 };
 
-export function Composer({ agents, mode, running, onSend, onAskAgent, onStop, draft }: ComposerProps) {
+export function Composer({ agents, mode, running, onSend, onAskAgent, onStop, draft, council = false, onCouncilChange, councilStep = null }: ComposerProps) {
   const [value, setValue] = useState("");
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionIndex, setMentionIndex] = useState(0);
@@ -184,7 +189,26 @@ export function Composer({ agents, mode, running, onSend, onAskAgent, onStop, dr
                 Prompt-Firewall: {firewall.matches.join(", ")}
               </span>
             ) : (
-              <span className="truncate text-[12px] text-muted">{MODE_HINT[mode]}</span>
+              <span className="truncate text-[12px] text-muted" aria-live="polite">
+                {councilStep ?? (council ? "Ratssitzung: Eröffnung, Streit, Abstimmung, dann der Bericht" : MODE_HINT[mode])}
+              </span>
+            )}
+            {onCouncilChange && (
+              <button
+                type="button"
+                role="switch"
+                aria-checked={council}
+                disabled={running}
+                onClick={() => onCouncilChange(!council)}
+                title="Alle aktiven KIs beraten in drei Runden (Eröffnung, Streit, Abstimmung); danach entsteht der Entscheidungsbericht."
+                className={clsx(
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium transition-colors disabled:opacity-50",
+                  council ? "border-accent/50 bg-accent/15 text-ink" : "border-line/80 text-muted hover:text-ink",
+                )}
+              >
+                <span className={clsx("size-2 rounded-full", council ? "bg-accent" : "bg-muted/50")} aria-hidden />
+                Ratssitzung
+              </button>
             )}
             <span className="ml-auto shrink-0 font-mono text-[11px] text-muted">
               {value ? `≈ ${approxTokens(value)} Tokens` : ""}

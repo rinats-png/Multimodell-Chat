@@ -22,6 +22,8 @@ export const RATE_LIMITS = {
   mutationsPerAccount: { limit: 60, windowMs: 60_000 },
   /** Orchestrierungs-Runden pro IP (teurer Endpunkt) */
   roundsPerIp: { limit: 20, windowMs: 60_000 },
+  /** Ratssitzungen (Start von Runde 1) pro Konto: jede löst viele Modellaufrufe aus */
+  councilPerAccount: { limit: 6, windowMs: 60 * 60_000 },
   /** Konto-Löschung / Export pro Konto */
   accountActionsPerAccount: { limit: 5, windowMs: 60 * 60_000 },
   /** Login-Versuche pro IP */

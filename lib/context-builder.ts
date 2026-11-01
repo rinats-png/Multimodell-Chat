@@ -18,6 +18,8 @@ export interface BuildAgentMessagesOptions {
   runningSummary?: string;
   /** Harte Obergrenze für den Kontext (geschätzte Tokens) – älteste Nachrichten fallen zuerst weg. */
   maxInputTokens?: number;
+  /** Aufgabe für genau diese Antwort (Ratssitzung: Eröffnung, Streit, Abstimmung). */
+  roundInstruction?: string;
 }
 
 /** Standard-Obergrenze für den Input eines einzelnen Modellaufrufs (Kosten-Bremse, BF-03). */
@@ -78,6 +80,10 @@ function buildSystemPrompt(target: RoomAgent, options: BuildAgentMessagesOptions
   const summary = options.runningSummary?.trim();
   if (summary) {
     parts.push("", "## Zusammenfassung des bisherigen Verlaufs (ältere Nachrichten)", summary);
+  }
+  const instruction = options.roundInstruction?.trim();
+  if (instruction) {
+    parts.push("", "## Deine Aufgabe in dieser Runde", instruction);
   }
   return parts.join("\n");
 }

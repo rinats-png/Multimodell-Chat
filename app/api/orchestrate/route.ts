@@ -1,4 +1,5 @@
 import { clientIp, handleApi, HttpError, notFound, readJson } from "@/lib/api";
+import { runCouncilRound } from "@/lib/council-session";
 import { logError, securityLog } from "@/lib/log";
 import { runOrchestration } from "@/lib/orchestrator";
 import { checkPromptInjection } from "@/lib/prompt-firewall";
@@ -45,7 +46,18 @@ export async function POST(request: Request) {
       securityLog("prompt_firewall", { userId });
       throw new HttpError(400, "prompt_injection", "Die Nachricht enthält Muster, die wie ein Angriff auf die KI-Anweisungen aussehen, und wurde nicht gesendet.");
     }
-    if (!content && !body.agentId) throw new HttpError(400, "invalid_input", "Nachricht oder Agent erforderlich");
+    if (!content && !body.agentId && !body.round) throw new HttpError(400, "invalid_input", "Nachricht oder Agent erforderlich");
+    if (body.round === 1 && !content) throw new HttpError(400, "invalid_input", "Beschreibe zuerst die Entscheidung, über die der Rat beraten soll.");
+    if (body.round === 1) {
+      // Eine Ratssitzung löst viele Modellaufrufe aus: Starts pro Konto begrenzen.
+      const council = await rateLimit("council", userId, RATE_LIMITS.councilPerAccount.limit, RATE_LIMITS.councilPerAccount.windowMs);
+      if (!council.allowed) {
+        securityLog("rate_limited", { bucket: "council", userId });
+        throw new HttpError(429, "rate_limited", `Du hast in der letzten Stunde viele Ratssitzungen gestartet. Bitte in ${Math.ceil(Number(retryAfterSeconds(council)) / 60)} min erneut versuchen.`, {
+          "Retry-After": retryAfterSeconds(council),
+        });
+      }
+    }
 
     // Höchstens eine laufende Runde pro Konto (BF-03, BF-21).
     const lockKey = `round:${userId}`;
@@ -79,16 +91,9 @@ export async function POST(request: Request) {
             });
             emit({ type: "user-message", message: userMessage });
           }
-          await runOrchestration({
-            store,
-            room,
-            agents,
-            forcedAgentId: body.agentId ?? null,
-            userMessage,
-            allowPlatformKey,
-            emit,
-            signal: request.signal,
-          });
+          const run = { store, room, agents, forcedAgentId: body.agentId ?? null, userMessage, allowPlatformKey, emit, signal: request.signal };
+          if (body.round) await runCouncilRound({ ...run, round: body.round as 1 | 2 | 3 });
+          else await runOrchestration(run);
         } catch (error) {
           logError("orchestrate.stream", error, { userId, roomId: room.id });
           emit({ type: "error", code: "internal", message: "Die Runde konnte nicht abgeschlossen werden. Bitte erneut versuchen." });

@@ -71,9 +71,15 @@ export function assertQuota(profile: UserProfile, estimatedTokens: number): void
  * Router- und Summary-Aufrufe zählen nicht gegen das Minutenlimit (BF-25), nur gegen
  * das Kontingent – sie sind über das Rundenlimit begrenzt.
  */
-export async function assertCanCallModel(profile: UserProfile, estimatedTokens: number, options: { ownAccess?: boolean } = {}): Promise<void> {
+export async function assertCanCallModel(
+  profile: UserProfile,
+  estimatedTokens: number,
+  options: { ownAccess?: boolean; skipRateLimit?: boolean } = {},
+): Promise<void> {
   // Eigener Zugang für genau dieses Modell (z. B. Anthropic-Key, lokales Abo): kein Kontingent.
   if (!options.ownAccess) assertQuota(profile, estimatedTokens);
+  // Ratssitzung: der Start einer Runde ist rate-limitiert, die Antworten innerhalb der Runde zählen nicht einzeln.
+  if (options.skipRateLimit) return;
   const rate = await rateLimit("model", profile.id, profile.rate_limit_per_min);
   if (!rate.allowed) {
     throw new UsageGuardError("rate_limited", rateLimitMessage(profile.rate_limit_per_min, rate), 429, rate.retryAfterMs);

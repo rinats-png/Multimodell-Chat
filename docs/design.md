@@ -36,6 +36,10 @@ Seiten außerhalb des Chats (Tarif & Verbrauch) nutzen dieselbe Kopf-Kachel und 
 
 Der Bericht ist das weitergebbare Ergebnis einer Debatte (`components/report/ReportView.tsx`): Urteil mit Wertung, Einigkeit und Streuung, die Optionen mit der Wertung jeder KI, Einigkeit und Streit, der stärkste Einwand, Bedingungen, nächste Schritte, günstigster Test, Abbruchkriterien. Dieselbe Ansicht dient dem Besitzer (`/report/[id]`) und der Link-Ansicht (`/r/[token]`). Druckansicht: weißer Grund, dunkle Schrift, ohne Navigation (`@media print`). Im Leerzustand der Debatte stehen sechs Entscheidungsvorlagen vor den Hinweisen.
 
+## Ratssitzung (F-23)
+
+Der Schalter „Ratssitzung“ im Eingabefeld (nach der Wahl eines Rats automatisch an) startet drei Runden: Eröffnung, Streit, Abstimmung. Der Moderator-Hinweis im Verlauf nennt die Runde („Runde 2 von 3: Streit“), das Eingabefeld zeigt den Fortschritt, „Stoppen“ beendet die Kette. Am Ende öffnet sich der Entscheidungsbericht.
+
 ## Bewertung Zustimmung/Widerspruch (F-19)
 
 Nach jeder KI-Antwort, die auf eine andere KI folgt, wird bewertet, ob sie zustimmt, widerspricht, weiterführt oder neutral bleibt (`lib/stance.ts`; mit Zugang per Router-Modell, sonst per Schlüsselwörtern). Die Bewertung steht als Chip an der Nachricht („widerspricht ChatGPT“) und in der Seitenkachel. Der Moderator wählt nach einem Widerspruch eine dritte KI. Gespeichert wird nur serverseitig (Migration `0006_stance.sql`).

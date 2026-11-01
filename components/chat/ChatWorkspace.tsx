@@ -69,6 +69,10 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
   const router = useRouter();
   const [reporting, setReporting] = useState(false);
   const [presetBusy, setPresetBusy] = useState<string | null>(null);
+  const [council, setCouncil] = useState(false);
+  const [councilBusy, setCouncilBusy] = useState(false);
+  const [councilStep, setCouncilStep] = useState<string | null>(null);
+  const failedRef = useRef(false);
   const [draft, setDraft] = useState<{ text: string; id: number } | null>(null);
   const [room, setRoom] = useState(props.initialRoom);
   const [agents, setAgents] = useState(props.initialAgents);
@@ -142,6 +146,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         setProfile(event.profile);
         break;
       case "error":
+        failedRef.current = true;
         setError(event.message);
         break;
       case "done":
@@ -149,8 +154,10 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
     }
   }
 
-  async function orchestrate(body: { content?: string; agentId?: string }) {
+  /** Führt eine Runde aus. Gibt true zurück, wenn sie ohne Fehler und ohne Abbruch endete (die Ratssitzung kettet darauf auf). */
+  async function orchestrate(body: { content?: string; agentId?: string; round?: 1 | 2 | 3 }): Promise<boolean> {
     setError(null);
+    failedRef.current = false;
     setRunning(true);
     const controller = new AbortController();
     abortRef.current = controller;
@@ -181,12 +188,30 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
       }
     } catch (e) {
       if (!(e instanceof DOMException && e.name === "AbortError")) {
+        failedRef.current = true;
         setError(e instanceof Error ? e.message : "Unbekannter Fehler");
       }
     } finally {
       setStreaming(null);
       setRunning(false);
       abortRef.current = null;
+    }
+    return !failedRef.current && !controller.signal.aborted;
+  }
+
+  /** Ratssitzung: Eröffnung, Streit, Abstimmung (je eine Anfrage), danach der Entscheidungsbericht. Fehler oder Stopp beenden die Kette. */
+  async function runCouncil(content: string) {
+    setCouncilBusy(true);
+    try {
+      for (const round of [1, 2, 3] as const) {
+        setCouncilStep(`Runde ${round} von 3`);
+        if (!(await orchestrate({ ...(round === 1 ? { content } : {}), round }))) return;
+      }
+      setCouncilStep("Bericht wird erstellt …");
+      await createReport();
+    } finally {
+      setCouncilBusy(false);
+      setCouncilStep(null);
     }
   }
 
@@ -276,6 +301,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
       setAgents(data.agents);
       setRoom(data.room);
       if (data.starter) setDraft({ text: data.starter, id: Date.now() });
+      if (data.agents.filter((a) => a.is_active).length >= 2) setCouncil(true);
     } catch {
       setError("Keine Verbindung. Bitte prüfe dein Netz und versuche es erneut.");
     } finally {
@@ -370,7 +396,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
       />
       <button
         onClick={createReport}
-        disabled={running || reporting || agentReplies < 2}
+        disabled={running || councilBusy || reporting || agentReplies < 2}
         title={agentReplies < 2 ? "Der Bericht braucht mindestens zwei Antworten der KIs" : "Aus dieser Debatte einen Entscheidungsbericht erstellen"}
         className="btn-primary inline-flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-semibold disabled:opacity-50"
       >
@@ -441,11 +467,14 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
           <Composer
             agents={agents}
             mode={room.orchestration_mode}
-            running={running}
-            onSend={(content) => orchestrate({ content })}
+            running={running || councilBusy}
+            onSend={(content) => (council ? runCouncil(content) : orchestrate({ content }))}
             onAskAgent={(agentId) => orchestrate({ agentId })}
             onStop={() => abortRef.current?.abort()}
             draft={draft}
+            council={council}
+            onCouncilChange={activeAgents.length >= 2 ? setCouncil : undefined}
+            councilStep={councilStep}
           />
         </main>
 
