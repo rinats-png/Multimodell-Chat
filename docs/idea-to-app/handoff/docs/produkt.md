@@ -32,6 +32,10 @@ Multimodell-Chat: KI-Gruppendebatten mit ChatGPT, Claude, Gemini u. a. als SaaS 
 | F-22 | Vorgefertigte Räte: 13 Räte in vier Gruppen (Entscheiden: Geschäftsentscheidung, Preis & Angebot, Karriere; Idee prüfen: Ideen-Check, Ideen-Werkstatt, Roast, Pre-Mortem; App bauen und prüfen: App planen, Code-Review, Sicherheits-Check, Bestehende App prüfen, Startklar-Check; Wachstum: Marketing), Bericht zusätzlich als Markdown mit Eintrag für ENTSCHEIDUNGEN.md (idea-to-app) mit fertigen Rollen, Modus und Starttext, per Klick in einer leeren Debatte; Rollen sind erfundene Denkschulen, keine echten Personen | Soll | umgesetzt | 🔒 | – |
 | F-23 | Automatische Ratssitzung: Schalter „Ratssitzung“ im Eingabefeld; alle aktiven KIs beraten in drei Runden (Eröffnung, Streit, Abstimmung) mit je eigener Aufgabe und Wertung je Option, danach entsteht der Entscheidungsbericht; jede Runde ist eine eigene Anfrage (Zeitlimit), Starts begrenzt auf 6 je Stunde | Soll | umgesetzt | 🔒 | – |
 
+## Grundsatz: Freie Nutzung bleibt der Kern (Entscheidung des Projektinhabers, 2026-11-01)
+
+Räte, Vorlagen, Ratssitzung und Bericht sind **Angebote, keine Pflicht**. Jede Person muss jederzeit ohne sie alles selbst durchgehen können: eigene KIs und Rollen im Agenten-Studio, freie Fragen, freie Debatte in jedem Modus, Bericht auf Wunsch. Kein Rat ist vorausgewählt, die Ratssitzung ist standardmäßig aus. Empfehlungen aus dem Roast Room (z. B. Räte ausblenden, Bericht als Einstiegsangebot) dürfen diesen freien Weg nicht verstecken oder hinter einen Rat stellen.
+
 ## Nicht im Umfang (Parkplatz)
 - Router-Begründungen dauerhaft speichern (BF-19)
 - Zwei-Faktor-Anmeldung (E-004)
