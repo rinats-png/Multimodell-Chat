@@ -2,6 +2,7 @@ import { isLocalSubscriptionMode } from "../ai/local-cli";
 import { decryptProviderKeys, decryptSecret, encryptProviderKeys, encryptSecret } from "../crypto";
 import { defaultAgents } from "../default-agents";
 import { PLANS } from "../plans";
+import type { PlatformSpend } from "../platform-budget";
 import type { ChatMessage, ChatRoom, RoomAgent, UserProfile } from "../types";
 import type { DataStore } from "./types";
 
@@ -21,6 +22,26 @@ interface MemoryDb {
 const globalForDb = globalThis as unknown as { __mmchatMemoryDbs?: Map<string, MemoryDb> };
 const MAX_DEMO_VISITORS = 500;
 
+/** Gemeinsamer Plattform-Verbrauch (alle Demo-Besucher) im laufenden Monat; nur für Demo und Tests. */
+const globalForSpend = globalThis as unknown as { __mmchatPlatformSpend?: { month: string; spend: PlatformSpend } };
+
+function platformSpendNow(): PlatformSpend {
+  const month = monthStart();
+  if (!globalForSpend.__mmchatPlatformSpend || globalForSpend.__mmchatPlatformSpend.month !== month) {
+    globalForSpend.__mmchatPlatformSpend = { month, spend: { trial_usd: 0, paid_usd: 0 } };
+  }
+  return globalForSpend.__mmchatPlatformSpend.spend;
+}
+
+/** Nur für Tests: gemeinsamen Plattform-Verbrauch zurücksetzen. */
+export function resetPlatformSpend(): void {
+  globalForSpend.__mmchatPlatformSpend = undefined;
+}
+
+function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function monthStart(): string {
   const d = new Date();
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString().slice(0, 10);
@@ -36,6 +57,8 @@ function freshDb(userId: string): MemoryDb {
       monthly_token_limit: PLANS[tier].monthlyTokenLimit,
       tokens_used_this_month: 0,
       usage_period_start: monthStart(),
+      tokens_used_today: 0,
+      usage_day: today(),
       rate_limit_per_min: PLANS[tier].rateLimitPerMin,
       custom_openrouter_key: null,
       provider_keys: null,
@@ -89,7 +112,8 @@ export function createMemoryStore(visitorId: string): DataStore {
   const store: DataStore = {
   async getProfile() {
     const p = db().profile;
-    if (p.usage_period_start < monthStart()) {
+    // Wie in der Datenbank: der Starter hat einen einmaligen Testlauf ohne Monatsumbruch.
+    if (!PLANS[p.subscription_tier].trialOnly && p.usage_period_start < monthStart()) {
       p.tokens_used_this_month = 0;
       p.usage_period_start = monthStart();
     }
@@ -106,6 +130,11 @@ export function createMemoryStore(visitorId: string): DataStore {
   },
   async setTier(tier) {
     const p = db().profile;
+    // Wechsel vom Starter zu einem bezahlten Tarif: der Testlauf wird nicht angerechnet.
+    if (PLANS[p.subscription_tier].trialOnly && !PLANS[tier].trialOnly) {
+      p.tokens_used_this_month = 0;
+      p.usage_period_start = monthStart();
+    }
     p.subscription_tier = tier;
     p.monthly_token_limit = PLANS[tier].monthlyTokenLimit;
     p.rate_limit_per_min = PLANS[tier].rateLimitPerMin;
@@ -116,7 +145,20 @@ export function createMemoryStore(visitorId: string): DataStore {
     return decryptedProfile(p);
   },
   async incrementTokens(tokens) {
-    db().profile.tokens_used_this_month += Math.max(0, Math.round(tokens));
+    const p = db().profile;
+    const n = Math.max(0, Math.round(tokens));
+    p.tokens_used_this_month += n;
+    p.tokens_used_today = p.usage_day === today() ? p.tokens_used_today + n : n;
+    p.usage_day = today();
+  },
+  async getPlatformSpend() {
+    return { ...platformSpendNow() };
+  },
+  async addPlatformSpend(costUsd, trial) {
+    const spend = platformSpendNow();
+    const cost = Math.max(0, costUsd);
+    if (trial) spend.trial_usd += cost;
+    else spend.paid_usd += cost;
   },
 
   async listRooms() {

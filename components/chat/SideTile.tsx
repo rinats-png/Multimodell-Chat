@@ -102,7 +102,7 @@ export function SideTile({ agents, messages, profile, rooms, activeRoomId, windo
           <>
             <p className="font-display text-[34px] leading-none">{pct} %</p>
             <p className="mb-3 mt-1.5 text-[12.5px] text-muted">
-              {formatCompact(profile.tokens_used_this_month)} von {formatCompact(profile.monthly_token_limit)} Tokens · {plan.name}
+              {formatCompact(profile.tokens_used_this_month)} von {formatCompact(profile.monthly_token_limit)} Tokens · {plan.trialOnly ? "Testlauf" : plan.name}
             </p>
             <Meter value={profile.tokens_used_this_month} max={profile.monthly_token_limit} />
           </>

@@ -95,6 +95,8 @@ export function toPublicProfile(profile: UserProfile): PublicProfile {
     monthly_token_limit: profile.monthly_token_limit,
     tokens_used_this_month: profile.tokens_used_this_month,
     usage_period_start: profile.usage_period_start,
+    tokens_used_today: profile.tokens_used_today,
+    usage_day: profile.usage_day,
     rate_limit_per_min: profile.rate_limit_per_min,
     created_at: profile.created_at,
     // Lokaler Abo-Modus zählt als eigener Zugang (die Abo-Agenten buchen kein Kontingent).

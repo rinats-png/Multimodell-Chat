@@ -130,7 +130,7 @@ describe("Konto & Tarif (F-12, F-13, F-15, F-16)", () => {
     await memoryStore.setCustomKey("sk-or-v1-abcdefghijklmnop");
     await choosePlan(jsonRequest("/api/billing/plan", "POST", { tier: "free" }));
     const profile = await memoryStore.getProfile();
-    expect(profile.monthly_token_limit).toBe(15_000);
+    expect(profile.monthly_token_limit).toBe(60_000);
     expect(profile.custom_openrouter_key).toBe("sk-or-v1-abcdefghijklmnop");
   });
 

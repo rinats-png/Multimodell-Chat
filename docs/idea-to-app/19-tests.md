@@ -132,13 +132,13 @@
 | ID | Test | Erwartung | Sichert ab |
 |---|---|---|---|
 | T-SEC-01 | `config.test.ts`, `usage-guard.test.ts` | Produktion ohne Supabase startet nicht; Demo ohne Plattform-Key | BD-06 |
-| T-SEC-02 | `orchestrator.test.ts` | Abbruch bucht Verbrauch | BD-04 |
+| T-SEC-02 | `orchestrator.test.ts` | Abbruch bucht Verbrauch | Roast Room 2026-11-01 |
 | T-SEC-03 | `orchestrator.test.ts`, `api.test.ts`, `plans.test.ts` | Katalog-Allowlist | BD-05 |
 | T-SEC-04 | `usage-guard.test.ts` | Leerzeichen-/Fremdtarif-Key ohne Wirkung | BD-03 |
-| T-SEC-05 | `orchestrator.test.ts`, `usage-guard.test.ts` | Vorab-Schätzung gegen Rest | BD-04 |
+| T-SEC-05 | `orchestrator.test.ts`, `usage-guard.test.ts` | Vorab-Schätzung gegen Rest | Roast Room 2026-11-01 |
 | T-SEC-06 | `api.test.ts`, `usage-guard.test.ts` | 429 + Retry-After | BD-09 |
-| T-SEC-07 | `api.test.ts`, `usage-guard.test.ts` | 409 bei paralleler Runde | BD-04 |
-| T-SEC-08 | `context-builder.test.ts` | Kontext-Budget | BD-04 |
+| T-SEC-07 | `api.test.ts`, `usage-guard.test.ts` | 409 bei paralleler Runde | Roast Room 2026-11-01 |
+| T-SEC-08 | `context-builder.test.ts` | Kontext-Budget | Roast Room 2026-11-01 |
 | T-SEC-09 | `orchestrator.test.ts` | Tarifgrenzen trotz manipulierter Raumwerte | BD-05 |
 | T-SEC-10 | `crypto.test.ts` | Verschlüsselung + Manipulationserkennung | BD-13 |
 | T-SEC-11 | `middleware.test.ts`, `security-headers.test.ts` | CSP/Nonce + Header | BD-11 |
@@ -151,12 +151,14 @@
 | T-SEC-18 | `rls.test.sql` | nichts in fremden Räumen anlegbar | BD-02 |
 | T-SEC-19 | `rls.test.sql` | Abrechnungsdaten schreibgeschützt, Key nicht lesbar | BD-03, BD-13 |
 | T-SEC-20 | `rls.test.sql` | Funktionen nur service_role | BD-03 |
-| T-SEC-21 | `rls.test.sql` | Längengrenzen in der DB | BD-04 |
+| T-SEC-21 | `rls.test.sql` | Längengrenzen in der DB | Roast Room 2026-11-01 |
 | T-SEC-22 | `rls.test.sql` | Kaskadenlöschung | BD-02 |
 | T-SEC-36 | `connections.test.ts` | Fremde Keys unsichtbar und ungenutzt | BD-01 |
 | T-SEC-37 | `connections.test.ts`, `rls.test.sql` | Keys nur verschlüsselt; kein Client-Grant auf `provider_keys` | BD-01 |
 | T-SEC-38 | `connections.test.ts` | OAuth-state-Prüfung | BD-01 |
 | T-SEC-39 | `connections.test.ts` | Abo-Modus nur mit Schalter; stdin statt Argument | BD-03 |
+| T-SEC-40 | `platform-budget.test.ts`, `rls.test.sql` | Ausgabenobergrenze für den Plattform-Key: harter Stopp, Töpfe Test/bezahlt, eigener Zugang ausgenommen; Tabelle und Funktionen nur für den Server | Roast Room 2026-11-01 |
+| T-SEC-41 | `usage-guard.test.ts`, `rls.test.sql` | Starter-Testlauf ohne Monatsumbruch, Tageslimit je Tarif, Zähler nur für den Server | Roast Room 2026-11-01 |
 | T-SEC-23 | `auth.test.ts` | keine Enumeration | BD-08 |
 | T-SEC-24 | `auth.test.ts` | Fehlversuchs-Sperre | BD-07 |
 | T-SEC-25 | `webhook.test.ts` | Signatur + Idempotenz | BD-12 |

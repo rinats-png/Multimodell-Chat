@@ -76,7 +76,7 @@ describe("Orchestrierung (F-03, F-04)", () => {
   it("T-SEC-05: Kontingent erschöpft → kein Modellaufruf, verständlicher Fehler", async () => {
     const room = await demoRoom("round-robin");
     const agents = await memoryStore.listAgents(room.id);
-    await memoryStore.incrementTokens(14_999);
+    await memoryStore.incrementTokens(59_999);
     const msg = await userMessage(room.id, "Noch eine Frage");
     const { events, emit } = collector();
     await runOrchestration({ store: memoryStore, room, agents, forcedAgentId: null, userMessage: msg, allowPlatformKey: false, emit, signal: new AbortController().signal });

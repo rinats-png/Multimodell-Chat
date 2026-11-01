@@ -8,6 +8,9 @@ export interface UserProfile {
   monthly_token_limit: number;
   tokens_used_this_month: number;
   usage_period_start: string;
+  /** Verbrauch am Tag `usage_day` (UTC-Datum); an einem neuen Tag zählt er als 0. */
+  tokens_used_today: number;
+  usage_day: string;
   rate_limit_per_min: number;
   custom_openrouter_key: string | null;
   /** Weitere eigene Zugänge (entschlüsselt; in der DB als ein verschlüsselter Wert gespeichert). */

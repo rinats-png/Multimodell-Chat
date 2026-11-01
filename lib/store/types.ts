@@ -1,3 +1,4 @@
+import type { PlatformSpend } from "../platform-budget";
 import type {
   AgentPatch,
   ChatMessage,
@@ -38,6 +39,10 @@ export interface DataStore {
   /** Nur im Demo-Store erlaubt; in Produktion setzt der Billing-Webhook den Tarif. */
   setTier?(tier: SubscriptionTier): Promise<UserProfile>;
   incrementTokens(tokens: number): Promise<void>;
+  /** Gemeinsamer Verbrauch mit dem Plattform-Key im laufenden Monat (alle Nutzer, nur Server). */
+  getPlatformSpend(): Promise<PlatformSpend>;
+  /** Bucht geschätzte Kosten (USD) eines Aufrufs mit dem Plattform-Key; `trial` für Testnutzer (Starter). */
+  addPlatformSpend(costUsd: number, trial: boolean): Promise<void>;
 
   listRooms(): Promise<ChatRoom[]>;
   getRoom(roomId: string): Promise<ChatRoom | null>;

@@ -6,6 +6,7 @@ import { applySlidingWindow, buildAgentMessages, estimatePromptTokens, stripSpea
 import { logError, securityLog } from "./log";
 import { approxTokens, estimateCostUsd, isPlatformModel, MAX_OUTPUT_TOKENS } from "./models";
 import { PLANS, type PlanLimits } from "./plans";
+import { assertPlatformBudget, isTrialUser, platformBudgetOk } from "./platform-budget";
 import { findMentionedAgent, heuristicRoute, routeNextSpeaker, SUMMARY_MAX_OUTPUT_TOKENS, summarizeDroppedMessages } from "./router";
 import { toPublicProfile } from "./session";
 import { rateStance, stanceTarget } from "./stance";
@@ -35,6 +36,18 @@ const ROUTER_TOKEN_ESTIMATE = 800;
 const STANCE_TOKEN_ESTIMATE = 700;
 /** Zeitbudget einer Runde, nach dem keine weitere KI mehr beginnt (Funktionslimit 120 s). */
 const ROUND_TIME_BUDGET_MS = 90_000;
+
+/**
+ * Bucht die geschätzten Kosten eines Aufrufs mit dem Plattform-Key gegen die gemeinsame Obergrenze
+ * (lib/platform-budget.ts). Eigene Zugänge und Demo kosten nichts. Ein Fehler beim Buchen beendet die Runde nicht,
+ * wird aber protokolliert.
+ */
+async function bookPlatformSpend(store: DataStore, profile: UserProfile, access: ResolvedKey, modelId: string, inputTokens: number, outputTokens: number): Promise<void> {
+  if (access.source !== "platform") return;
+  const cost = estimateCostUsd(modelId, inputTokens, outputTokens);
+  if (cost <= 0) return;
+  await store.addPlatformSpend(cost, isTrialUser(profile)).catch((e) => logError("platform.spend", e, { userId: profile.id }));
+}
 
 /** Tarifgrenzen, die der Raum (über die REST-API veränderbar) nie überschreiten darf (BF-28). */
 export function effectiveRoomSettings(room: ChatRoom, limits: PlanLimits) {
@@ -98,7 +111,9 @@ export async function runOrchestration(input: OrchestrateInput): Promise<void> {
       let decision;
       const routerAccess = accessFor(ROUTER_MODEL);
       const routerBooks = !isOwnAccess(routerAccess.source);
-      if (routerAccess.apiKey) {
+      // Obergrenze des Plattform-Keys erreicht: ohne Modellaufruf per Schlüsselwörtern routen.
+      const routerBudgetOk = routerAccess.source !== "platform" || (await platformBudgetOk(store, profile));
+      if (routerAccess.apiKey && routerBudgetOk) {
         key = routerAccess;
         if (routerBooks) assertQuota(profile, ROUTER_TOKEN_ESTIMATE);
         try {
@@ -106,8 +121,10 @@ export async function runOrchestration(input: OrchestrateInput): Promise<void> {
         } catch (error) {
           // Z14-13: Abbruch während des Router-Aufrufs – Schätzung buchen, dann weiterreichen.
           if (routerBooks) await store.incrementTokens(ROUTER_TOKEN_ESTIMATE);
+          await bookPlatformSpend(store, profile, routerAccess, ROUTER_MODEL, ROUTER_TOKEN_ESTIMATE, 0);
           throw error;
         }
+        await bookPlatformSpend(store, profile, routerAccess, ROUTER_MODEL, decision.inputTokens, decision.outputTokens);
         const routerTokens = decision.inputTokens + decision.outputTokens;
         if (routerTokens > 0 && routerBooks) {
           await store.incrementTokens(routerTokens);
@@ -223,6 +240,8 @@ async function runAgentTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
   });
   const promptTokens = estimatePromptTokens(prompt);
   const ownAccess = isOwnAccess(key.source);
+  // Harter Stopp: Ist die Obergrenze für den Plattform-Key erreicht, entsteht kein weiterer Aufruf.
+  if (key.source === "platform") await assertPlatformBudget(store, profile);
   await assertCanCallModel(profile, promptTokens + MAX_OUTPUT_TOKENS, { ownAccess });
 
   const model = key.apiKey || key.source === "local"
@@ -289,6 +308,7 @@ async function runAgentTurn(input: AgentTurnInput): Promise<AgentTurnResult> {
   // Eigener Zugang bezahlt selbst – nur Plattform- und Demo-Verbrauch zählt gegen das Kontingent.
   const tokens = ownAccess ? 0 : inputTokens + outputTokens;
   if (tokens > 0) await store.incrementTokens(tokens);
+  await bookPlatformSpend(store, profile, key, agent.model_identifier, inputTokens, outputTokens);
 
   let saved: ChatMessage | null = null;
   if (partial || !failure) {
@@ -336,6 +356,7 @@ async function rateAndStoreStance({ store, reply, previous, profile, access, emi
   if (usable && books) {
     try {
       assertQuota(profile, STANCE_TOKEN_ESTIMATE);
+      if (usable.source === "platform" && !(await platformBudgetOk(store, profile))) usable = null;
     } catch {
       usable = null;
     }
@@ -345,6 +366,7 @@ async function rateAndStoreStance({ store, reply, previous, profile, access, emi
     if (!rating) return 0;
     const tokens = books ? rating.inputTokens + rating.outputTokens : 0;
     if (tokens > 0) await store.incrementTokens(tokens);
+    await bookPlatformSpend(store, profile, access, ROUTER_MODEL, rating.inputTokens, rating.outputTokens);
     await store.setMessageStance(reply.id, rating.stance, rating.targetId);
     reply.stance = rating.stance;
     reply.stance_target_id = rating.targetId;
@@ -354,6 +376,7 @@ async function rateAndStoreStance({ store, reply, previous, profile, access, emi
     // Abbruch während des Modellaufrufs: der Anbieter hat ihn womöglich schon berechnet → Schätzung buchen (wie beim Router)
     if (signal.aborted && usable && books) {
       await store.incrementTokens(STANCE_TOKEN_ESTIMATE).catch((e) => logError("stance.book", e));
+      await bookPlatformSpend(store, profile, usable, ROUTER_MODEL, STANCE_TOKEN_ESTIMATE, 0);
       return STANCE_TOKEN_ESTIMATE;
     }
     if (!signal.aborted) logError("stance", error, { roomId: reply.room_id });
@@ -385,17 +408,23 @@ async function maybeUpdateSummary({ store, room, messages, profile, key, windowS
     const dropped = messages.slice(alreadySummarized, outsideWindow);
     const books = !isOwnAccess(key.source);
     if (key.apiKey && books) assertQuota(profile, estimate);
+    // Obergrenze des Plattform-Keys erreicht: die Zusammenfassung wartet, bis ein eigener Zugang oder der nächste Monat da ist.
+    if (key.source === "platform" && !(await platformBudgetOk(store, profile))) return;
     called = Boolean(key.apiKey) && books;
     const result = await summarizeDroppedMessages(room.running_summary, dropped, key.apiKey ? key : null, signal);
     called = false;
     const tokens = books ? result.inputTokens + result.outputTokens : 0;
     if (tokens > 0) await store.incrementTokens(tokens);
+    await bookPlatformSpend(store, profile, key, SUMMARY_MODEL, result.inputTokens, result.outputTokens);
     await store.updateRoomSummary(room.id, result.summary, outsideWindow);
     emit({ type: "summary", summary: result.summary, summarizedCount: outsideWindow });
   } catch (error) {
     // BF-05: Die Antworten sind bereits gespeichert – ein Summary-Fehler beendet die Runde nicht.
     // Z14-13: Ein begonnener Aufruf wird mit der Schätzung gebucht.
-    if (called) await store.incrementTokens(estimate).catch((e) => logError("summary.book", e));
+    if (called) {
+      await store.incrementTokens(estimate).catch((e) => logError("summary.book", e));
+      await bookPlatformSpend(store, profile, key, SUMMARY_MODEL, estimate, 0);
+    }
     if (!signal.aborted) logError("summary", error, { roomId: room.id });
   }
 }

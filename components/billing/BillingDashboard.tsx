@@ -83,7 +83,7 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
         <div className="glass relative overflow-hidden rounded-2xl p-5 md:col-span-2">
           <div className="pointer-events-none absolute -right-16 -top-20 size-56 rounded-full bg-accent/20 blur-3xl" aria-hidden />
           <div className="flex items-baseline justify-between">
-            <span className="text-[13px] text-muted">Tokens diesen Monat</span>
+            <span className="text-[13px] text-muted">{plan.trialOnly ? "Testlauf (einmalig)" : "Tokens diesen Monat"}</span>
             <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-[11px] font-medium text-accent-strong">{plan.name}</span>
           </div>
           {profile.has_custom_key ? (
@@ -98,7 +98,11 @@ export function BillingDashboard({ profile: initialProfile, totals, isDemoStore,
                 <span className="text-[15px] font-normal text-muted"> / {formatCompact(profile.monthly_token_limit)}</span>
               </div>
               <Meter value={profile.tokens_used_this_month} max={profile.monthly_token_limit} className="mt-3" />
-              <p className="mt-2 text-[12px] text-muted">{formatNumber(remaining)} Tokens verbleibend</p>
+              <p className="mt-2 text-[12px] text-muted">
+                {plan.trialOnly && remaining === 0
+                  ? "Testlauf aufgebraucht – verbinde unten einen eigenen Zugang, dann geht es unbegrenzt weiter."
+                  : `${formatNumber(remaining)} Tokens verbleibend${plan.trialOnly ? " im Testlauf" : ""}`}
+              </p>
             </>
           )}
         </div>

@@ -69,6 +69,7 @@ Zähler liegen in Upstash Redis (Produktion Pflicht, instanzübergreifend), loka
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | öffentlich (nur mit RLS) | Vercel Env | Server (Sitzung) |
 | `SUPABASE_SERVICE_ROLE_KEY` | **geheim** (umgeht RLS) | Vercel Env (Production/Preview getrennt) | Server: Ledger, Verbrauch, Profil, Konto löschen, Webhook |
 | `OPENROUTER_API_KEY` | **geheim** | Vercel Env | Server: Modellaufrufe mit Plattform-Key |
+| `PLATFORM_KEY_MONTHLY_CAP_EUR`, `PLATFORM_KEY_TRIAL_SHARE`, `PLATFORM_KEY_USD_PER_EUR` | Konfiguration (nicht geheim) | Vercel Env | Server: Ausgabenobergrenze für den Plattform-Key (Standard 50 EUR im Monat, 40 % für Testnutzer) |
 | `BYOK_ENCRYPTION_KEY` | **geheim** (32 Byte base64) | Vercel Env | Server: Ver-/Entschlüsselung der Nutzer-Keys |
 | `UPSTASH_REDIS_REST_URL` / `_TOKEN` | **geheim** | Vercel Env | Server + Middleware: Rate-Limits, Sperren |
 | `STRIPE_SECRET_KEY` | **geheim** | Vercel Env | Server: Checkout, Portal, Abo-Abfrage, Kündigung |

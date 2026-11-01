@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { decryptProviderKeys, decryptSecret, encryptProviderKeys, encryptSecret } from "../crypto";
 import { defaultAgents } from "../default-agents";
+import type { PlatformSpend } from "../platform-budget";
 import type { ChatMessage, ChatRoom, RoomAgent, UserProfile } from "../types";
 import type { DataStore } from "./types";
 
@@ -72,6 +73,18 @@ export function createSupabaseStore(user: SupabaseClient, admin: SupabaseClient,
     async incrementTokens(tokens) {
       const { error } = await admin.rpc("increment_token_usage", { p_user_id: userId, p_tokens: Math.max(0, Math.round(tokens)) });
       if (error) throw new Error(`Token-Verbrauch buchen: ${error.message}`);
+    },
+    async getPlatformSpend() {
+      const { data, error } = await admin.rpc("get_platform_spend");
+      if (error) throw new Error(`Plattform-Verbrauch laden: ${error.message}`);
+      const row = (data ?? {}) as Partial<Record<keyof PlatformSpend, number | string>>;
+      return { trial_usd: Number(row.trial_usd ?? 0), paid_usd: Number(row.paid_usd ?? 0) };
+    },
+    async addPlatformSpend(costUsd, trial) {
+      const cost = Math.max(0, Math.round(costUsd * 1_000_000) / 1_000_000);
+      if (cost === 0) return;
+      const { error } = await admin.rpc("add_platform_spend", { p_cost_usd: cost, p_trial: trial });
+      if (error) throw new Error(`Plattform-Verbrauch buchen: ${error.message}`);
     },
 
     async listRooms() {

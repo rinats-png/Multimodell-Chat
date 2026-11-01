@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { effectiveCustomKey, resolveApiKey, resolveModelAccess } from "@/lib/ai/provider";
 import { acquireLock, peekLimit, rateLimit, releaseLock } from "@/lib/rate-limit";
 import type { UserProfile } from "@/lib/types";
-import { assertCanCallModel, checkTokenQuota, UsageGuardError } from "@/lib/usage-guard";
+import { assertCanCallModel, assertQuota, checkTokenQuota, tokensUsedToday, UsageGuardError } from "@/lib/usage-guard";
 
 const profile = (patch: Partial<UserProfile> = {}): UserProfile => ({
   id: "00000000-0000-4000-8000-0000000000aa",
@@ -10,6 +10,8 @@ const profile = (patch: Partial<UserProfile> = {}): UserProfile => ({
   monthly_token_limit: 15_000,
   tokens_used_this_month: 0,
   usage_period_start: "2026-10-01",
+  tokens_used_today: 0,
+  usage_day: "2026-10-01",
   rate_limit_per_min: 5,
   custom_openrouter_key: null,
   provider_keys: {},
@@ -96,3 +98,36 @@ describe("Client-IP (Z14-07)", () => {
     }
   });
 });
+
+describe("Testlauf und Tageslimit (T-SEC-41)", () => {
+  const today = new Date().toISOString().slice(0, 10);
+
+  it("Der Tageszähler eines früheren Tages gilt als 0", () => {
+    expect(tokensUsedToday({ tokens_used_today: 9_000, usage_day: "2026-01-01" })).toBe(0);
+    expect(tokensUsedToday({ tokens_used_today: 9_000, usage_day: today })).toBe(9_000);
+  });
+
+  it("Das Tageslimit des Tarifs bindet auch bei viel Monatskontingent (Pro: 150.000 am Tag)", () => {
+    const pro = profile({ subscription_tier: "pro", monthly_token_limit: 500_000, tokens_used_this_month: 100_000, tokens_used_today: 149_000, usage_day: today });
+    expect(checkTokenQuota(pro, 500)).toMatchObject({ allowed: true });
+    const over = checkTokenQuota(pro, 2_000);
+    expect(over).toMatchObject({ allowed: false, remainingTokens: 1_000, limitedBy: "day" });
+  });
+
+  it("Ist das Tageslimit ausgeschöpft, sagt die Meldung das und nennt den eigenen Zugang", () => {
+    const pro = profile({ subscription_tier: "pro", monthly_token_limit: 500_000, tokens_used_today: 150_000, usage_day: today });
+    expect(() => assertQuota(pro, 100)).toThrow(/Tageslimit/);
+  });
+
+  it("Starter: ein aufgebrauchter Testlauf führt zum eigenen Zugang, nicht zu einem Upgrade-Zwang", () => {
+    const free = profile({ monthly_token_limit: 60_000, tokens_used_this_month: 60_000 });
+    expect(() => assertQuota(free, 100)).toThrow(/Testlauf ist aufgebraucht/);
+    expect(() => assertQuota(free, 100)).toThrow(/eigenen API-Key/);
+  });
+
+  it("Ein eigener Zugang für alle Modelle ist vom Tageslimit ausgenommen", () => {
+    const own = profile({ custom_openrouter_key: "sk-or-v1-abcdefghijklmnop", tokens_used_today: 1_000_000, usage_day: today });
+    expect(checkTokenQuota(own, 50_000).allowed).toBe(true);
+  });
+});
+

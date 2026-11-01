@@ -145,7 +145,7 @@ BEGIN
   PERFORM public.apply_subscription_tier('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'free');
   SELECT * INTO prof FROM public.user_profiles WHERE id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   -- 0005: Eigene Zugänge sind in jedem Tarif erlaubt – der Downgrade lässt den Key stehen.
-  IF prof.monthly_token_limit <> 15000 OR prof.custom_openrouter_key IS NULL OR prof.stripe_subscription_id IS NOT NULL THEN
+  IF prof.monthly_token_limit <> 60000 OR prof.custom_openrouter_key IS NULL OR prof.stripe_subscription_id IS NOT NULL THEN
     RAISE EXCEPTION 'FEHLER Downgrade setzt Limits nicht zurück oder entfernt eigenen Key';
   END IF;
 END $$;
@@ -174,6 +174,71 @@ SET LOCAL ROLE authenticated;
 SET LOCAL request.jwt.claims = '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 SELECT pg_temp.expect_denied($q$UPDATE public.messages SET stance = 'disagree' WHERE content = 'Geheim A'$q$, 'T-SEC-35 Client darf stance nicht schreiben');
 SELECT pg_temp.expect_rows($q$SELECT stance FROM public.messages WHERE content = 'Geheim B'$q$, 0, 'T-SEC-35 fremde Nachricht samt Bewertung unsichtbar');
+ROLLBACK;
+
+
+-- ---------------------------------------------------------------------------
+-- T-SEC-40: Ausgabenobergrenze (platform_spend) und Tageslimit – nur der Server darf lesen und schreiben
+-- ---------------------------------------------------------------------------
+BEGIN;
+SET LOCAL ROLE authenticated;
+SET LOCAL request.jwt.claims = '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+SELECT pg_temp.expect_denied($q$SELECT * FROM public.platform_spend$q$, 'T-SEC-40 platform_spend lesen');
+SELECT pg_temp.expect_denied($q$INSERT INTO public.platform_spend (period) VALUES (CURRENT_DATE)$q$, 'T-SEC-40 platform_spend schreiben');
+SELECT pg_temp.expect_denied($q$SELECT public.add_platform_spend(1, true)$q$, 'T-SEC-40 add_platform_spend');
+SELECT pg_temp.expect_denied($q$SELECT public.get_platform_spend()$q$, 'T-SEC-40 get_platform_spend');
+SELECT pg_temp.expect_denied($q$SELECT tokens_used_today FROM public.user_profiles$q$, 'T-SEC-40 Tageszähler lesen');
+SELECT pg_temp.expect_denied($q$UPDATE public.user_profiles SET tokens_used_today = 0$q$, 'T-SEC-40 Tageszähler zurücksetzen');
+ROLLBACK;
+
+BEGIN;
+SET LOCAL ROLE anon;
+SELECT pg_temp.expect_denied($q$SELECT public.add_platform_spend(1, true)$q$, 'T-SEC-40 anon add_platform_spend');
+SELECT pg_temp.expect_denied($q$SELECT * FROM public.platform_spend$q$, 'T-SEC-40 anon platform_spend lesen');
+ROLLBACK;
+
+BEGIN;
+SET LOCAL ROLE service_role;
+DO $$
+DECLARE r JSONB; prof public.user_profiles;
+BEGIN
+  r := public.get_platform_spend();
+  IF (r->>'trial_usd')::numeric <> 0 OR (r->>'paid_usd')::numeric <> 0 THEN RAISE EXCEPTION 'FEHLER get_platform_spend leer: %', r; END IF;
+  r := public.add_platform_spend(1.5, true);
+  r := public.add_platform_spend(2, false);
+  r := public.add_platform_spend(0.25, true);
+  IF (r->>'trial_usd')::numeric <> 1.75 OR (r->>'paid_usd')::numeric <> 2 THEN RAISE EXCEPTION 'FEHLER add_platform_spend: %', r; END IF;
+  r := public.get_platform_spend();
+  IF (r->>'trial_usd')::numeric <> 1.75 OR (r->>'paid_usd')::numeric <> 2 THEN RAISE EXCEPTION 'FEHLER get_platform_spend: %', r; END IF;
+  BEGIN
+    PERFORM public.add_platform_spend(-1, true);
+    RAISE EXCEPTION 'FEHLER: negative Ausgabe erlaubt';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM LIKE 'FEHLER%' THEN RAISE; END IF;
+  END;
+
+  -- Starter: Testlauf ohne Monatsumbruch; Tageszähler läuft mit
+  UPDATE public.user_profiles SET subscription_tier = 'free', monthly_token_limit = 60000, tokens_used_this_month = 0, tokens_used_today = 0,
+         usage_period_start = date_trunc('month', NOW() - interval '2 months')::date, usage_day = CURRENT_DATE - 1
+   WHERE id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  PERFORM public.increment_token_usage('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 1000);
+  PERFORM public.increment_token_usage('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 500);
+  SELECT * INTO prof FROM public.user_profiles WHERE id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  IF prof.tokens_used_this_month <> 1500 OR prof.tokens_used_today <> 1500 OR prof.usage_day <> CURRENT_DATE THEN
+    RAISE EXCEPTION 'FEHLER Tageszähler: monat %, tag %, tag-datum %', prof.tokens_used_this_month, prof.tokens_used_today, prof.usage_day;
+  END IF;
+  -- Starter erhält keinen Monatsumbruch (der Testlauf bleibt verbraucht)
+  prof := public.roll_usage_period('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+  IF prof.tokens_used_this_month <> 1500 THEN RAISE EXCEPTION 'FEHLER Starter-Testlauf wurde zurückgesetzt: %', prof.tokens_used_this_month; END IF;
+  -- Bezahlter Tarif: Wechsel vom Starter startet bei 0, danach gilt der Monatsumbruch
+  PERFORM public.apply_subscription_tier('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'pro');
+  SELECT * INTO prof FROM public.user_profiles WHERE id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  IF prof.tokens_used_this_month <> 0 OR prof.monthly_token_limit <> 500000 THEN RAISE EXCEPTION 'FEHLER Wechsel Starter zu Pro: %, %', prof.tokens_used_this_month, prof.monthly_token_limit; END IF;
+  UPDATE public.user_profiles SET tokens_used_this_month = 9999, usage_period_start = date_trunc('month', NOW() - interval '1 month')::date
+   WHERE id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  prof := public.roll_usage_period('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+  IF prof.tokens_used_this_month <> 0 THEN RAISE EXCEPTION 'FEHLER Pro: Monatsumbruch fehlt'; END IF;
+END $$;
 ROLLBACK;
 
 \o

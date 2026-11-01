@@ -17,7 +17,12 @@ export interface PlanDefinition {
   tier: SubscriptionTier;
   name: string;
   priceEur: number;
+  /** Kontingent: bei bezahlten Tarifen je Monat, beim Starter einmalig (Testlauf, siehe `trialOnly`). */
   monthlyTokenLimit: number;
+  /** Höchstverbrauch je Tag (UTC), schützt vor einem Ausreißer an einem einzelnen Tag. */
+  dailyTokenLimit: number;
+  /** Starter: das Kontingent ist ein einmaliger Testlauf mit dem Plattform-Key und wird nicht monatlich erneuert. */
+  trialOnly: boolean;
   /** Agenten-Antworten pro Minute */
   rateLimitPerMin: number;
   /** Eigene Zugänge (OpenRouter, Gateway, Anbieter-Keys) erlaubt – derzeit in allen Tarifen. */
@@ -37,14 +42,16 @@ export const PLANS: Record<SubscriptionTier, PlanDefinition> = {
     tier: "free",
     name: "Starter",
     priceEur: 0,
-    monthlyTokenLimit: 15_000,
+    monthlyTokenLimit: 60_000,
+    dailyTokenLimit: 60_000,
+    trialOnly: true,
     rateLimitPerMin: 5,
     byok: true,
     limits: { maxActiveAgents: 3, maxAutoTurns: 3, maxSlidingWindow: 12, maxRooms: 5, runningSummary: false },
-    tagline: "Zum Ausprobieren der ersten KI-Debatten.",
+    tagline: "Ein Testlauf zum Ausprobieren, danach mit eigenem Zugang.",
     features: [
-      "15.000 Start-Tokens pro Monat",
-      "Eigener Zugang: OpenRouter verbinden oder API-Keys",
+      "Einmaliger Testlauf: etwa eine Debatte (60.000 Tokens) mit unserem Zugang",
+      "Danach unbegrenzt mit eigenem Zugang: OpenRouter verbinden oder API-Keys",
       "5 KI-Antworten pro Minute",
       "3 KI-Agenten pro Raum, bis zu 5 Räume",
       "Router, Round-Robin & @Mentions",
@@ -55,6 +62,8 @@ export const PLANS: Record<SubscriptionTier, PlanDefinition> = {
     name: "Pro",
     priceEur: 29,
     monthlyTokenLimit: 500_000,
+    dailyTokenLimit: 150_000,
+    trialOnly: false,
     rateLimitPerMin: 15,
     byok: true,
     limits: { maxActiveAgents: 6, maxAutoTurns: 10, maxSlidingWindow: 40, maxRooms: 100, runningSummary: true },
@@ -73,6 +82,8 @@ export const PLANS: Record<SubscriptionTier, PlanDefinition> = {
     name: "Workspace",
     priceEur: 79,
     monthlyTokenLimit: 2_500_000,
+    dailyTokenLimit: 600_000,
+    trialOnly: false,
     rateLimitPerMin: 60,
     byok: true,
     limits: { maxActiveAgents: 8, maxAutoTurns: 10, maxSlidingWindow: 40, maxRooms: 100, runningSummary: true },
