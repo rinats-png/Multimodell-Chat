@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { groupModelsByProvider } from "@/lib/models";
 import type { AgentPatch, RoomAgent } from "@/lib/types";
 import { AgentAvatar } from "@/components/ui/AgentAvatar";
 
@@ -159,10 +160,14 @@ function AgentCard({ agent, open, onToggle, onUpdate, onToggleActive, onDelete, 
                   {!modelCatalog.some((m) => m.id === draft.model_identifier) && (
                     <option value={draft.model_identifier}>{draft.model_identifier} (nur mit eigenem Key)</option>
                   )}
-                  {modelCatalog.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.label}
-                    </option>
+                  {groupModelsByProvider(modelCatalog).map((g) => (
+                    <optgroup key={g.label} label={g.label}>
+                      {g.models.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.label}
+                        </option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               )}

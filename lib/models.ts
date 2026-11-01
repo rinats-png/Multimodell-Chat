@@ -72,6 +72,38 @@ export function providerOf(modelId: string): ProviderKey {
   return "other";
 }
 
+const PROVIDER_GROUP_LABELS: Record<string, string> = {
+  abo: "Eigenes Abo (lokal)",
+  openai: "OpenAI (ChatGPT)",
+  anthropic: "Anthropic (Claude)",
+  google: "Google (Gemini)",
+  "x-ai": "xAI (Grok)",
+  deepseek: "DeepSeek",
+  moonshotai: "Moonshot (Kimi)",
+  qwen: "Alibaba (Qwen)",
+  "z-ai": "Z.ai (GLM)",
+  mistralai: "Mistral",
+  "meta-llama": "Meta (Llama)",
+};
+
+/** Anzeigename des Anbieters für die gruppierte Modellauswahl; unbekannte Anbieter zeigen ihr Kürzel. */
+export function providerGroupLabel(modelId: string): string {
+  const prefix = modelId.split("/")[0] ?? modelId;
+  return PROVIDER_GROUP_LABELS[prefix] ?? prefix;
+}
+
+/** Gruppiert Modelle nach Anbieter; die Reihenfolge der Gruppen und der Modelle bleibt wie in der Eingabe. */
+export function groupModelsByProvider<T extends { id: string }>(models: T[]): { label: string; models: T[] }[] {
+  const groups: { label: string; models: T[] }[] = [];
+  for (const m of models) {
+    const label = providerGroupLabel(m.id);
+    const group = groups.find((g) => g.label === label);
+    if (group) group.models.push(m);
+    else groups.push({ label, models: [m] });
+  }
+  return groups;
+}
+
 /** Grobe Token-Schätzung (≈ 4 Zeichen pro Token), nur für Vorschau & Demo-Modus. */
 export function approxTokens(text: string): number {
   return Math.max(1, Math.ceil(text.length / 4));
