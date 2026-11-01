@@ -162,6 +162,7 @@
 | T-SEC-42 | `rls.test.sql` | Entscheidungsberichte: Besitzer liest/löscht, Clients schreiben nicht, Freigabe-Hash nicht lesbar, Grenzen (Größe, 500 je Konto) | F-21 |
 | T-SEC-43 | `report.test.ts` | Teilen per Link: nur Bericht sichtbar, Hash statt Token, Widerruf/Löschen wirken sofort, fremde Nutzer sehen nichts | F-21 |
 | TEST-F21-1 | `report-score.test.ts`, `report.test.ts` | Punkterechnung (Durchschnitt, Bänder, Deckel, Gleichstand), Berichtsgrenzen je Tarif, Obergrenze und Kontingent | F-21 |
+| TEST-F22-1 | `council-presets.test.ts` | Räte gültig (Grenzen, Katalog-Modelle), keine echten Personen, nur in leerer Debatte, Tarifgrenzen, fremde/unbekannte Räume 404 | F-22 |
 | T-SEC-23 | `auth.test.ts` | keine Enumeration | BD-08 |
 | T-SEC-24 | `auth.test.ts` | Fehlversuchs-Sperre | BD-07 |
 | T-SEC-25 | `webhook.test.ts` | Signatur + Idempotenz | BD-12 |

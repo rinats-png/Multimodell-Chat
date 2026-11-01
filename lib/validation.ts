@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "./auth-policy";
+import { COUNCIL_PRESET_IDS } from "./council-presets";
 import { PROVIDER_KEY_IDS } from "./types";
 
 export const uuidSchema = z.uuid();
@@ -90,3 +91,5 @@ export const passwordUpdateSchema = z.object({ password }).strict();
 export const reauthSchema = z.object({ password: z.string().min(1).max(PASSWORD_MAX_LENGTH) }).strict();
 
 export const reportShareSchema = z.object({ enabled: z.boolean() }).strict();
+
+export const councilSchema = z.object({ preset: z.enum(COUNCIL_PRESET_IDS) }).strict();

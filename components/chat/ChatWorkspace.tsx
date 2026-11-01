@@ -5,6 +5,7 @@ import { Brain, Coins, Eraser, FileText, Hand, Info, Loader2, Menu, MessagesSqua
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { applySlidingWindow } from "@/lib/context-builder";
+import { COUNCIL_PRESETS } from "@/lib/council-presets";
 import { DECISION_TEMPLATES, type DecisionTemplate } from "@/lib/decision-templates";
 import { formatCompact, formatUsd } from "@/lib/format";
 import type { PlanLimits } from "@/lib/plans";
@@ -67,6 +68,7 @@ const MODE_OPTIONS = [
 export function ChatWorkspace(props: ChatWorkspaceProps) {
   const router = useRouter();
   const [reporting, setReporting] = useState(false);
+  const [presetBusy, setPresetBusy] = useState<string | null>(null);
   const [draft, setDraft] = useState<{ text: string; id: number } | null>(null);
   const [room, setRoom] = useState(props.initialRoom);
   const [agents, setAgents] = useState(props.initialAgents);
@@ -263,6 +265,24 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
 
   const agentReplies = messages.filter((m) => m.sender_type === "agent").length;
 
+  /** Vorgefertigten Rat einsetzen (leere Debatte): ersetzt die Agenten und füllt den Starttext ein. */
+  async function applyPreset(presetId: string) {
+    setPresetBusy(presetId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/rooms/${room.id}/council`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ preset: presetId }) });
+      const data = (await res.json().catch(() => ({}))) as { room?: ChatRoom; agents?: RoomAgent[]; starter?: string; error?: string };
+      if (!res.ok || !data.agents || !data.room) return setError(data.error ?? "Der Rat konnte nicht eingesetzt werden.");
+      setAgents(data.agents);
+      setRoom(data.room);
+      if (data.starter) setDraft({ text: data.starter, id: Date.now() });
+    } catch {
+      setError("Keine Verbindung. Bitte prüfe dein Netz und versuche es erneut.");
+    } finally {
+      setPresetBusy(null);
+    }
+  }
+
   /** Entscheidungsbericht (F-21): fasst die Debatte zu Optionen, Wertungen, Einwand und nächsten Schritten zusammen. */
   async function createReport() {
     setReporting(true);
@@ -398,7 +418,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
           <div ref={scrollRef} role="log" aria-live="polite" aria-label="Verlauf der Debatte" className="flex-1 overflow-y-auto">
             <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6">
               {messages.length === 0 && !running ? (
-                <EmptyState agents={activeAgents} onPick={(t) => setDraft({ text: t.text, id: Date.now() })} />
+                <EmptyState agents={activeAgents} onPick={(t) => setDraft({ text: t.text, id: Date.now() })} onPreset={applyPreset} presetBusy={presetBusy} />
               ) : (
                 timeline
               )}
@@ -506,7 +526,7 @@ function IconButton(props: {
   );
 }
 
-function EmptyState({ agents, onPick }: { agents: RoomAgent[]; onPick: (template: DecisionTemplate) => void }) {
+function EmptyState({ agents, onPick, onPreset, presetBusy }: { agents: RoomAgent[]; onPick: (template: DecisionTemplate) => void; onPreset: (presetId: string) => void; presetBusy: string | null }) {
   return (
     <div className="flex flex-col items-center pt-[2vh] text-center">
       <div className="relative flex -space-x-2">
@@ -523,6 +543,23 @@ function EmptyState({ agents, onPick }: { agents: RoomAgent[]; onPick: (template
         eigene Fachrolle und widerspricht, statt nur zuzustimmen.
       </p>
       <div className="mt-4 w-full max-w-2xl text-left">
+        <h3 className="px-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">Rat wählen</h3>
+        <p className="mt-1 px-1 text-[12.5px] text-muted">Fertige Rollen für typische Richtungen. Die Rollen sind erfundene Denkschulen, keine echten Personen.</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {COUNCIL_PRESETS.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => onPreset(p.id)}
+              disabled={presetBusy !== null}
+              title={`${p.description} Rollen: ${p.agents.map((a) => a.display_name).join(", ")}`}
+              className="rounded-full border border-line/80 bg-surface/30 px-3.5 py-1.5 text-[13px] font-medium text-ink transition-colors hover:border-accent/40 hover:bg-accent/[0.06] disabled:opacity-50"
+            >
+              {presetBusy === p.id ? "Setze ein …" : p.title}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="mt-5 w-full max-w-2xl text-left">
         <h3 className="px-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">Mit einer Entscheidung starten</h3>
         <p className="mt-1 px-1 text-[12.5px] text-muted">Die Vorlage füllt das Eingabefeld. Trage deine Zahlen ein und sende. Danach erstellst du oben den Bericht.</p>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
