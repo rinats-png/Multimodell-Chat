@@ -1,0 +1,18 @@
+{
+  "option": "B",
+  "label": "GO WITH CONDITIONS",
+  "recommendation": "Launch B behind a three-week paid gate: sell a EUR 49 tested-decision report by hand to 20 founders, then open a public German page with the report as the front door.",
+  "conditions": [
+    "Production works and one council session costs EUR 1.50 or less, measured by 2026-11-15",
+    "Gate by 2026-12-06: at least 8 of 20 pay EUR 49, refunds at most 25%, at least 5 share unprompted",
+    "Platform cap = max(EUR 50, 20% of last month's revenue), trial reserve separate, before any public link",
+    "Three councils visible, ten hidden; founder hours at most 10 a week"
+  ],
+  "next_steps": [
+    "By 2026-11-08: production live, 10 real sessions logged",
+    "By 2026-11-15: 20 named founders, EUR 49 checkout, revenue-linked cap",
+    "2026-12-07: gate decision"
+  ],
+  "cheapest_test": "20 hand-sold EUR 49 reports to founders with a real decision.",
+  "kill_criteria": "Fewer than 6 of 20 pay or fewer than 4 share at the gate; under 40 paying buyers by day 90."
+}

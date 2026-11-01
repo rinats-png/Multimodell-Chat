@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<title>SynthrAI Promo</title>
+<style>
+@font-face { font-family: "DM Sans"; font-weight: 400; src: url(fonts/dm-sans-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "DM Sans"; font-weight: 500; src: url(fonts/dm-sans-latin-500-normal.woff2) format("woff2"); }
+@font-face { font-family: "DM Sans"; font-weight: 700; src: url(fonts/dm-sans-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "DM Serif Display"; font-weight: 400; src: url(fonts/dm-serif-display-latin-400-normal.woff2) format("woff2"); }
+:root {
+  --canvas: #1b1816; --surface: #26221f; --surface2: #302b27; --line: #433b34;
+  --ink: #f4eee6; --ink2: #ddd3c6; --muted: #b8ad9f; --signal: #62d1b9; --danger: #f08a72; --warn: #e8c77d;
+  --gpt: #62d1b9; --claude: #f0a55f; --gemini: #c9dc5e; --deepseek: #d9b98a; --kimi: #a9b6ff;
+  --ai1: #5fe6d2; --ai2: #ffa766; --ai3: #cfe86a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--canvas); color: var(--ink); font-family: "DM Sans", sans-serif; }
+#stage { position: absolute; inset: 0; overflow: hidden; }
+.blob { position: absolute; border-radius: 50%; filter: blur(120px); opacity: .55; }
+.scene { position: absolute; inset: 0; opacity: 0; }
+.abs { position: absolute; }
+.center { position: absolute; left: 0; right: 0; text-align: center; }
+.serif { font-family: "DM Serif Display", serif; font-weight: 400; letter-spacing: -0.01em; }
+.glass { background: linear-gradient(180deg, rgba(255,240,220,.09), rgba(255,240,220,.04)); border: 1px solid rgba(255,240,220,.14); border-radius: 22px; box-shadow: 0 30px 70px -30px rgba(0,0,0,.8); }
+.grad { background: linear-gradient(90deg, var(--ai1), var(--ai2), var(--ai3)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.bubble { position: absolute; padding: 26px 34px; font-size: 38px; line-height: 1.3; border-radius: 28px; max-width: 1100px; }
+.user { background: var(--ink); color: var(--canvas); border-bottom-right-radius: 8px; }
+.ai { background: var(--surface2); border: 1px solid var(--line); border-bottom-left-radius: 8px; }
+.tag { display: inline-block; font-size: 22px; font-weight: 700; padding: 6px 16px; border-radius: 999px; letter-spacing: .04em; }
+.avatar { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 26px; color: #1b1816; flex: none; }
+.agent { position: absolute; left: 110px; width: 520px; height: 112px; display: flex; align-items: center; gap: 22px; padding: 0 26px; }
+.agent .n { font-size: 30px; font-weight: 700; }
+.agent .r { font-size: 21px; color: var(--muted); margin-top: 2px; }
+.msg { position: absolute; left: 720px; width: 1090px; padding: 22px 28px; display: flex; gap: 20px; align-items: flex-start; }
+.msg .t { font-size: 29px; line-height: 1.35; }
+.msg .h { font-size: 22px; font-weight: 700; margin-bottom: 6px; display: flex; gap: 14px; align-items: center; }
+.chip { font-size: 18px; font-weight: 700; padding: 4px 12px; border-radius: 999px; }
+.row { position: absolute; left: 160px; width: 1600px; height: 118px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.cell { display: flex; align-items: center; gap: 22px; padding: 0 32px; font-size: 31px; border-radius: 20px; }
+.cell.bad { background: rgba(240,138,114,.07); border: 1px solid rgba(240,138,114,.22); color: var(--muted); }
+.cell.good { background: rgba(98,209,185,.10); border: 1px solid rgba(98,209,185,.35); color: var(--ink); font-weight: 500; }
+.ico { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-size: 30px; font-weight: 700; flex: none; }
+.bar { position: absolute; height: 54px; border-radius: 14px; }
+.card13 { position: absolute; width: 420px; height: 108px; padding: 18px 24px; }
+.card13 .g { font-size: 17px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.card13 .ti { font-size: 27px; font-weight: 700; margin-top: 6px; }
+.pill { position: absolute; top: 175px; width: 400px; height: 70px; border-radius: 999px; display: grid; place-items: center; font-size: 28px; font-weight: 700; border: 2px solid var(--line); color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="blob" id="b1" style="width:900px;height:900px;background:#8a5a1f"></div>
+  <div class="blob" id="b2" style="width:1000px;height:1000px;background:#2f4a3f"></div>
+  <div class="blob" id="b3" style="width:700px;height:700px;background:#4a3a2a"></div>
+
+  <!-- S1: Eine KI -->
+  <div class="scene" id="s1">
+    <div class="center serif" id="s1cap" style="top:110px;font-size:64px;color:var(--muted)">Du fragst <span style="color:var(--ink)">eine</span> KI …</div>
+    <div class="bubble user" id="s1q" style="right:300px;top:300px">Soll ich kündigen und meine App-Idee starten?</div>
+    <div class="bubble ai" id="s1a" style="left:300px;top:470px;min-width:200px"><span id="s1at"></span></div>
+    <div class="abs tag" id="s1echo" style="left:300px;top:420px;background:var(--danger);color:#1b1816">ECHO</div>
+    <div class="center serif" id="s1t" style="top:720px;font-size:72px">Eine Sicht. <span style="color:var(--danger)">Und sie sagt meist Ja.</span></div>
+  </div>
+
+  <!-- S2: Frage + Logo -->
+  <div class="scene" id="s2">
+    <div class="center serif" id="s2q" style="top:420px;font-size:92px">Was, wenn KIs <span class="grad">widersprechen</span> dürften?</div>
+    <div class="center" id="s2logo" style="top:330px">
+      <div class="serif" style="font-size:210px;line-height:1">Synthr<span style="font-family:'DM Sans';font-weight:700;font-size:200px" class="grad">AI</span></div>
+      <div id="s2line" style="margin:18px auto 0;height:6px;width:520px;border-radius:6px;background:linear-gradient(90deg,var(--ai1),var(--ai2),var(--ai3))"></div>
+      <div style="margin-top:28px;font-size:40px;letter-spacing:.32em;color:var(--ink2);font-weight:500">AI DISCUSSION ROOM</div>
+    </div>
+  </div>
+
+  <!-- S3: Debatte -->
+  <div class="scene" id="s3">
+    <div class="abs serif" id="s3cap" style="left:110px;top:70px;font-size:64px">5 Modelle. 5 Rollen. <span class="grad">Echter Widerspruch.</span></div>
+    <div id="s3agents"></div>
+    <div id="s3msgs"></div>
+  </div>
+
+  <!-- S4: Vorteil -->
+  <div class="scene" id="s4">
+    <div class="center serif" id="s4cap" style="top:70px;font-size:70px">Warum mehrere KIs <span class="grad">besser entscheiden</span></div>
+    <div class="abs" id="s4h1" style="left:192px;top:205px;font-size:30px;font-weight:700;color:var(--muted);letter-spacing:.14em">EINE KI</div>
+    <div class="abs" id="s4h2" style="left:992px;top:205px;font-size:30px;font-weight:700;letter-spacing:.14em">SYNTHR<span class="grad">AI</span></div>
+    <div id="s4rows"></div>
+    <div class="center serif" id="s4foot" style="top:900px;font-size:48px;color:var(--ink2)">Was ein Modell übersieht, <span style="color:var(--signal)">kann das nächste abfangen.</span></div>
+  </div>
+
+  <!-- S5: Ratssitzung + Bericht -->
+  <div class="scene" id="s5">
+    <div class="abs serif" id="s5cap" style="left:110px;top:60px;font-size:62px">Ratssitzung: <span class="grad">drei Runden, ein Bericht</span></div>
+    <div class="pill" id="p1" style="left:110px">1 · Eröffnung</div>
+    <div class="pill" id="p2" style="left:560px">2 · Streit</div>
+    <div class="pill" id="p3" style="left:1010px">3 · Abstimmung</div>
+    <div class="abs glass" id="rep" style="left:110px;top:290px;width:1700px;height:700px">
+      <div class="abs" style="left:50px;top:36px;font-size:22px;letter-spacing:.14em;color:var(--muted);font-weight:700">ENTSCHEIDUNGSBERICHT</div>
+      <div class="abs serif" style="left:50px;top:70px;font-size:48px">Kündigen und App starten?</div>
+      <div id="bars"></div>
+      <div class="abs tag" id="stamp" style="left:1130px;top:120px;font-size:30px;padding:16px 26px;border:3px solid var(--warn);color:var(--warn);background:rgba(232,199,125,.08)">EMPFOHLEN MIT BEDINGUNGEN</div>
+      <div class="abs" id="obj" style="left:1130px;top:230px;width:520px;font-size:25px;line-height:1.4;color:var(--ink2)"><b style="color:var(--claude)">Stärkster Einwand · Kassenwart</b><br>Die Rücklagen reichen nur vier Monate.</div>
+      <div class="abs" id="kill" style="left:1130px;top:350px;width:520px;font-size:25px;line-height:1.4;color:var(--ink2)"><b style="color:var(--danger)">Abbruchkriterium</b><br>Weniger als 5 zahlende Kunden bis 1. März.</div>
+      <div class="abs" id="acts" style="left:50px;top:600px;display:flex;gap:16px;font-size:24px;font-weight:700">
+        <span class="tag" style="border:1px solid var(--line);font-size:24px">🔗 Link teilen</span>
+        <span class="tag" style="border:1px solid var(--line);font-size:24px">📄 PDF</span>
+        <span class="tag" style="border:1px solid var(--line);font-size:24px">⬇ Markdown</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6: 13 Räte -->
+  <div class="scene" id="s6">
+    <div class="center serif" id="s6cap" style="top:70px;font-size:70px"><span class="grad">13 fertige Räte</span> für jede Frage</div>
+    <div id="cards"></div>
+  </div>
+
+  <!-- S7: Abschluss -->
+  <div class="scene" id="s7">
+    <div class="center serif" id="s7a" style="top:260px;font-size:100px;color:var(--muted)">Nicht eine Antwort.</div>
+    <div class="center serif" id="s7b" style="top:400px;font-size:120px">Eine <span class="grad">geprüfte Entscheidung.</span></div>
+    <div class="center" id="s7logo" style="top:640px">
+      <div class="serif" style="font-size:96px;line-height:1">Synthr<span style="font-family:'DM Sans';font-weight:700;font-size:92px" class="grad">AI</span></div>
+      <div style="margin-top:14px;font-size:26px;letter-spacing:.32em;color:var(--ink2);font-weight:500">AI DISCUSSION ROOM</div>
+    </div>
+  </div>
+
+  <div id="flash" class="abs" style="inset:0;background:#fff;opacity:0;pointer-events:none"></div>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const cl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const P = (t, a, d) => cl((t - a) / d);
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const eb = (x) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const ei = (x) => x * x * x;
+function set(el, o, x = 0, y = 0, s = 1, extra = "") { el.style.opacity = o; el.style.transform = `translate(${x}px,${y}px) scale(${s}) ${extra}`; }
+// rein bei a über d, raus bei b über d2
+function inout(t, a, d, b, d2) { return eo(P(t, a, d)) * (1 - ei(P(t, b, d2))); }
+const scenes = [["s1", 0, 6], ["s2", 6, 11.2], ["s3", 11.2, 21.4], ["s4", 21.4, 31], ["s5", 31, 39.4], ["s6", 39.4, 44.2], ["s7", 44.2, 50]];
+
+// Agenten
+const AG = [
+  ["G", "ChatGPT", "Stratege", "var(--gpt)"],
+  ["C", "Claude", "Kassenwart", "var(--claude)"],
+  ["G", "Gemini", "Gegenspieler", "var(--gemini)"],
+  ["D", "DeepSeek", "Produkt-Realist", "var(--deepseek)"],
+  ["K", "Kimi", "Umsetzer", "var(--kimi)"],
+];
+const agWrap = $("s3agents");
+AG.forEach(([l, m, r, c], i) => {
+  const d = document.createElement("div");
+  d.className = "agent glass"; d.id = "ag" + i; d.style.top = 210 + i * 150 + "px";
+  d.innerHTML = `<div class="avatar" style="background:${c}">${l}</div><div><div class="n">${r}</div><div class="r">${m}</div></div>`;
+  agWrap.appendChild(d);
+});
+const MSG = [
+  [0, "Das Zeitfenster ist gut. Wer zuerst kommt, gewinnt den Markt.", "eröffnet", "var(--muted)"],
+  [1, "Deine Rücklagen reichen vier Monate. Sofort kündigen ist zu riskant.", "widerspricht Stratege", "var(--danger)"],
+  [2, "Niemand hat geprüft, ob jemand zahlt. Das ist der Denkfehler.", "widerspricht allen", "var(--danger)"],
+  [3, "Stimmt. Erst fünf Kundengespräche, dann entscheiden.", "stimmt Gegenspieler zu", "var(--signal)"],
+  [4, "Also: nebenbei testen, 10 Stunden pro Woche, Entscheidung am 1. März.", "stimmt Kassenwart zu", "var(--signal)"],
+];
+const mWrap = $("s3msgs");
+MSG.forEach(([a, text, chip, cc], i) => {
+  const [l, m, r, c] = AG[a];
+  const d = document.createElement("div");
+  d.className = "msg glass"; d.id = "m" + i; d.style.top = 200 + i * 158 + "px";
+  d.innerHTML = `<div class="avatar" style="background:${c};width:54px;height:54px;font-size:22px">${l}</div><div><div class="h"><span style="color:${c}">${r}</span><span class="chip" id="c${i}" style="color:${cc};border:1px solid ${cc}">${chip}</span></div><div class="t">${text}</div></div>`;
+  mWrap.appendChild(d);
+});
+
+// Vorteile
+const ROWS = [
+  ["Eine Sicht", "Bis zu 6 Blickwinkel in Fachrollen"],
+  ["Stimmt dir gern zu", "Widerspruch ist eingebaut"],
+  ["Blinde Flecken eines Modells", "Modelle verschiedener Anbieter prüfen sich"],
+  ["Lange Antwort, keine Entscheidung", "Wertung, Empfehlung, Abbruchkriterium"],
+];
+const rWrap = $("s4rows");
+ROWS.forEach(([b, g], i) => {
+  const d = document.createElement("div");
+  d.className = "row"; d.style.top = 270 + i * 148 + "px";
+  d.innerHTML = `<div class="cell bad" id="rb${i}"><div class="ico" style="background:rgba(240,138,114,.18);color:var(--danger)">✕</div>${b}</div><div class="cell good" id="rg${i}"><div class="ico" style="background:var(--signal);color:#1b1816">✓</div>${g}</div>`;
+  rWrap.appendChild(d);
+});
+
+// Balken
+const OPTS = [["A", "Sofort kündigen", 3.8, "var(--danger)"], ["B", "Nebenbei testen, 3 Monate", 7.4, "var(--signal)"], ["C", "Nicht starten", 4.1, "var(--muted)"]];
+const bWrap = $("bars");
+OPTS.forEach(([id, label, v, c], i) => {
+  const y = 170 + i * 135;
+  const d = document.createElement("div");
+  d.innerHTML = `<div class="abs" style="left:50px;top:${y}px;font-size:28px;font-weight:500">${id}) ${label}</div>
+  <div class="bar" style="left:50px;top:${y + 46}px;width:900px;background:rgba(255,240,220,.06)"></div>
+  <div class="bar" id="bar${i}" style="left:50px;top:${y + 46}px;width:0;background:${c}"></div>
+  <div class="abs" id="bv${i}" style="left:970px;top:${y + 46}px;font-size:40px;font-weight:700;color:${c}">0,0</div>`;
+  bWrap.appendChild(d);
+});
+
+// 13 Räte
+const RAETE = [
+  ["Entscheiden", "Geschäftsentscheidung"], ["Entscheiden", "Preis & Angebot"], ["Entscheiden", "Karriere"],
+  ["Idee prüfen", "Ideen-Check"], ["Idee prüfen", "Ideen-Werkstatt"], ["Idee prüfen", "Roast: Ehrliche Kritik"], ["Idee prüfen", "Pre-Mortem"],
+  ["App bauen", "App planen"], ["App bauen", "Code-Review"], ["App bauen", "Sicherheits-Check"], ["App bauen", "Bestehende App prüfen"], ["App bauen", "Startklar-Check"],
+  ["Wachstum", "Marketing: 100 Nutzer"],
+];
+const cWrap = $("cards");
+RAETE.forEach(([g, ti], i) => {
+  const col = i % 4, row = Math.floor(i / 4);
+  const d = document.createElement("div");
+  d.className = "card13 glass"; d.id = "k" + i;
+  d.style.left = 110 + col * 440 + "px"; d.style.top = (row === 3 ? 760 : 250 + row * 170) + "px";
+  if (row === 3) d.style.left = 110 + 1.5 * 440 + "px";
+  d.innerHTML = `<div class="g">${g}</div><div class="ti">${ti}</div>`;
+  cWrap.appendChild(d);
+});
+
+const REPLY = "Klingt nach einer großartigen Idee! Mach es! 🚀";
+
+window.render = function (t) {
+  // Hintergrund
+  set($("b1"), 1, -200 + Math.sin(t * 0.25) * 140, -250 + Math.cos(t * 0.2) * 90);
+  set($("b2"), 1, 1150 + Math.cos(t * 0.22) * 160, 350 + Math.sin(t * 0.3) * 120);
+  set($("b3"), 1, 500 + Math.sin(t * 0.17) * 220, 650 + Math.cos(t * 0.21) * 100);
+
+  for (const [id, a, b] of scenes) {
+    const o = cl((t - a) / 0.35) * (1 - cl((t - (b - 0.4)) / 0.4));
+    const el = $(id);
+    el.style.opacity = o;
+    el.style.display = o <= 0 ? "none" : "block";
+  }
+
+  // S1
+  set($("s1cap"), eo(P(t, 0.2, 0.6)), 0, 30 * (1 - eo(P(t, 0.2, 0.6))));
+  set($("s1q"), eb(P(t, 0.8, 0.45)), 0, 0, 0.6 + 0.4 * eb(P(t, 0.8, 0.45)));
+  set($("s1a"), eb(P(t, 1.6, 0.4)), 0, 0, 0.6 + 0.4 * eb(P(t, 1.6, 0.4)));
+  const typed = Math.floor(REPLY.length * P(t, 1.9, 1.0));
+  $("s1at").textContent = t < 1.9 ? "…" : [...REPLY].slice(0, typed).join("");
+  const glitch = t > 4.0 && t < 4.6 ? Math.sin(t * 90) * 10 : 0;
+  set($("s1echo"), eb(P(t, 4.0, 0.3)), glitch, 0, 0.5 + 0.5 * eb(P(t, 4.0, 0.3)), "rotate(-6deg)");
+  $("s1a").style.filter = t > 4.0 ? `grayscale(${P(t, 4.0, 0.5)})` : "none";
+  $("s1a").style.opacity = String((t > 4.0 ? 1 - 0.5 * P(t, 4.0, 0.5) : 1) * eb(P(t, 1.6, 0.4)));
+  set($("s1t"), eo(P(t, 3.1, 0.6)), 0, 40 * (1 - eo(P(t, 3.1, 0.6))));
+
+  // S2
+  const q = inout(t, 6.3, 0.6, 8.3, 0.4);
+  set($("s2q"), q, 0, 30 * (1 - eo(P(t, 6.3, 0.6))));
+  const lp = eo(P(t, 8.7, 0.9));
+  set($("s2logo"), lp, 0, 0, 0.85 + 0.15 * lp);
+  $("s2line").style.width = 520 * eo(P(t, 9.0, 0.8)) + "px";
+
+  // S3
+  set($("s3cap"), eo(P(t, 11.4, 0.6)), 0, 30 * (1 - eo(P(t, 11.4, 0.6))));
+  AG.forEach((_, i) => { const p = eo(P(t, 11.7 + i * 0.12, 0.5)); set($("ag" + i), p, -80 * (1 - p)); });
+  MSG.forEach((m, i) => {
+    const s = 12.6 + i * 1.55;
+    const p = eb(P(t, s, 0.4));
+    set($("m" + i), cl(p), 60 * (1 - cl(p)), 0, 0.9 + 0.1 * cl(p));
+    const ag = $("ag" + m[0]);
+    const glow = cl(1 - Math.abs(t - (s + 0.5)) / 0.9);
+    ag.style.boxShadow = `0 0 ${50 * glow}px ${8 * glow}px ${getComputedStyle(document.documentElement).getPropertyValue(["--gpt", "--claude", "--gemini", "--deepseek", "--kimi"][m[0]])}55`;
+    const cp = eb(P(t, s + 0.45, 0.3));
+    set($("c" + i), cl(cp), 0, 0, 0.6 + 0.4 * cp);
+  });
+
+  // S4
+  set($("s4cap"), eo(P(t, 21.6, 0.6)), 0, 30 * (1 - eo(P(t, 21.6, 0.6))));
+  set($("s4h1"), eo(P(t, 22.1, 0.5)));
+  set($("s4h2"), eo(P(t, 22.1, 0.5)));
+  ROWS.forEach((_, i) => {
+    const s = 22.6 + i * 1.7;
+    const pb = eo(P(t, s, 0.4));
+    set($("rb" + i), pb, -60 * (1 - pb));
+    const pg = eb(P(t, s + 0.55, 0.45));
+    set($("rg" + i), cl(pg), 60 * (1 - cl(pg)), 0, 0.92 + 0.08 * pg);
+  });
+  set($("s4foot"), eo(P(t, 29.6, 0.6)), 0, 25 * (1 - eo(P(t, 29.6, 0.6))));
+
+  // S5
+  set($("s5cap"), eo(P(t, 31.2, 0.6)), 0, 30 * (1 - eo(P(t, 31.2, 0.6))));
+  ["p1", "p2", "p3"].forEach((id, i) => {
+    const s = 31.6 + i * 0.75;
+    const p = eb(P(t, s, 0.35));
+    const el = $(id);
+    set(el, cl(p * 2), 0, 0, 0.8 + 0.2 * p);
+    const on = t > s + 0.2;
+    el.style.background = on ? "linear-gradient(90deg,var(--ai1),var(--ai2))" : "transparent";
+    el.style.color = on ? "#1b1816" : "var(--muted)";
+    el.style.borderColor = on ? "transparent" : "var(--line)";
+  });
+  const rp = eo(P(t, 33.8, 0.6));
+  set($("rep"), rp, 0, 60 * (1 - rp));
+  OPTS.forEach(([, , v], i) => {
+    const p = eo(P(t, 34.4 + i * 0.25, 1.1));
+    $("bar" + i).style.width = 900 * (v / 10) * p + "px";
+    $("bv" + i).textContent = (v * p).toFixed(1).replace(".", ",");
+  });
+  const sp = P(t, 36.0, 0.25);
+  set($("stamp"), sp > 0 ? 1 : 0, 0, 0, 1.6 - 0.6 * eo(sp), "rotate(-4deg)");
+  set($("obj"), eo(P(t, 36.6, 0.5)), 0, 20 * (1 - eo(P(t, 36.6, 0.5))));
+  set($("kill"), eo(P(t, 37.1, 0.5)), 0, 20 * (1 - eo(P(t, 37.1, 0.5))));
+  set($("acts"), eo(P(t, 37.6, 0.5)), 0, 20 * (1 - eo(P(t, 37.6, 0.5))));
+
+  // S6
+  set($("s6cap"), eo(P(t, 39.6, 0.6)), 0, 30 * (1 - eo(P(t, 39.6, 0.6))));
+  RAETE.forEach((_, i) => { const p = eb(P(t, 40.0 + i * 0.18, 0.4)); set($("k" + i), cl(p), 0, 40 * (1 - cl(p)), 0.85 + 0.15 * p); });
+
+  // S7
+  set($("s7a"), eo(P(t, 44.4, 0.5)), 0, 30 * (1 - eo(P(t, 44.4, 0.5))));
+  const bp = eo(P(t, 45.3, 0.5));
+  set($("s7b"), bp, 0, 0, 1.15 - 0.15 * bp);
+  set($("s7logo"), eo(P(t, 46.5, 0.7)), 0, 30 * (1 - eo(P(t, 46.5, 0.7))));
+
+  // Blitze bei Schlägen
+  const hits = [8.75, 36.0, 45.3];
+  let f = 0;
+  for (const h of hits) f = Math.max(f, t >= h ? 0.35 * (1 - cl((t - h) / 0.25)) : 0);
+  $("flash").style.opacity = f;
+  const fadeEnd = 1 - cl((t - 49.3) / 0.7);
+  $("stage").style.opacity = fadeEnd;
+};
+window.DURATION = 50;
+window.render(0);
+</script>
+</body>
+</html>

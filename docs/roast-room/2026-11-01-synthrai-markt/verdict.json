@@ -1,0 +1,19 @@
+{
+  "verdict": "GO WITH CONDITIONS",
+  "option": "B",
+  "title": "SynthrAI: mass market or niche?",
+  "call": "Niche, not mass market. Launch B: BYOK first, professionals, one paid tier, 90-day test. Expect a side income of about 60 payers.",
+  "scores": {
+    "A": 2.3,
+    "B": 7.4,
+    "C": 3.4
+  },
+  "support": 7.2,
+  "confidence": 6,
+  "spread": 1,
+  "votes": {
+    "endorse": 0,
+    "amend": 9,
+    "dissent": 0
+  }
+}

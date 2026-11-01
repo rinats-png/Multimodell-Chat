@@ -1,0 +1,248 @@
+<title>Multimodell-Chat Screens</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+  /* Farbkonzept „Lounge & Glut“ wie die App (hell: Morgenlicht, dunkel: Glut). Layout: Kontaktbogen – Bereiche als Filter, Screens als Abzüge mit Route und Funktions-IDs, Lightbox zum Durchblättern */
+  :root {
+    --bg: #ebe5dd;
+    --surface: #fcfaf7;
+    --ink: #2b2723;
+    --muted: #5b5148;
+    --line: #d8cec2;
+    --accent: #b9581d;
+    --openai: #44622f;
+    --anthropic: #7a4417;
+    --google: #5c574d;
+    --frame: #ebe5dd;
+    --shadow: 0 1px 2px rgb(70 50 30 / 0.06), 0 8px 24px rgb(70 50 30 / 0.08);
+    --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Geist", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #252220; --surface: #2e2b28; --ink: #f4efea; --muted: #c0b5ab; --line: #48423d;
+      --accent: #f08c4e; --openai: #abc994; --anthropic: #eab98c; --google: #d5cdbd; --frame: #252220;
+      --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px rgb(10 10 12 / 0.45);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #252220; --surface: #2e2b28; --ink: #f4efea; --muted: #c0b5ab; --line: #48423d;
+    --accent: #f08c4e; --openai: #abc994; --anthropic: #eab98c; --google: #d5cdbd; --frame: #252220;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px rgb(10 10 12 / 0.45);
+    color-scheme: dark;
+  }
+
+  body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding-block: 40px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+  header { display: grid; gap: 12px; margin-bottom: 28px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .dots { display: inline-flex; gap: 4px; }
+  .dots i { width: 9px; height: 9px; border-radius: 3px; display: block; }
+  h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(30px, 5vw, 46px); line-height: 1.05; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+  .lede { max-width: 64ch; color: var(--muted); margin: 0; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 16px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 28px; }
+  .filters button {
+    font: 500 13px/1 var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 8px 14px; cursor: pointer;
+  }
+  .filters button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .filters button:focus-visible, .shot:focus-visible, .lb button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .filters .count { font-family: var(--font-mono); font-size: 11px; opacity: 0.6; margin-left: 4px; }
+
+  section { margin-bottom: 44px; }
+  section h2 { font-family: var(--font-display); font-weight: 500; font-size: 22px; margin: 0 0 4px; }
+  section > p { margin: 0 0 16px; color: var(--muted); max-width: 70ch; }
+  .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); }
+  .grid.phones { grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+
+  .shot { display: grid; grid-template-rows: auto 1fr; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); cursor: zoom-in; text-align: left; padding: 0; color: inherit; font: inherit; }
+  .shot .frame { background: var(--frame); aspect-ratio: 16 / 10; overflow: hidden; border-bottom: 1px solid var(--line); }
+  .phones .shot .frame { aspect-ratio: 390 / 844; }
+  .shot img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; transition: transform 0.4s ease; }
+  .shot:hover img { transform: scale(1.015); }
+  .cap { display: grid; gap: 6px; padding: 12px 14px 14px; min-width: 0; }
+  .cap strong { font-weight: 600; font-size: 15px; }
+  .cap span { color: var(--muted); font-size: 13.5px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; font-family: var(--font-mono); font-size: 11px; }
+  .tags code { padding: 2px 6px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); }
+  .tags code.route { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+
+  .lb { position: fixed; inset: 0; z-index: 50; background: rgb(30 27 25 / 0.94); display: grid; grid-template-rows: auto 1fr auto; padding: calc(12px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); color: #ececf1; }
+  .lb-top { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .lb-top div { min-width: 0; flex: 1; }
+  .lb-top strong { display: block; font-size: 16px; }
+  .lb-top span { color: #a6a6b4; font-size: 13.5px; }
+  .lb img { max-width: 100%; max-height: 100%; margin: auto; object-fit: contain; border-radius: 8px; align-self: center; justify-self: center; min-height: 0; }
+  .lb-stage { display: grid; min-height: 0; padding-block: 12px; }
+  .lb-nav { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 12px; color: #a6a6b4; }
+  .lb button { background: #3a3431; color: #efe8e3; border: 1px solid #615750; border-radius: 8px; padding: 8px 12px; font: 500 13px var(--font-body); cursor: pointer; }
+
+  footer { border-top: 1px solid var(--line); padding-top: 16px; color: var(--muted); font-size: 13px; }
+  @media (prefers-reduced-motion: reduce) { .shot img { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="dots"><i style="background:var(--openai)"></i><i style="background:var(--anthropic)"></i><i style="background:var(--google)"></i></span> Multimodell-Chat · KI-Gruppendebatten</div>
+    <h1>Alle Screens der App</h1>
+    <p class="lede">Echte Aufnahmen der laufenden Anwendung im Design „Lounge & Glut“ – ein großer Glasrahmen mit Icon-Leiste vor einer Lounge, hell „Morgenlicht“, dunkel „Glut“. Keine Entwürfe. Die Antworten stammen aus dem Demo-Modus mit simuliertem Modell; mit verbundenem OpenRouter-Konto oder eigenen Keys antworten die echten Modelle, im lokalen Abo-Modus deine Abos. Klick auf einen Screen öffnet die Großansicht, Pfeiltasten blättern.</p>
+    <div class="meta"><span>24 Screens × hell/dunkel</span><span>Desktop 1440 × 900</span><span>Mobil 390 × 844</span><span>Branch ccr-aab1b190-y70xl3</span></div>
+  </header>
+
+  <div class="filters" role="toolbar" aria-label="Darstellung der Aufnahmen" id="modes"></div>
+  <div class="filters" role="toolbar" aria-label="Bereich filtern" id="filters"></div>
+  <main id="gallery"></main>
+  <footer>Funktions-IDs (F-…) und Routen beziehen sich auf <code>docs/idea-to-app/05-mvp.md</code> im Repository. Die Bilder liegen als PNG unter <code>docs/mockups/hell/</code> und <code>docs/mockups/dunkel/</code>.</footer>
+</div>
+
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-labelledby="lb-title">
+  <div class="lb-top">
+    <div><strong id="lb-title"></strong><span id="lb-desc"></span></div>
+    <button type="button" id="lb-close" aria-label="Großansicht schließen">Schließen</button>
+  </div>
+  <div class="lb-stage"><img id="lb-img" alt=""></div>
+  <div class="lb-nav">
+    <button type="button" id="lb-prev">← Zurück</button>
+    <span id="lb-pos"></span>
+    <button type="button" id="lb-next">Weiter →</button>
+  </div>
+</div>
+
+<script>
+  const SECTIONS = [
+    { id: "chat", title: "Gruppenchat", text: "Die Debatte mit mehreren KIs: Streaming, Moderator-Entscheidungen, Token- und Kosten-Chips pro Antwort.", shots: [
+      ["01-chat-start", "Leere Debatte", "Startzustand mit Teilnehmern, Hinweis zur Datenweitergabe und Beispielfragen.", "/chat/[roomId]", ["F-03", "F-18"]],
+      ["02-chat-streaming", "Antwort im Stream", "Der KI-Moderator hat gewählt, die Antwort läuft live ein.", "/chat/[roomId]", ["F-03", "F-04"]],
+      ["03-chat-debatte", "Debatte im Moderator-Modus", "Drei Rollen widersprechen sich; jede Wahl des Moderators ist begründet.", "/chat/[roomId]", ["F-03", "F-04", "F-07"]],
+      ["04-mention-autocomplete", "@Mention", "Autovervollständigung beim Erwähnen einer KI – übersteuert jeden Modus.", "/chat/[roomId]", ["F-04"]],
+      ["05-prompt-firewall", "Hinweisfilter", "Bekannte Angriffsmuster werden vor dem Senden markiert.", "/chat/[roomId]", ["F-09"]],
+      ["06-prompt-inspector", "API-Prompt-Inspector", "Exakter Payload pro Agent: system, user, assistant – mit Token-Schätzung.", "/chat/[roomId]", ["F-05", "F-11"]],
+    ]},
+    { id: "steuerung", title: "Steuerung & Agenten", text: "Orchestrierungsmodus, Kosten-Bremse, Langzeitgedächtnis und das Agenten-Studio im Seitenpanel.", shots: [
+      ["07-agenten-studio", "Agenten-Studio", "Name, Modell aus dem Katalog, Rolle und System-Prompt je Agent; Agenten an- und abschalten.", "/chat/[roomId]", ["F-10"]],
+      ["08-sliding-window-und-gedaechtnis", "Sliding-Window-Grenze", "Ältere Nachrichten gehen nicht mehr an die Modelle und werden zusammengefasst.", "/chat/[roomId]", ["F-05", "F-06"]],
+      ["09-steuerung-ledger-gedaechtnis", "Ledger & Gedächtnis", "Token-Ledger der Debatte und die Zusammenfassung älterer Nachrichten (ab Pro).", "/chat/[roomId]", ["F-06", "F-07"]],
+    ]},
+    { id: "konto", title: "Tarif & Konto", text: "Verbrauch, Tarife, eigener API-Key und die Datenschutz-Funktionen für das Konto.", shots: [
+      ["10-tarif-und-verbrauch", "Tarif & Verbrauch", "Kontingent, Rate-Limit, Ledger-Summen und die drei Tarife.", "/billing", ["F-07", "F-12"]],
+      ["11-eigene-zugaenge", "Eigene KI-Zugänge", "„Mit OpenRouter verbinden“ (OAuth) oder Keys für Vercel AI Gateway, OpenAI, Anthropic, Google, xAI – nur gekürzt sichtbar.", "/billing", ["F-13"]],
+      ["12-konto-loeschen-dialog", "Konto löschen", "Bestätigung vor der endgültigen Löschung inklusive Abo-Kündigung.", "/billing", ["F-16"]],
+    ]},
+    { id: "anmeldung", title: "Anmeldung", text: "Alle Auth-Abläufe laufen serverseitig; Antworten verraten nicht, ob eine E-Mail registriert ist.", shots: [
+      ["20-anmelden", "Anmelden", "Login mit Link zu „Passwort vergessen“ und Registrierung.", "/login", ["F-01"]],
+      ["21-registrieren", "Registrieren", "Mindestens 15 Zeichen, Bestätigung des Datenschutzhinweises.", "/login", ["F-01", "F-18"]],
+      ["22-passwort-vergessen", "Passwort vergessen", "Reset-Link per E-Mail, gleiche Antwort für jede Adresse.", "/passwort-vergessen", ["F-17"]],
+      ["23-anmelden-link-abgelaufen", "Link abgelaufen", "Hinweis, wenn ein Bestätigungs- oder Reset-Link ungültig ist.", "/login?link=ungueltig", ["F-17"]],
+      ["24-neues-passwort", "Neues Passwort", "Nach dem Reset-Link; danach werden alle anderen Geräte abgemeldet.", "/passwort-neu", ["F-17"]],
+      ["25-abo-modus-debatte", "Lokaler Abo-Modus: Debatte", "ChatGPT, Claude, Gemini und Kimi antworten über die Abo-Programme auf dem eigenen Rechner – ohne API-Key, $0 in der App.", "/chat/[roomId]", ["F-13"]],
+      ["26-abo-modus-programme", "Lokaler Abo-Modus: Programme", "Zeigt, welche Abo-Programme (Claude Code, Codex, Gemini CLI, Kimi CLI) gefunden wurden.", "/billing", ["F-13"]],
+    ]},
+    { id: "recht", title: "Rechtliches & Fehler", text: "Pflichtseiten aus der Betreiberkonfiguration und die einheitliche 404-Antwort.", shots: [
+      ["13-datenschutz", "Datenschutzerklärung", "Zwecke, Rechtsgrundlagen, KI-Anbieter, Empfänger und Rechte.", "/datenschutz", ["F-18"]],
+      ["14-impressum", "Impressum", "Hinweis, solange die Betreiberangaben nicht gesetzt sind.", "/impressum", ["F-18"]],
+      ["15-nicht-gefunden", "Nicht gefunden", "Fremde oder unbekannte Debatten sehen aus wie nicht vorhandene.", "/chat/[roomId]", ["F-02"]],
+    ]},
+    { id: "mobil", title: "Mobil", phones: true, text: "Navigation und Seitenpanel als Schubladen – alle Funktionen sind auch auf dem Handy erreichbar.", shots: [
+      ["16-mobil-chat", "Chat", "Debatte auf 390 px Breite.", "/chat/[roomId]", ["F-03"]],
+      ["17-mobil-navigation", "Navigation", "Debatten, Tarif, Rechtliches.", "/chat/[roomId]", ["F-02"]],
+      ["18-mobil-steuerung", "Steuerung", "Modus, Kosten-Bremse, Ledger.", "/chat/[roomId]", ["F-04", "F-05"]],
+      ["19-mobil-tarife", "Tarif & Verbrauch", "Dashboard auf dem Handy.", "/billing", ["F-12"]],
+    ]},
+  ];
+
+  const all = SECTIONS.flatMap((s) => s.shots.map((shot) => ({ section: s.id, file: shot[0], title: shot[1], desc: shot[2], route: shot[3], ids: shot[4] })));
+  let filter = "alle";
+  let mode = matchMedia("(prefers-color-scheme: dark)").matches ? "dunkel" : "hell";
+  const modes = document.getElementById("modes");
+  function renderModes() {
+    modes.innerHTML = "";
+    for (const [id, title] of [["hell", "Hell · Morgenlicht"], ["dunkel", "Dunkel · Glut"]]) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(mode === id));
+      b.textContent = title;
+      b.addEventListener("click", () => { mode = id; renderModes(); renderGallery(); });
+      modes.appendChild(b);
+    }
+  }
+  let visible = all;
+  let current = 0;
+
+  const filters = document.getElementById("filters");
+  const gallery = document.getElementById("gallery");
+  const lb = document.getElementById("lb");
+
+  function renderFilters() {
+    const options = [{ id: "alle", title: "Alle", n: all.length }, ...SECTIONS.map((s) => ({ id: s.id, title: s.title, n: s.shots.length }))];
+    filters.innerHTML = "";
+    for (const o of options) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.id = `filter-${o.id}`;
+      b.setAttribute("aria-pressed", String(filter === o.id));
+      b.innerHTML = `${o.title}<span class="count">${o.n}</span>`;
+      b.addEventListener("click", () => { filter = o.id; renderFilters(); renderGallery(); });
+      filters.appendChild(b);
+    }
+  }
+
+  function renderGallery() {
+    gallery.innerHTML = "";
+    visible = all.filter((s) => filter === "alle" || s.section === filter);
+    for (const sec of SECTIONS) {
+      if (filter !== "alle" && filter !== sec.id) continue;
+      const el = document.createElement("section");
+      el.innerHTML = `<h2>${sec.title}</h2><p>${sec.text}</p>`;
+      const grid = document.createElement("div");
+      grid.className = sec.phones ? "grid phones" : "grid";
+      for (const shot of all.filter((s) => s.section === sec.id)) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "shot";
+        b.setAttribute("aria-label", `${shot.title} vergrößern`);
+        b.innerHTML = `<div class="frame"><img src="${mode}/${shot.file}.png" alt="${shot.title}: ${shot.desc}" loading="lazy"></div>
+          <div class="cap"><strong>${shot.title}</strong><span>${shot.desc}</span>
+          <div class="tags"><code class="route">${shot.route}</code>${shot.ids.map((id) => `<code>${id}</code>`).join("")}</div></div>`;
+        b.addEventListener("click", () => open(visible.indexOf(shot)));
+        grid.appendChild(b);
+      }
+      el.appendChild(grid);
+      gallery.appendChild(el);
+    }
+  }
+
+  let lastFocus = null;
+  function show(i) {
+    current = (i + visible.length) % visible.length;
+    const s = visible[current];
+    document.getElementById("lb-img").src = `${mode}/${s.file}.png`;
+    document.getElementById("lb-img").alt = `${s.title}: ${s.desc}`;
+    document.getElementById("lb-title").textContent = s.title;
+    document.getElementById("lb-desc").textContent = `${s.desc} · ${s.route}`;
+    document.getElementById("lb-pos").textContent = `${current + 1} / ${visible.length}`;
+  }
+  function open(i) { lastFocus = document.activeElement; lb.hidden = false; show(i); document.getElementById("lb-close").focus(); }
+  function close() { lb.hidden = true; lastFocus?.focus(); }
+
+  document.getElementById("lb-close").addEventListener("click", close);
+  document.getElementById("lb-prev").addEventListener("click", () => show(current - 1));
+  document.getElementById("lb-next").addEventListener("click", () => show(current + 1));
+  lb.addEventListener("click", (e) => { if (e.target === lb || e.target.classList.contains("lb-stage")) close(); });
+  document.addEventListener("keydown", (e) => {
+    if (lb.hidden) return;
+    if (e.key === "Escape") close();
+    if (e.key === "ArrowRight") show(current + 1);
+    if (e.key === "ArrowLeft") show(current - 1);
+  });
+
+  renderModes();
+  renderFilters();
+  renderGallery();
+</script>

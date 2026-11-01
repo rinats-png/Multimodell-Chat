@@ -1,0 +1,25 @@
+{
+  "title": "SynthrAI after the rebuild: launch how, for how many?",
+  "decision": "How to launch SynthrAI with the decision report, councils and council session, and how many users and payers in 12 months.",
+  "mode": "full",
+  "options": [
+    { "id": "A", "label": "Broad public launch now" },
+    { "id": "B", "label": "Focused launch around the decision report" },
+    { "id": "C", "label": "Private beta first (30 users, 30 days)" },
+    { "id": "D", "label": "Do not launch" }
+  ],
+  "weights": {
+    "graham": { "weight": 3, "reason": "Real demand: does the report make people want it" },
+    "hormozi": { "weight": 3, "reason": "Is a tested decision worth paying for" },
+    "garyvee": { "weight": 2, "reason": "Video and shared reports as distribution" },
+    "bezos": { "weight": 2, "reason": "Strategy and reversibility of a broad launch" },
+    "buffett": { "weight": 2, "reason": "Platform-key cost and EUR 2,000 cash" },
+    "naval": { "weight": 2, "reason": "Shared reports and content as owned assets" },
+    "blakely": { "weight": 2, "reason": "Product love from zero" },
+    "martell": { "weight": 1, "reason": "Founder time: 10 hours a week" },
+    "musk": { "weight": 1, "reason": "What is missing before anything works" }
+  },
+  "seats": ["bezos", "graham", "hormozi", "garyvee", "martell", "buffett", "naval", "blakely", "musk"],
+  "brief": "The founder rebuilt SynthrAI around the last council's advice: a scored, shareable decision report, an automatic three-round council session, 13 ready-made councils, cost caps and a promo video. Production secrets and the English interface are not done; no users yet.",
+  "assumptions": ["10 founder hours a week", "EUR 2,000 cash", "Market sizes are the seats' own estimates"]
+}

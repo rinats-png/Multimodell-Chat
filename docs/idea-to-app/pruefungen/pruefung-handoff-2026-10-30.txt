@@ -1,0 +1,14 @@
+idea-to-app · Projektprüfung (handoff) · . · 2026-10-30
+────────────────────────────────────────────────────────────────────────
+• HINWEIS [Recht/Fakten] 16-recht.md
+    16× [PRÜFEN] – vor dem Launch klären.
+• HINWEIS [Recht/Fakten] 17-kosten.md
+    2× [PRÜFEN] – vor dem Launch klären.
+• HINWEIS [Recht/Fakten] 20-betrieb.md
+    2× [PRÜFEN] – vor dem Launch klären.
+• HINWEIS [Recht/Fakten] ENTSCHEIDUNGEN.md
+    1× [PRÜFEN] – vor dem Launch klären.
+────────────────────────────────────────────────────────────────────────
+FEHLER: 0 · WARNUNGEN: 0 · HINWEISE: 4
+Ergebnis: ✔ Formal in Ordnung (Teile vorhanden und verknüpft).
+Hinweis: Diese Prüfung ersetzt keine inhaltliche Kontrolle. Sie prüft, ob Teile vorhanden und verknüpft sind – nicht, ob sie stimmen (siehe Zweitprüfung, AGENTS.md Abschnitt 14).

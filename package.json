@@ -1,0 +1,54 @@
+{
+  "name": "multimodell-chat",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:rls": "bash scripts/test-rls.sh",
+    "a11y": "node scripts/a11y-check.cjs",
+    "smoke": "node scripts/smoke-browser.cjs"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.110",
+    "@ai-sdk/gateway": "^2.0.173",
+    "@ai-sdk/google": "^2.0.106",
+    "@ai-sdk/openai": "^2.0.138",
+    "@ai-sdk/provider": "^2.0.5",
+    "@ai-sdk/xai": "^2.0.100",
+    "@fontsource/dm-sans": "^5.3.0",
+    "@fontsource/dm-serif-display": "^5.3.0",
+    "@openrouter/ai-sdk-provider": "^1.5.4",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.118.0",
+    "@upstash/ratelimit": "^2.2.0",
+    "@upstash/redis": "^1.40.0",
+    "ai": "^5.0.282",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.64.0",
+    "next": "^15.5.28",
+    "react": "19.1",
+    "react-dom": "19.1",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "server-only": "^0.0.1",
+    "stripe": "^19.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

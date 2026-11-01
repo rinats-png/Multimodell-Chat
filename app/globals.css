@@ -1,0 +1,531 @@
+@import "tailwindcss";
+
+/*
+ * Designkonzept „Bühne“ (Bento): ein Kachelraster aus Milchglas vor weichen Farbflächen.
+ * Die drei KIs sind die Hauptfiguren (große Kacheln oben), darunter der Chat und eine Seitenspalte mit Konsens, Verbrauch und Debatten.
+ * Hell und Dunkel folgen der Systemeinstellung, überschreibbar per <html data-theme="light|dark"> (components/ui/ThemeToggle.tsx).
+ * Die Farbe kommt von den KIs: ChatGPT teal, Claude orange, Gemini limette; der Akzent der Oberfläche ist neutral (Tinte).
+ */
+@theme {
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.375rem;
+  --radius-3xl: 1.625rem;
+
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* Überschriften, Namen der KIs, Wortmarke */
+  --font-display: "DM Serif Display", Georgia, "Times New Roman", serif;
+
+  --color-canvas: #f1e8dc;
+  --color-canvas-2: #ece1d2;
+  --color-surface: #f8f2e9;
+  --color-surface-2: #fffbf5;
+  --color-surface-3: #e7dccb;
+  --color-line: #d9cbb7;
+  --color-line-strong: #bfae96;
+  --color-ink: #2c241b;
+  --color-ink-2: #43382b;
+  --color-muted: #665a49;
+  --color-accent: #2c241b;
+  --color-accent-strong: #14100a;
+  --color-accent-deep: #5a4a36;
+  --color-signal: #1b6f5d;
+  --color-on-accent: #f6efe3;
+  --color-danger: #a83c27;
+  --color-warn: #7a4f0c;
+  --color-openai: #1b6f5d;
+  --color-anthropic: #a2551a;
+  --color-google: #5d6e1a;
+  --color-other: #7d5f35;
+  --color-on-agent: #ffffff;
+  /* Wortmarke: „AI“ im Verlauf der drei KI-Farben (kräftiger als die Textfarben, nur für große Schrift) */
+  --brand-ai-1: #0b8f7d;
+  --brand-ai-2: #e0601a;
+  --brand-ai-3: #6f9a0e;
+}
+
+:root {
+  color-scheme: light;
+  --b1: #efc99a;
+  --b2: #cfe3d6;
+  --b3: #f3dfb0;
+  --shadow: 0 18px 40px -22px rgb(90 60 30 / 0.35);
+  --glass-1: rgb(255 255 255 / 0.58);
+  --glass-2: rgb(255 252 246 / 0.4);
+  --glass-strong-1: rgb(255 255 255 / 0.86);
+  --glass-strong-2: rgb(255 250 242 / 0.78);
+  --glass-edge: rgb(255 255 255 / 0.85);
+  --glass-hl: rgb(255 255 255 / 0.9);
+  --glass-drop: rgb(90 60 30 / 0.28);
+  --card-1: rgb(255 255 255 / 0.6);
+  --card-2: rgb(255 250 240 / 0.4);
+  --card-edge: rgb(255 255 255 / 0.8);
+  --bar-bg: rgb(255 255 255 / 0.55);
+  --field-bg: rgb(255 255 255 / 0.7);
+  --field-edge: rgb(60 45 25 / 0.16);
+  --ghost-bg: rgb(255 255 255 / 0.5);
+  --ghost-bg-hover: rgb(255 255 255 / 0.8);
+  --ghost-edge: rgb(60 45 25 / 0.14);
+  --code-bg: rgb(60 45 25 / 0.07);
+  --pre-bg: rgb(255 255 255 / 0.62);
+}
+
+/* Dunkel: einmal für die Systemeinstellung, einmal für die feste Wahl */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-canvas: #1b1816;
+    --color-canvas-2: #151311;
+    --color-surface: #26221f;
+    --color-surface-2: #302b27;
+    --color-surface-3: #3a342f;
+    --color-line: #433b34;
+    --color-line-strong: #5b5047;
+    --color-ink: #f4eee6;
+    --color-ink-2: #ddd3c6;
+    --color-muted: #b8ad9f;
+    --color-accent: #f4eee6;
+    --color-accent-strong: #ffffff;
+    --color-accent-deep: #cbbfae;
+    --color-signal: #62d1b9;
+    --color-on-accent: #1b1816;
+    --color-danger: #f08a72;
+    --color-warn: #e8c77d;
+    --color-openai: #62d1b9;
+    --color-anthropic: #f0a55f;
+    --color-google: #c9dc5e;
+    --color-other: #d9b98a;
+    --color-on-agent: #1b1816;
+    --brand-ai-1: #5fe6d2;
+    --brand-ai-2: #ffa766;
+    --brand-ai-3: #cfe86a;
+    --b1: #8a5a1f;
+    --b2: #2f4a3f;
+    --b3: #4a3a2a;
+    --shadow: 0 18px 40px -22px rgb(0 0 0 / 0.7);
+    --glass-1: rgb(255 240 220 / 0.09);
+    --glass-2: rgb(255 240 220 / 0.05);
+    --glass-strong-1: rgb(52 46 41 / 0.88);
+    --glass-strong-2: rgb(38 34 31 / 0.86);
+    --glass-edge: rgb(255 240 220 / 0.14);
+    --glass-hl: rgb(255 240 220 / 0.1);
+    --glass-drop: rgb(0 0 0 / 0.6);
+    --card-1: rgb(255 240 220 / 0.08);
+    --card-2: rgb(255 240 220 / 0.04);
+    --card-edge: rgb(255 240 220 / 0.12);
+    --bar-bg: rgb(27 24 22 / 0.55);
+    --field-bg: rgb(255 240 220 / 0.07);
+    --field-edge: rgb(255 240 220 / 0.16);
+    --ghost-bg: rgb(255 240 220 / 0.07);
+    --ghost-bg-hover: rgb(255 240 220 / 0.13);
+    --ghost-edge: rgb(255 240 220 / 0.14);
+    --code-bg: rgb(255 240 220 / 0.08);
+    --pre-bg: rgb(0 0 0 / 0.25);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-canvas: #1b1816;
+  --color-canvas-2: #151311;
+  --color-surface: #26221f;
+  --color-surface-2: #302b27;
+  --color-surface-3: #3a342f;
+  --color-line: #433b34;
+  --color-line-strong: #5b5047;
+  --color-ink: #f4eee6;
+  --color-ink-2: #ddd3c6;
+  --color-muted: #b8ad9f;
+  --color-accent: #f4eee6;
+  --color-accent-strong: #ffffff;
+  --color-accent-deep: #cbbfae;
+  --color-signal: #62d1b9;
+  --color-on-accent: #1b1816;
+  --color-danger: #f08a72;
+  --color-warn: #e8c77d;
+  --color-openai: #62d1b9;
+  --color-anthropic: #f0a55f;
+  --color-google: #c9dc5e;
+  --color-other: #d9b98a;
+  --color-on-agent: #1b1816;
+  --brand-ai-1: #5fe6d2;
+  --brand-ai-2: #ffa766;
+  --brand-ai-3: #cfe86a;
+  --b1: #8a5a1f;
+  --b2: #2f4a3f;
+  --b3: #4a3a2a;
+  --shadow: 0 18px 40px -22px rgb(0 0 0 / 0.7);
+  --glass-1: rgb(255 240 220 / 0.09);
+  --glass-2: rgb(255 240 220 / 0.05);
+  --glass-strong-1: rgb(52 46 41 / 0.88);
+  --glass-strong-2: rgb(38 34 31 / 0.86);
+  --glass-edge: rgb(255 240 220 / 0.14);
+  --glass-hl: rgb(255 240 220 / 0.1);
+  --glass-drop: rgb(0 0 0 / 0.6);
+  --card-1: rgb(255 240 220 / 0.08);
+  --card-2: rgb(255 240 220 / 0.04);
+  --card-edge: rgb(255 240 220 / 0.12);
+  --bar-bg: rgb(27 24 22 / 0.55);
+  --field-bg: rgb(255 240 220 / 0.07);
+  --field-edge: rgb(255 240 220 / 0.16);
+  --ghost-bg: rgb(255 240 220 / 0.07);
+  --ghost-bg-hover: rgb(255 240 220 / 0.13);
+  --ghost-edge: rgb(255 240 220 / 0.14);
+  --code-bg: rgb(255 240 220 / 0.08);
+  --pre-bg: rgb(0 0 0 / 0.25);
+}
+
+html,
+body {
+  color: var(--color-ink);
+}
+
+body {
+  background-color: var(--color-canvas);
+  min-height: 100dvh;
+}
+
+/* Weiche Farbflächen hinter dem Glas */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 42% at 18% 22%, var(--b1), transparent 70%),
+    radial-gradient(34% 40% at 84% 18%, var(--b2), transparent 70%),
+    radial-gradient(40% 44% at 62% 90%, var(--b3), transparent 70%),
+    var(--color-canvas);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-signal) 30%, transparent);
+}
+
+/* In der Base-Ebene, damit Utilities wie outline-none (Composer) sie überschreiben können */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+}
+
+/* Die Serifenschrift gibt es nur in einem Schnitt: kein künstliches Fett */
+.font-display {
+  font-synthesis: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Glas-Bausteine
+ * ------------------------------------------------------------------------- */
+
+@utility glass {
+  background: linear-gradient(150deg, var(--glass-1), var(--glass-2));
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-hl), var(--shadow);
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+}
+
+@utility glass-strong {
+  background: linear-gradient(150deg, var(--glass-strong-1), var(--glass-strong-2));
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-hl), var(--shadow);
+  backdrop-filter: blur(30px) saturate(160%);
+  -webkit-backdrop-filter: blur(30px) saturate(160%);
+}
+
+/* Karte innerhalb einer Kachel: heller Hauch statt zweiter Unschärfe */
+@utility card {
+  background: linear-gradient(160deg, var(--card-1), var(--card-2));
+  border: 1px solid var(--card-edge);
+}
+
+@utility glass-bar {
+  background: var(--bar-bg);
+  border-color: var(--glass-edge);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+/* Kachel des Rasters */
+.tile {
+  border-radius: var(--radius-3xl);
+}
+
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  &:hover {
+    opacity: 0.88;
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+@utility btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  color: var(--color-ink);
+  background: var(--ghost-bg);
+  border: 1px solid var(--ghost-edge);
+  transition: background 0.15s ease, border-color 0.15s ease;
+  &:hover {
+    background: var(--ghost-bg-hover);
+    border-color: var(--color-line-strong);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@utility field {
+  width: 100%;
+  border-radius: 0.9rem;
+  border: 1px solid var(--field-edge);
+  background: var(--field-bg);
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  &::placeholder {
+    color: var(--color-muted);
+  }
+  &:focus {
+    border-color: var(--color-ink);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ink) 14%, transparent);
+  }
+}
+
+/* Kleine Beschriftung in Großbuchstaben (Kachel-Titel, Statuszeilen) */
+.hud {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.hud-live {
+  color: var(--color-signal);
+}
+
+@utility text-gradient {
+  background: linear-gradient(100deg, var(--color-ink) 30%, var(--color-accent-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Ring um Avatare der KIs */
+.tron-ring {
+  box-shadow: 0 0 0 1px var(--glass-edge), 0 6px 16px -8px var(--glass-drop);
+}
+
+/* Schwebende Eingabe (Composer) */
+.tron-edge {
+  border-color: var(--glass-edge) !important;
+  box-shadow: inset 0 1px 0 var(--glass-hl), var(--shadow) !important;
+}
+
+/* Neue Nachrichten blenden sanft ein */
+@keyframes scan-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.scan-in {
+  animation: scan-in 0.35s ease-out both;
+}
+
+/* Kachel einer KI, die gerade denkt oder antwortet */
+.agent-live {
+  box-shadow: inset 0 1px 0 var(--glass-hl), 0 0 36px -8px var(--c), var(--shadow) !important;
+}
+
+/* ---------------------------------------------------------------------------
+ * Chat-Typografie
+ * ------------------------------------------------------------------------- */
+
+.prose-chat {
+  line-height: 1.68;
+  overflow-wrap: anywhere;
+}
+.prose-chat p + p,
+.prose-chat ul + p,
+.prose-chat ol + p,
+.prose-chat p + ul,
+.prose-chat p + ol {
+  margin-top: 0.6rem;
+}
+.prose-chat ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.prose-chat ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+.prose-chat li + li {
+  margin-top: 0.2rem;
+}
+.prose-chat li::marker {
+  color: var(--color-accent);
+}
+.prose-chat strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.prose-chat code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--code-bg);
+  border: 1px solid var(--glass-edge);
+  border-radius: 6px;
+  padding: 0.05rem 0.3rem;
+}
+.prose-chat pre {
+  background: var(--pre-bg);
+  border: 1px solid var(--glass-edge);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  margin: 0.6rem 0;
+}
+.prose-chat pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.prose-chat a {
+  color: var(--color-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-chat h1,
+.prose-chat h2,
+.prose-chat h3 {
+  font-weight: 600;
+  margin: 0.8rem 0 0.3rem;
+}
+
+/* Legal-Seiten */
+.legal a {
+  color: var(--color-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.streaming-caret::after {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  border-radius: 2px;
+  background: var(--color-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 70%, transparent);
+  animation: caret-blink 1s steps(1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-signal) 50%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(--color-signal) 0%, transparent);
+  }
+}
+.live-dot {
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .streaming-caret::after,
+  .live-dot {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation: none !important;
+  }
+}
+
+/* Wortmarke „SynthrAI“: das „AI“ steht im Verlauf der drei KI-Farben, mit Linie darunter */
+.brand-ai {
+  background: linear-gradient(90deg, var(--brand-ai-1), var(--brand-ai-2), var(--brand-ai-3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.brand-ai-bar {
+  background: linear-gradient(90deg, var(--brand-ai-1), var(--brand-ai-2), var(--brand-ai-3));
+}
+
+/* Druckansicht (Bericht als PDF): weißer Grund, dunkle Schrift, keine Navigation und keine Glas-Effekte. */
+@media print {
+  :root,
+  :root[data-theme="dark"] {
+    --color-canvas: #fff;
+    --color-ink: #111;
+    --color-ink-2: #333;
+    --color-muted: #555;
+    --color-signal: #0b6b5c;
+    --color-warn: #7a4f0c;
+    --color-danger: #a83c27;
+    --color-surface-2: #f3f3f3;
+    --color-surface-3: #e4e4e4;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  body::before,
+  .no-print {
+    display: none !important;
+  }
+  .glass,
+  .tile {
+    background: #fff !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+  .report-block {
+    break-inside: avoid;
+  }
+}
