@@ -243,7 +243,6 @@ thud(44.4, 0.4);
 riser(44.4, 0.9, 0.16);
 impact(45.3, 0.95);
 chime(46.5, 0.14);
-pop(47.3, 880, 0.3);
 chime(48.2, 0.07);
 
 // Hall (Freeverb-Prinzip: parallele Kammfilter + Allpässe) auf dem Effekt-Kanal, dann zur Summe
