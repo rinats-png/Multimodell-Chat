@@ -8,11 +8,11 @@ const FPS = 30;
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
-  await page.goto('file://' + path.join(__dirname, 'scene.html'));
+  await page.goto('file://' + path.join(__dirname, process.env.SCENE || 'scene.html'));
   await page.evaluate(() => document.fonts.ready);
   const duration = await page.evaluate(() => window.DURATION);
   const frames = Math.round(duration * FPS);
-  const out = path.join(__dirname, 'out', 'synthrai-promo.mp4');
+  const out = path.join(__dirname, 'out', process.env.OUT || 'synthrai-promo.mp4');
   const ff = spawn('ffmpeg', [
     '-y', '-loglevel', 'error',
     '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-',

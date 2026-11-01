@@ -5,7 +5,8 @@ Ein 50-Sekunden-Video (1920×1080, 30 fps), komplett aus Code erzeugt. Im Mittel
 - `scene.html`: die Animation; `window.render(t)` zeichnet den Zustand zur Zeit `t`, die Bilder sind also reproduzierbar
 - `gen-audio.cjs`: Soundeffekte und Musikteppich, rein synthetisch (keine fremden Samples), mit Hall auf dem Effekt-Kanal
 - `render.cjs`: rendert Bild für Bild mit Chromium (Playwright) und schreibt per ffmpeg `out/synthrai-promo.mp4`
-- `preview.cjs`: Standbilder zu festen Zeiten
+- `scene-en.html`: englische Fassung mit gleichem Timing (gleiche Tonspur); rendern mit `SCENE=scene-en.html OUT=synthrai-promo-en.mp4 node render.cjs`
+- `preview.cjs`: Standbilder zu festen Zeiten (`SCENE=` wählt die Fassung)
 
 ```bash
 cd video

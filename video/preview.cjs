@@ -6,7 +6,7 @@ const path = require('path');
   const outDir = process.argv[2];
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
-  await page.goto('file://' + path.join(__dirname, 'scene.html'));
+  await page.goto('file://' + path.join(__dirname, process.env.SCENE || 'scene.html'));
   await page.evaluate(() => document.fonts.ready);
   for (const t of times) {
     await page.evaluate((t) => window.render(t), t);
