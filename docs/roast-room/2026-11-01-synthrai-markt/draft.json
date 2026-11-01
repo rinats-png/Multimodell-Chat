@@ -1,0 +1,17 @@
+{
+  "option": "B",
+  "label": "GO WITH CONDITIONS",
+  "recommendation": "Launch SynthrAI for professionals who check decisions with several AIs, BYOK first, one paid tier, as a 90-day test. Realistic outcome is a side income, not 500 payers.",
+  "conditions": [
+    "EUR 150 monthly platform-key cap and per-user daily limit in code",
+    "8 of first 30 users run a second debate within 7 days",
+    "20 paying strangers by day 90"
+  ],
+  "next_steps": [
+    "Put the cap in code this week",
+    "Record 2 debates, post 6 clips, book 20 demos",
+    "Gate review 2026-12-01; day-90 decision"
+  ],
+  "cheapest_test": "30 live demos with named professionals; count second debates and payments.",
+  "kill_criteria": "Fewer than 5 of 30 second debates in week 1, or fewer than 20 paying strangers at day 90."
+}

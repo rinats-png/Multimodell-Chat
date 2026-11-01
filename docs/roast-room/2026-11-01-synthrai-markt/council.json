@@ -1,0 +1,24 @@
+{
+  "title": "SynthrAI: mass market or niche?",
+  "decision": "Launch SynthrAI as a public paid product, and for whom? How many people would use it?",
+  "mode": "full",
+  "options": [
+    { "id": "A", "label": "Public SaaS for a broad audience" },
+    { "id": "B", "label": "Focused niche: professionals, BYOK first" },
+    { "id": "C", "label": "Do not launch publicly" }
+  ],
+  "weights": {
+    "graham": { "weight": 3, "reason": "Real demand and growth is the core question" },
+    "hormozi": { "weight": 3, "reason": "Will people pay, how much, for what offer" },
+    "garyvee": { "weight": 2, "reason": "Distribution with no audience and no budget" },
+    "bezos": { "weight": 2, "reason": "Strategic bet, reversibility, competition from the labs" },
+    "buffett": { "weight": 2, "reason": "Token cost on the platform key, downside" },
+    "naval": { "weight": 2, "reason": "Leverage: build equity or rent hours" },
+    "blakely": { "weight": 2, "reason": "Product from zero, no outside money, customers sell it" },
+    "martell": { "weight": 1, "reason": "Solo founder, 10 hours a week" },
+    "musk": { "weight": 1, "reason": "First-principles check on the real constraint" }
+  },
+  "seats": ["bezos", "graham", "hormozi", "garyvee", "martell", "buffett", "naval", "blakely", "musk"],
+  "brief": "SynthrAI is a group chat where several LLMs debate a question. Is it a mass market or a niche, and how many users and payers are realistic?",
+  "assumptions": ["Market and cost numbers are assumed, not verified", "Success: 500 paying users in 12 months (assumed)"]
+}

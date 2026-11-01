@@ -1,0 +1,70 @@
+{
+  "cruxes": [
+    {
+      "question": "Is a niche here a business or a side income?",
+      "sides": [
+        {
+          "position": "Side income, 40 to 150 payers",
+          "seats": [
+            "Graham",
+            "Hormozi",
+            "Buffett",
+            "Martell",
+            "Sara"
+          ]
+        },
+        {
+          "position": "Bigger if distribution lands",
+          "seats": [
+            "Elon",
+            "Bezos",
+            "Gary V"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "Is it a product or a feature the labs absorb?",
+      "sides": [
+        {
+          "position": "Thin moat, feature risk",
+          "seats": [
+            "Naval",
+            "Sara",
+            "Elon",
+            "Buffett"
+          ]
+        },
+        {
+          "position": "Competitors prove demand",
+          "seats": [
+            "Graham",
+            "Hormozi"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "Does a EUR 29 BYOK tool sell at all?",
+      "sides": [
+        {
+          "position": "One avatar, EUR 79, sell by hand",
+          "seats": [
+            "Hormozi",
+            "Graham"
+          ]
+        },
+        {
+          "position": "One tier, no platform key, hard cap",
+          "seats": [
+            "Sara",
+            "Elon",
+            "Buffett"
+          ]
+        }
+      ]
+    }
+  ],
+  "unanimous": true,
+  "note": "All nine back the niche option B; the Chair makes broad reach with bring-your-own-key the unargued alternative for Round 2."
+}
