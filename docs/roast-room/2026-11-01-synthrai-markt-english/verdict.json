@@ -1,0 +1,19 @@
+{
+  "verdict": "GO WITH CONDITIONS",
+  "option": "B",
+  "title": "SynthrAI English: mass market or niche?",
+  "call": "Still a niche. English is about 4x reach and 1.5x payers. Launch BYOK first, two-market test (German live, English landing page).",
+  "scores": {
+    "A": 2.0,
+    "B": 7.2,
+    "C": 2.8
+  },
+  "support": 7.4,
+  "confidence": 6,
+  "spread": 2,
+  "votes": {
+    "endorse": 1,
+    "amend": 8,
+    "dissent": 0
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "cruxes": [
+    {
+      "question": "Does English change the answer or only the niche's size?",
+      "sides": [
+        {
+          "position": "Same niche, 5x reach, ~1.7x payers",
+          "seats": [
+            "Bezos",
+            "Graham",
+            "Hormozi",
+            "Martell",
+            "Buffett"
+          ]
+        },
+        {
+          "position": "Bigger if a clip outlier hits",
+          "seats": [
+            "Gary V",
+            "Elon",
+            "Naval"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "Is 10 hours enough to reach English audiences?",
+      "sides": [
+        {
+          "position": "Content volume is the lever",
+          "seats": [
+            "Gary V",
+            "Elon"
+          ]
+        },
+        {
+          "position": "Translation, legal, support eat the hours",
+          "seats": [
+            "Martell",
+            "Graham",
+            "Buffett"
+          ]
+        }
+      ]
+    },
+    {
+      "question": "Is German a better first market than English?",
+      "sides": [
+        {
+          "position": "Untested: nobody has argued it",
+          "seats": [
+            "Hormozi",
+            "Buffett"
+          ]
+        }
+      ]
+    }
+  ],
+  "unanimous": true,
+  "note": "All nine back B again; the Chair makes a two-market plan (German converts, English reaches) the unargued alternative."
+}

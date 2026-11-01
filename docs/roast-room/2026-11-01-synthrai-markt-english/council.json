@@ -1,0 +1,74 @@
+{
+  "title": "SynthrAI in English: mass market or niche?",
+  "decision": "Launch SynthrAI as a public paid product with a fully English site. How many users, and is it still a niche?",
+  "mode": "full",
+  "options": [
+    {
+      "id": "A",
+      "label": "Public SaaS, broad English audience"
+    },
+    {
+      "id": "B",
+      "label": "Focused niche, English, BYOK first"
+    },
+    {
+      "id": "C",
+      "label": "Do not launch publicly"
+    }
+  ],
+  "weights": {
+    "graham": {
+      "weight": 3,
+      "reason": "Real demand and growth is the core question"
+    },
+    "hormozi": {
+      "weight": 3,
+      "reason": "Will people pay, price, offer"
+    },
+    "garyvee": {
+      "weight": 2,
+      "reason": "English-language attention, distribution with no audience"
+    },
+    "bezos": {
+      "weight": 2,
+      "reason": "Strategic bet, competition, reversibility"
+    },
+    "buffett": {
+      "weight": 2,
+      "reason": "Token cost, downside, marketing cost"
+    },
+    "naval": {
+      "weight": 2,
+      "reason": "Leverage and what the founder owns"
+    },
+    "blakely": {
+      "weight": 2,
+      "reason": "Product from zero, will strangers repeat it"
+    },
+    "martell": {
+      "weight": 1,
+      "reason": "Solo founder, 10 hours, English support load"
+    },
+    "musk": {
+      "weight": 1,
+      "reason": "First-principles check on the real constraint"
+    }
+  },
+  "seats": [
+    "bezos",
+    "graham",
+    "hormozi",
+    "garyvee",
+    "martell",
+    "buffett",
+    "naval",
+    "blakely",
+    "musk"
+  ],
+  "brief": "Same product, now with a fully English site and a global audience. How many users, and is it still a niche?",
+  "assumptions": [
+    "Market and cost numbers are assumed, not verified",
+    "English pool assumed 10 to 20 times larger than German, with more competition",
+    "Success: 500 paying users in 12 months (assumed)"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "option": "B",
+  "label": "GO WITH CONDITIONS",
+  "recommendation": "English makes the same niche about 4x bigger in reach and 1.5x in payers. Launch BYOK first, two-market test: German built and live, English landing page and clips.",
+  "conditions": [
+    "EUR 50 monthly platform-key cap",
+    "Support at or under 3 hours a week",
+    "Day 90: 20 payers combined, English page at least 10 of them"
+  ],
+  "next_steps": [
+    "Cap in code and English landing page this week",
+    "3 debates recorded a week, about 30 clips a month",
+    "Gates at day 30, 60 and 90"
+  ],
+  "cheapest_test": "30 named professionals, 15 German and 15 English; count second debates and payments.",
+  "kill_criteria": "Fewer than 20 payers combined at day 90, or fewer than 8 of the first 30 run a second debate within 7 days."
+}
