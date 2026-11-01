@@ -19,6 +19,7 @@ Ein Raster aus Milchglas-Kacheln vor weichen Farbflächen. Die drei KIs sind die
 - Bausteine: `glass`, `glass-strong`, `card`, `.tile` (Radius 26 px), `btn-primary` (Tinte, Pillenform), `btn-ghost`, `field` (`app/globals.css`).
 - Hintergrund: drei weiche Farbflächen (`body::before`), keine Animation.
 - Schrift: DM Sans für Text, DM Serif Display für Überschriften, KI-Namen und die Wortmarke (beide lokal über `@fontsource`, kein Google-Abruf). Die Serifenschrift hat nur einen Schnitt (`font-synthesis: none`). Mindestgröße 11 px.
+- Wortmarke „SynthrAI“ (`components/ui/BrandMark.tsx`): „Synthr“ in DM Serif Display, „AI“ größer in DM Sans (800) im Verlauf der drei KI-Farben (`--brand-ai-1…3`, in Hell dunkler gewählt) mit Verlaufslinie darunter; in der Kopfzeile mit Zusatz „AI Discussion Room“, mobil nur das Symbol.
 - Bewegung: nur ein sanftes Einblenden neuer Nachrichten und das Leuchten der KI-Kachel, solange diese denkt oder antwortet. Bei „Bewegung reduzieren“ des Systems entfällt alles.
 
 ## Aufbau (`components/chat/ChatWorkspace.tsx`)

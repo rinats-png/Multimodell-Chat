@@ -7,7 +7,7 @@ export function AuthCard({ title, subtitle, children }: { title: string; subtitl
       <div className="glass tile relative w-full max-w-md overflow-hidden px-6 py-8 sm:px-8">
         <div className="relative flex flex-col items-center text-center">
           <BrandMark className="size-12" />
-          <Wordmark className="mt-3 text-[13px] font-medium uppercase tracking-[0.2em] text-ink-2" />
+          <Wordmark tagline className="mt-3 items-center text-[28px]" />
           <h1 className="mt-5 font-display text-[28px] leading-tight">{title}</h1>
           <p className="mt-1 text-[13px] text-muted">{subtitle}</p>
         </div>

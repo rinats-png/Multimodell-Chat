@@ -108,7 +108,7 @@ export function getLanguageModel(modelId: string, access: ResolvedKey): Language
     default: {
       const openrouter = createOpenRouter({
         apiKey,
-        headers: { "X-Title": "Multimodell-Chat" },
+        headers: { "X-Title": "SynthrAI" },
       });
       // BF-17: Nur Anbieter, die Prompts nicht speichern bzw. nicht zum Training nutzen [Q-003].
       // Findet OpenRouter dafür keinen Anbieter, schlägt die Anfrage fehl (404) – siehe userFacingModelError.

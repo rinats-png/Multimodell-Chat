@@ -40,6 +40,10 @@
   --color-google: #5d6e1a;
   --color-other: #7d5f35;
   --color-on-agent: #ffffff;
+  /* Wortmarke: „AI“ im Verlauf der drei KI-Farben (kräftiger als die Textfarben, nur für große Schrift) */
+  --brand-ai-1: #0b8f7d;
+  --brand-ai-2: #e0601a;
+  --brand-ai-3: #6f9a0e;
 }
 
 :root {
@@ -94,6 +98,9 @@
     --color-google: #c9dc5e;
     --color-other: #d9b98a;
     --color-on-agent: #1b1816;
+    --brand-ai-1: #5fe6d2;
+    --brand-ai-2: #ffa766;
+    --brand-ai-3: #cfe86a;
     --b1: #8a5a1f;
     --b2: #2f4a3f;
     --b3: #4a3a2a;
@@ -142,6 +149,9 @@
   --color-google: #c9dc5e;
   --color-other: #d9b98a;
   --color-on-agent: #1b1816;
+  --brand-ai-1: #5fe6d2;
+  --brand-ai-2: #ffa766;
+  --brand-ai-3: #cfe86a;
   --b1: #8a5a1f;
   --b2: #2f4a3f;
   --b3: #4a3a2a;
@@ -472,4 +482,15 @@ body::before {
     transition-duration: 0.01ms !important;
     animation: none !important;
   }
+}
+
+/* Wortmarke „SynthrAI“: das „AI“ steht im Verlauf der drei KI-Farben, mit Linie darunter */
+.brand-ai {
+  background: linear-gradient(90deg, var(--brand-ai-1), var(--brand-ai-2), var(--brand-ai-3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.brand-ai-bar {
+  background: linear-gradient(90deg, var(--brand-ai-1), var(--brand-ai-2), var(--brand-ai-3));
 }

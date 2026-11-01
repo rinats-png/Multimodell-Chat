@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Multimodell-Chat – KI-Gruppendebatten",
+  title: "SynthrAI – AI Discussion Room",
   description: "Diskutiere gleichzeitig mit ChatGPT, Claude und Gemini in einem gemeinsamen Gruppenchat.",
 };
 

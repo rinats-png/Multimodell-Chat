@@ -16,10 +16,23 @@ export function BrandMark({ className }: { className?: string }) {
   );
 }
 
-export function Wordmark({ className }: { className?: string }) {
+/**
+ * Wortmarke „SynthrAI“: „Synthr“ in der Serifenschrift, „AI“ größer in serifenloser Schrift im Verlauf der drei KI-Farben
+ * mit Linie darunter. Optional steht die Zeile „AI Discussion Room“ darunter. Die Schriftgröße kommt von der umgebenden Klasse.
+ */
+export function Wordmark({ className, tagline = false }: { className?: string; tagline?: boolean }) {
   return (
-    <span className={clsx("font-display font-semibold tracking-tight", className)}>
-      Multi<span className="text-accent-strong">modell</span>
+    <span className={clsx("inline-flex flex-col leading-none", className)}>
+      <span className="inline-flex items-end gap-0.5 font-display font-semibold tracking-tight">
+        Synthr
+        <span className="inline-flex flex-col items-stretch">
+          <span className="brand-ai font-sans text-[1.2em] font-extrabold leading-none tracking-[-0.02em]">AI</span>
+          <span aria-hidden className="brand-ai-bar mt-[2px] h-[3px] rounded-sm" />
+        </span>
+      </span>
+      {tagline && (
+        <span className="mt-1 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-muted">AI Discussion Room</span>
+      )}
     </span>
   );
 }

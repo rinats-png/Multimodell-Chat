@@ -2,7 +2,7 @@ import { getOperatorInfo } from "@/lib/legal";
 import { LegalPage } from "@/components/legal/LegalPage";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Datenschutz – Multimodell-Chat" };
+export const metadata = { title: "Datenschutz – SynthrAI" };
 
 /**
  * Datenschutzerklärung, abgeglichen mit docs/idea-to-app/11-daten.md und 16-recht.md.

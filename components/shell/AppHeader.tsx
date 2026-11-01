@@ -38,9 +38,11 @@ function NavLink({ href, active, icon: Icon, children }: { href: string; active:
 export function AppHeader({ active, email, isDemoStore, title, actions }: AppHeaderProps) {
   return (
     <header className="glass tile relative z-20 flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
-      <Link href="/chat" className="flex items-center gap-2.5" aria-label="Multimodell – Debatten">
+      <Link href="/chat" className="flex items-center gap-2.5" aria-label="SynthrAI – Debatten">
         <BrandMark className="size-8" />
-        <Wordmark className="hidden text-[22px] sm:inline" />
+        <span className="hidden sm:block">
+          <Wordmark tagline className="text-[26px]" />
+        </span>
       </Link>
       <nav aria-label="Hauptbereiche" className="flex items-center gap-1">
         <NavLink href="/chat" active={active === "chat"} icon={MessagesSquare}>

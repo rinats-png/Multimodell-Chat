@@ -2,7 +2,7 @@ import { getOperatorInfo } from "@/lib/legal";
 import { LegalPage } from "@/components/legal/LegalPage";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Impressum – Multimodell-Chat" };
+export const metadata = { title: "Impressum – SynthrAI" };
 
 /** Anbieterkennzeichnung (§ 5 DDG). Angaben stammen aus OPERATOR_* – Prüfung durch den Betreiber nötig. */
 export default function ImpressumPage() {
