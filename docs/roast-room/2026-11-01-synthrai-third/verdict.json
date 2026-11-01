@@ -1,0 +1,44 @@
+{
+  "label": "GO",
+  "call": "Launch B behind a paid gate: make production work, hand-sell a EUR 49 tested-decision report to 20 founders over three weeks, and open the public German page only if at least 8 of 20 pay.",
+  "recommended": "B",
+  "why": [
+    { "point": "A decision is occasional, so sell a EUR 49 report, not a EUR 29 subscription.", "seat": "Graham", "framework": "Startup = Growth" },
+    { "point": "A paid gate tests price and sharing at once; a free beta tests neither price nor love properly.", "seat": "Hormozi", "framework": "Front-end offers" },
+    { "point": "Nothing counts until production works and real reports exist.", "seat": "Elon", "framework": "Limiting factor" },
+    { "point": "The shared report is the only leverage, so keep the link free and measure it.", "seat": "Naval", "framework": "Three kinds of leverage" },
+    { "point": "Broad paid ads give a CAC near EUR 400 against about EUR 270 lifetime profit.", "seat": "Hormozi", "framework": "LTV:CAC" }
+  ],
+  "minority": { "seat": "Sara", "quote": "Sharing is the one signal of product love here, so a pass on that signal shouldn't come cheaper than a pass on payment.", "would_have_to_be_true": "Buyers pay out of politeness to a founder they know, so only sharing shows real love." },
+  "next_steps": [
+    { "when": "By 2026-11-08", "action": "Production live, 10 real council sessions, euro cost logged, reports read aloud." },
+    { "when": "By 2026-11-15", "action": "20 named founders, EUR 49 checkout, revenue-linked cap, shared-link tracking." },
+    { "when": "2026-12-07", "action": "Gate decision: public German page, second gate, or Option D." }
+  ],
+  "kill_criteria": "Fewer than 8 of 20 pay, fewer than 5 share, or refunds above 25% at the gate; under 40 paying buyers by day 90 after the public page.",
+  "conditions": [
+    "Production works and a session costs EUR 1.50 or less by 2026-11-15",
+    "Cap = EUR 50 plus 20% of last month's revenue, trial reserve separate, before any public link",
+    "Gate: at least 8 of 20 pay, refunds at most 25%, at least 5 paying buyers share, at least 1 sign-up per 20 link views",
+    "Founder hours at most 10 a week; gate stretches to 5 weeks if exceeded",
+    "English only after the gate passes"
+  ],
+  "fights": [
+    { "crux": "Gate length", "story": "Graham, Martell and Elon wanted a 30-day closed beta, Bezos, Buffett and Naval one to two weeks; Hormozi's paid pilot settled it at three weeks with 20 paying outsiders." },
+    { "crux": "How many councils", "story": "Six seats wanted three, Graham, Sara and Elon one; resolved as one during the gate and three on the public page." },
+    { "crux": "Cost cap", "story": "Buffett showed the EUR 50 cap also covers payers; everyone tied it to revenue, Bezos's EUR 50 plus 20% replaced the larger-of rule." }
+  ],
+  "amendments": [
+    { "seat": "Bezos", "amendment": "Cap = EUR 50 plus 20% of last month's revenue.", "adopted": true, "reason": "The larger-of rule gives no headroom below EUR 250; unanswered." },
+    { "seat": "Graham", "amendment": "Only the business decision council during the gate; 6 or 7 of 20 is a fail.", "adopted": true, "reason": "Unanswered; Elon argued the same." },
+    { "seat": "Naval", "amendment": "Gate metric: 1 sign-up per 20 shared-link views.", "adopted": true, "reason": "Gary V asked the same; no objection." },
+    { "seat": "Gary V", "amendment": "Record whether 2 of the first 10 posts reach 3x views.", "adopted": true, "reason": "Recorded as a signal, not a pass bar." },
+    { "seat": "Sara", "amendment": "Share bar 7 of 20 among payers, kill below 5.", "adopted": false, "reason": "Counting only payers adopted; the bar stays 5 because 20 sales are too few to judge on shares (Hormozi)." },
+    { "seat": "Hormozi", "amendment": "Close rate against everyone pitched; 16 of 20 paying means public price EUR 79.", "adopted": true, "reason": "No objection." },
+    { "seat": "Martell", "amendment": "Stretch the gate to 5 weeks if hours exceed 10 in two weeks.", "adopted": true, "reason": "No objection." },
+    { "seat": "Elon", "amendment": "EUR 1.50 hard cap per session, logged against EUR 1.", "adopted": true, "reason": "No objection." }
+  ],
+  "cheapest_test": "20 hand-sold EUR 49 reports to founders with a real money decision.",
+  "revisit": "2026-12-07 with payments, refunds, shares, sign-ups per 20 link views, euro cost per session and the hours log; again at day 90 after the public page.",
+  "override_note": ""
+}

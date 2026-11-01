@@ -1,0 +1,27 @@
+{
+  "cruxes": [
+    {
+      "question": "Public B after a short gate, or a separate closed beta first?",
+      "sides": [
+        { "position": "B after 1-2 weeks of real reports", "seats": ["Bezos", "Buffett", "Naval", "Sara", "Hormozi", "Gary V"] },
+        { "position": "C first: 30 users, 30 days", "seats": ["Graham", "Martell", "Elon"] }
+      ]
+    },
+    {
+      "question": "Monthly subscription or a paid one-off decision report?",
+      "sides": [
+        { "position": "EUR 49 report, credited to Pro", "seats": ["Hormozi"] },
+        { "position": "EUR 29 a month", "seats": ["Bezos", "Buffett", "Naval", "Sara"] }
+      ]
+    },
+    {
+      "question": "Keep 13 councils or cut to three?",
+      "sides": [
+        { "position": "Cut or hide all but 1-3", "seats": ["Elon", "Sara"] },
+        { "position": "Keep, they are surface not cost", "seats": ["Naval", "Bezos"] }
+      ]
+    }
+  ],
+  "unanimous": false,
+  "note": "Everyone gates the launch on working production and real reports; they fight over how long the gate is, how to price an occasional decision, and how many councils to show."
+}
