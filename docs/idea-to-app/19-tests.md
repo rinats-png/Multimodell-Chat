@@ -159,6 +159,9 @@
 | T-SEC-39 | `connections.test.ts` | Abo-Modus nur mit Schalter; stdin statt Argument | BD-03 |
 | T-SEC-40 | `platform-budget.test.ts`, `rls.test.sql` | Ausgabenobergrenze für den Plattform-Key: harter Stopp, Töpfe Test/bezahlt, eigener Zugang ausgenommen; Tabelle und Funktionen nur für den Server | Roast Room 2026-11-01 |
 | T-SEC-41 | `usage-guard.test.ts`, `rls.test.sql` | Starter-Testlauf ohne Monatsumbruch, Tageslimit je Tarif, Zähler nur für den Server | Roast Room 2026-11-01 |
+| T-SEC-42 | `rls.test.sql` | Entscheidungsberichte: Besitzer liest/löscht, Clients schreiben nicht, Freigabe-Hash nicht lesbar, Grenzen (Größe, 500 je Konto) | F-21 |
+| T-SEC-43 | `report.test.ts` | Teilen per Link: nur Bericht sichtbar, Hash statt Token, Widerruf/Löschen wirken sofort, fremde Nutzer sehen nichts | F-21 |
+| TEST-F21-1 | `report-score.test.ts`, `report.test.ts` | Punkterechnung (Durchschnitt, Bänder, Deckel, Gleichstand), Berichtsgrenzen je Tarif, Obergrenze und Kontingent | F-21 |
 | T-SEC-23 | `auth.test.ts` | keine Enumeration | BD-08 |
 | T-SEC-24 | `auth.test.ts` | Fehlversuchs-Sperre | BD-07 |
 | T-SEC-25 | `webhook.test.ts` | Signatur + Idempotenz | BD-12 |

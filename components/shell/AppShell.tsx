@@ -3,7 +3,7 @@ import { AppHeader } from "./AppHeader";
 interface AppShellProps {
   email: string | null;
   isDemoStore: boolean;
-  active: "chat" | "billing";
+  active: "chat" | "reports" | "billing";
   children: React.ReactNode;
 }
 

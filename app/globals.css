@@ -494,3 +494,38 @@ body::before {
 .brand-ai-bar {
   background: linear-gradient(90deg, var(--brand-ai-1), var(--brand-ai-2), var(--brand-ai-3));
 }
+
+/* Druckansicht (Bericht als PDF): weißer Grund, dunkle Schrift, keine Navigation und keine Glas-Effekte. */
+@media print {
+  :root,
+  :root[data-theme="dark"] {
+    --color-canvas: #fff;
+    --color-ink: #111;
+    --color-ink-2: #333;
+    --color-muted: #555;
+    --color-signal: #0b6b5c;
+    --color-warn: #7a4f0c;
+    --color-danger: #a83c27;
+    --color-surface-2: #f3f3f3;
+    --color-surface-3: #e4e4e4;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  body::before,
+  .no-print {
+    display: none !important;
+  }
+  .glass,
+  .tile {
+    background: #fff !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+  .report-block {
+    break-inside: avoid;
+  }
+}

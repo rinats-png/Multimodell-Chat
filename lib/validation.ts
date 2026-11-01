@@ -88,3 +88,5 @@ export const signupSchema = z.object({ email, password, acceptTerms: z.literal(t
 export const resetRequestSchema = z.object({ email }).strict();
 export const passwordUpdateSchema = z.object({ password }).strict();
 export const reauthSchema = z.object({ password: z.string().min(1).max(PASSWORD_MAX_LENGTH) }).strict();
+
+export const reportShareSchema = z.object({ enabled: z.boolean() }).strict();

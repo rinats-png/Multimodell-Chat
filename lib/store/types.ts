@@ -1,4 +1,5 @@
 import type { PlatformSpend } from "../platform-budget";
+import type { DecisionReport, ReportSummary, StoredReport } from "../report/schema";
 import type {
   AgentPatch,
   ChatMessage,
@@ -24,6 +25,7 @@ export interface AccountExport {
   exported_at: string;
   profile: Omit<UserProfile, "custom_openrouter_key" | "provider_keys"> & { has_custom_key: boolean };
   rooms: (ChatRoom & { agents: RoomAgent[]; messages: ChatMessage[] })[];
+  reports: StoredReport[];
 }
 
 /**
@@ -65,6 +67,15 @@ export interface DataStore {
   /** Hält fest, wie eine KI-Antwort auf eine andere Bezug nimmt. Nur eigene Nachrichten; sonst Fehler. */
   setMessageStance(messageId: string, stance: Stance, targetId: string): Promise<void>;
   clearMessages(roomId: string): Promise<void>;
+
+  /** Entscheidungsberichte (F-21). Nur eigene; fremde IDs verhalten sich wie „nicht vorhanden“. */
+  createReport(input: { room_id: string; title: string; report: DecisionReport }): Promise<StoredReport>;
+  listReports(): Promise<ReportSummary[]>;
+  getReport(reportId: string): Promise<StoredReport | null>;
+  /** false, wenn der Bericht nicht existiert oder nicht dem Nutzer gehört. */
+  deleteReport(reportId: string): Promise<boolean>;
+  /** Hash des Freigabe-Tokens setzen (Link aktiv) oder null (Link widerrufen). false bei fremdem/unbekanntem Bericht. */
+  setReportShare(reportId: string, tokenHash: string | null): Promise<boolean>;
 
   getUsageTotals(): Promise<UsageTotals>;
   exportAccount(): Promise<AccountExport>;

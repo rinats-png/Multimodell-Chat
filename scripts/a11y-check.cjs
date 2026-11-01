@@ -14,7 +14,7 @@ const THEMES = [
   { name: 'dunkel-gewaehlt', scheme: 'light', stored: 'dark' },
 ];
 const WIDTHS = [1440, 390];
-const PATHS = ['/billing', '/datenschutz', '/impressum', '/login'];
+const PATHS = ['/billing', '/reports', '/datenschutz', '/impressum', '/login'];
 const MIN_CONTRAST = 3; // harte Grenze; der Hintergrund ist Glas über Bewegtbild, daher nur grob geprüft
 
 function freePort() {

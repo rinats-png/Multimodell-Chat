@@ -1,7 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { decryptProviderKeys, decryptSecret, encryptProviderKeys, encryptSecret } from "../crypto";
 import { defaultAgents } from "../default-agents";
+import { logError } from "../log";
 import type { PlatformSpend } from "../platform-budget";
+import { reportSchema, summaryOf, type StoredReport } from "../report/schema";
 import type { ChatMessage, ChatRoom, RoomAgent, UserProfile } from "../types";
 import type { DataStore } from "./types";
 
@@ -9,6 +11,28 @@ function unwrap<T>(result: { data: T | null; error: { message: string } | null }
   if (result.error) throw new Error(`${what}: ${result.error.message}`);
   if (result.data === null) throw new Error(`${what}: keine Daten`);
   return result.data;
+}
+
+/** Spalten, die der Client lesen darf (der Freigabe-Hash gehört nicht dazu). */
+const REPORT_COLUMNS = "id, room_id, title, report, shared_at, created_at";
+
+interface ReportRow {
+  id: string;
+  room_id: string;
+  title: string;
+  report: unknown;
+  shared_at: string | null;
+  created_at: string;
+}
+
+/** Gespeicherten Bericht erneut prüfen; ein beschädigter Eintrag wird übersprungen statt angezeigt. */
+function toStoredReport(row: ReportRow): StoredReport | null {
+  const parsed = reportSchema.safeParse(row.report);
+  if (!parsed.success) {
+    logError("report.invalid", new Error("Gespeicherter Bericht entspricht nicht dem Schema"), { reportId: row.id });
+    return null;
+  }
+  return { id: row.id, room_id: row.room_id, title: row.title, report: parsed.data, shared: row.shared_at !== null, shared_at: row.shared_at, created_at: row.created_at };
 }
 
 function normalizeMessage(row: ChatMessage): ChatMessage {
@@ -208,6 +232,51 @@ export function createSupabaseStore(user: SupabaseClient, admin: SupabaseClient,
         replies: Number(data?.agent_replies ?? 0),
       };
     },
+    async createReport(input) {
+      await assertOwnRoom(input.room_id);
+      const row = unwrap(
+        await admin
+          .from("decision_reports")
+          .insert({ room_id: input.room_id, user_id: userId, title: input.title, report: input.report })
+          .select(REPORT_COLUMNS)
+          .single<ReportRow>(),
+        "Bericht speichern",
+      );
+      const stored = toStoredReport(row);
+      if (!stored) throw new Error("Bericht speichern: ungültiger Bericht");
+      return stored;
+    },
+    async listReports() {
+      const rows = unwrap(
+        await user.from("decision_reports").select(REPORT_COLUMNS).order("created_at", { ascending: false }).limit(200).returns<ReportRow[]>(),
+        "Berichte laden",
+      );
+      return rows.map(toStoredReport).filter((r): r is StoredReport => r !== null).map(summaryOf);
+    },
+    async getReport(reportId) {
+      const { data, error } = await user.from("decision_reports").select(REPORT_COLUMNS).eq("id", reportId).maybeSingle<ReportRow>();
+      if (error) throw new Error(`Bericht laden: ${error.message}`);
+      return data ? toStoredReport(data) : null;
+    },
+    async deleteReport(reportId) {
+      const { data, error } = await user.from("decision_reports").delete().eq("id", reportId).select("id");
+      if (error) throw new Error(`Bericht löschen: ${error.message}`);
+      return (data?.length ?? 0) > 0;
+    },
+    async setReportShare(reportId, tokenHash) {
+      // Besitz zuerst mit der Nutzer-Sitzung prüfen (RLS), erst dann mit dem Service-Role-Client schreiben.
+      const { data: own, error: ownError } = await user.from("decision_reports").select("id").eq("id", reportId).maybeSingle();
+      if (ownError) throw new Error(`Bericht prüfen: ${ownError.message}`);
+      if (!own) return false;
+      const { error } = await admin
+        .from("decision_reports")
+        .update({ share_token_hash: tokenHash, shared_at: tokenHash ? new Date().toISOString() : null })
+        .eq("id", reportId)
+        .eq("user_id", userId);
+      if (error) throw new Error(`Freigabe speichern: ${error.message}`);
+      return true;
+    },
+
     async exportAccount() {
       const { custom_openrouter_key, provider_keys, ...profile } = await store.getProfile();
       const rooms = unwrap(
@@ -220,10 +289,16 @@ export function createSupabaseStore(user: SupabaseClient, admin: SupabaseClient,
         rooms: await Promise.all(
           rooms.map(async (room) => ({ ...room, agents: await store.listAgents(room.id), messages: await store.listMessages(room.id) })),
         ),
+        reports: unwrap(
+          await user.from("decision_reports").select(REPORT_COLUMNS).order("created_at", { ascending: true }).returns<ReportRow[]>(),
+          "Berichte exportieren",
+        )
+          .map(toStoredReport)
+          .filter((r): r is StoredReport => r !== null),
       };
     },
     async deleteAccount() {
-      // Löscht auth.users → Kaskade auf user_profiles, chat_rooms, room_agents, messages.
+      // Löscht auth.users → Kaskade auf user_profiles, chat_rooms, room_agents, messages, decision_reports.
       const { error } = await admin.auth.admin.deleteUser(userId);
       if (error) throw new Error(`Konto löschen: ${error.message}`);
     },

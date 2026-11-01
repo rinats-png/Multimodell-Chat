@@ -1,14 +1,14 @@
 "use client";
 
 import clsx from "clsx";
-import { CreditCard, MessagesSquare } from "lucide-react";
+import { CreditCard, FileText, MessagesSquare } from "lucide-react";
 import Link from "next/link";
 import { BrandMark, Wordmark } from "@/components/ui/BrandMark";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { AccountMenu } from "./AccountMenu";
 
 interface AppHeaderProps {
-  active: "chat" | "billing";
+  active: "chat" | "reports" | "billing";
   email: string | null;
   isDemoStore: boolean;
   /** Mitte: Titel der Seite oder Debatte */
@@ -47,6 +47,9 @@ export function AppHeader({ active, email, isDemoStore, title, actions }: AppHea
       <nav aria-label="Hauptbereiche" className="flex items-center gap-1">
         <NavLink href="/chat" active={active === "chat"} icon={MessagesSquare}>
           Debatten
+        </NavLink>
+        <NavLink href="/reports" active={active === "reports"} icon={FileText}>
+          Berichte
         </NavLink>
         <NavLink href="/billing" active={active === "billing"} icon={CreditCard}>
           Tarif & Verbrauch

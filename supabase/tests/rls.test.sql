@@ -241,5 +241,68 @@ BEGIN
 END $$;
 ROLLBACK;
 
+
+-- ---------------------------------------------------------------------------
+-- T-SEC-42: Entscheidungsberichte – Besitzer liest/löscht, nur der Server schreibt; Freigabe-Hash bleibt serverseitig
+-- ---------------------------------------------------------------------------
+BEGIN;
+INSERT INTO public.decision_reports (id, room_id, user_id, title, report, share_token_hash, shared_at) VALUES
+  ('a2000000-0000-4000-8000-00000000000a', 'a0000000-0000-4000-8000-00000000000a', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Bericht A', '{"version":1}', repeat('a', 64), NOW()),
+  ('b2000000-0000-4000-8000-00000000000b', 'b0000000-0000-4000-8000-00000000000b', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'Bericht B', '{"version":1}', repeat('b', 64), NOW());
+
+SET LOCAL ROLE authenticated;
+SET LOCAL request.jwt.claims = '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+SELECT pg_temp.expect_rows($q$SELECT id, title, report FROM public.decision_reports$q$, 1, 'T-SEC-42 nur eigener Bericht sichtbar');
+SELECT pg_temp.expect_rows($q$SELECT id FROM public.decision_reports WHERE title = 'Bericht B'$q$, 0, 'T-SEC-42 fremder Bericht unsichtbar');
+SELECT pg_temp.expect_denied($q$SELECT share_token_hash FROM public.decision_reports$q$, 'T-SEC-42 Freigabe-Hash lesen');
+SELECT pg_temp.expect_denied($q$INSERT INTO public.decision_reports (room_id, user_id, title, report) VALUES ('a0000000-0000-4000-8000-00000000000a', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Selbst erzeugt', '{}')$q$, 'T-SEC-42 Client darf keinen Bericht schreiben');
+SELECT pg_temp.expect_denied($q$UPDATE public.decision_reports SET title = 'Neu' WHERE title = 'Bericht A'$q$, 'T-SEC-42 Client darf Bericht nicht ändern');
+SELECT pg_temp.expect_denied($q$UPDATE public.decision_reports SET share_token_hash = repeat('c', 64)$q$, 'T-SEC-42 Client darf Freigabe nicht setzen');
+SELECT pg_temp.expect_affected($q$DELETE FROM public.decision_reports WHERE title = 'Bericht B'$q$, 0, 'T-SEC-42 fremden Bericht löschen');
+SELECT pg_temp.expect_affected($q$DELETE FROM public.decision_reports WHERE title = 'Bericht A'$q$, 1, 'T-SEC-42 eigenen Bericht löschen');
+ROLLBACK;
+
+BEGIN;
+SET LOCAL ROLE anon;
+SELECT pg_temp.expect_denied($q$SELECT * FROM public.decision_reports$q$, 'T-SEC-42 anon liest Berichte');
+ROLLBACK;
+
+BEGIN;
+SET LOCAL ROLE service_role;
+DO $$
+BEGIN
+  INSERT INTO public.decision_reports (room_id, user_id, title, report, share_token_hash)
+  VALUES ('a0000000-0000-4000-8000-00000000000a', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Server', '{"version":1}', repeat('d', 64));
+  BEGIN
+    INSERT INTO public.decision_reports (room_id, user_id, title, report, share_token_hash)
+    VALUES ('a0000000-0000-4000-8000-00000000000a', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Doppelt', '{}', repeat('d', 64));
+    RAISE EXCEPTION 'FEHLER: doppelter Freigabe-Hash erlaubt';
+  EXCEPTION WHEN unique_violation THEN NULL;
+  END;
+  BEGIN
+    INSERT INTO public.decision_reports (room_id, user_id, title, report, share_token_hash)
+    VALUES ('a0000000-0000-4000-8000-00000000000a', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Kein Hash', '{}', 'kein-hex');
+    RAISE EXCEPTION 'FEHLER: ungültiger Freigabe-Hash erlaubt';
+  EXCEPTION WHEN check_violation THEN NULL;
+  END;
+  BEGIN
+    INSERT INTO public.decision_reports (room_id, user_id, title, report)
+    VALUES ('a0000000-0000-4000-8000-00000000000a', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Zu groß', to_jsonb(repeat('x', 70000)));
+    RAISE EXCEPTION 'FEHLER: übergroßer Bericht erlaubt';
+  EXCEPTION WHEN check_violation THEN NULL;
+  END;
+  FOR i IN 1..499 LOOP
+    INSERT INTO public.decision_reports (room_id, user_id, title, report)
+    VALUES ('a0000000-0000-4000-8000-00000000000a', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Bericht ' || i, '{}');
+  END LOOP;
+  BEGIN
+    INSERT INTO public.decision_reports (room_id, user_id, title, report)
+    VALUES ('a0000000-0000-4000-8000-00000000000a', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Bericht 501', '{}');
+    RAISE EXCEPTION 'FEHLER: mehr als 500 Berichte erlaubt';
+  EXCEPTION WHEN check_violation THEN NULL;
+  END;
+END $$;
+ROLLBACK;
+
 \o
 \echo 'RLS-Tests: alle Erwartungen erfüllt'

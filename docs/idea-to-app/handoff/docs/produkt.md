@@ -28,6 +28,7 @@ Multimodell-Chat: KI-Gruppendebatten mit ChatGPT, Claude, Gemini u. a. als SaaS 
 | F-18 | Impressum, Datenschutzerklärung, KI-Transparenzhinweis | Muss | umgesetzt | | BF-16, BF-17 |
 | F-19 | Zustimmung/Widerspruch: jede KI-Antwort auf eine andere KI wird bewertet (stimmt zu, widerspricht, baut weiter, neutral), als Chip an der Nachricht und im Konsens-Panel | Soll | umgesetzt | 🔒 | – |
 | F-20 | Lokaler Abo-Modus: Modelle `abo/*` über Claude Code, Codex, Gemini CLI, Kimi CLI auf dem eigenen Rechner (nur Entwicklung, ohne Supabase) | Kann | umgesetzt | 🔒 | – |
+| F-21 | Entscheidungsbericht: aus einer Debatte entsteht ein bewerteter Bericht (Optionen mit Wertung jeder KI, Einigkeit, Widerspruch, stärkster Einwand, Bedingungen, nächste Schritte, günstigster Test, Abbruchkriterien) – Zahlen rechnet die App aus den Wertungen; Link zum Teilen (widerrufbar, nur Hash gespeichert) und Druck/PDF; Entscheidungsvorlagen für den Start | Muss | umgesetzt | 🔒 | – |
 
 ## Nicht im Umfang (Parkplatz)
 - Router-Begründungen dauerhaft speichern (BF-19)

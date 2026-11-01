@@ -9,6 +9,8 @@ export interface PlanLimits {
   maxSlidingWindow: number;
   /** Anzahl Räume */
   maxRooms: number;
+  /** Gespeicherte Entscheidungsberichte (F-21). Beim Starter zählt die Erstellung nicht gegen den Testlauf, ist aber begrenzt. */
+  maxReports: number;
   /** Langzeitgedächtnis (zusätzliche Summary-Aufrufe) */
   runningSummary: boolean;
 }
@@ -47,13 +49,14 @@ export const PLANS: Record<SubscriptionTier, PlanDefinition> = {
     trialOnly: true,
     rateLimitPerMin: 5,
     byok: true,
-    limits: { maxActiveAgents: 3, maxAutoTurns: 3, maxSlidingWindow: 12, maxRooms: 5, runningSummary: false },
+    limits: { maxActiveAgents: 3, maxAutoTurns: 3, maxSlidingWindow: 12, maxRooms: 5, maxReports: 3, runningSummary: false },
     tagline: "Ein Testlauf zum Ausprobieren, danach mit eigenem Zugang.",
     features: [
       "Einmaliger Testlauf: etwa eine Debatte (60.000 Tokens) mit unserem Zugang",
       "Danach unbegrenzt mit eigenem Zugang: OpenRouter verbinden oder API-Keys",
       "5 KI-Antworten pro Minute",
       "3 KI-Agenten pro Raum, bis zu 5 Räume",
+      "3 Entscheidungsberichte zum Teilen und Drucken",
       "Router, Round-Robin & @Mentions",
     ],
   },
@@ -66,13 +69,14 @@ export const PLANS: Record<SubscriptionTier, PlanDefinition> = {
     trialOnly: false,
     rateLimitPerMin: 15,
     byok: true,
-    limits: { maxActiveAgents: 6, maxAutoTurns: 10, maxSlidingWindow: 40, maxRooms: 100, runningSummary: true },
+    limits: { maxActiveAgents: 6, maxAutoTurns: 10, maxSlidingWindow: 40, maxRooms: 100, maxReports: 200, runningSummary: true },
     tagline: "Für tägliche Strategie- und Architektur-Debatten.",
     features: [
       "500.000 Tokens pro Monat inklusive",
       "Eigener Zugang ohne Token-Deckel",
       "15 KI-Antworten pro Minute",
       "Bis zu 6 Agenten pro Raum, 100 Räume",
+      "Entscheidungsberichte als Link und PDF (bis 200)",
       "Agenten-Studio & Prompt-Inspector",
       "Langzeitgedächtnis (Running Summary)",
     ],
@@ -86,7 +90,7 @@ export const PLANS: Record<SubscriptionTier, PlanDefinition> = {
     trialOnly: false,
     rateLimitPerMin: 60,
     byok: true,
-    limits: { maxActiveAgents: 8, maxAutoTurns: 10, maxSlidingWindow: 40, maxRooms: 100, runningSummary: true },
+    limits: { maxActiveAgents: 8, maxAutoTurns: 10, maxSlidingWindow: 40, maxRooms: 100, maxReports: 500, runningSummary: true },
     tagline: "Für Teams und Vielnutzer – volle Kostenkontrolle.",
     features: [
       "2,5 Mio. Tokens pro Monat inklusive",

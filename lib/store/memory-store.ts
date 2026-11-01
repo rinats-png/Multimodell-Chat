@@ -3,6 +3,7 @@ import { decryptProviderKeys, decryptSecret, encryptProviderKeys, encryptSecret 
 import { defaultAgents } from "../default-agents";
 import { PLANS } from "../plans";
 import type { PlatformSpend } from "../platform-budget";
+import { summaryOf, type StoredReport } from "../report/schema";
 import type { ChatMessage, ChatRoom, RoomAgent, UserProfile } from "../types";
 import type { DataStore } from "./types";
 
@@ -16,6 +17,12 @@ interface MemoryDb {
   rooms: Map<string, ChatRoom>;
   agents: Map<string, RoomAgent>;
   messages: Map<string, ChatMessage>;
+  reports: Map<string, MemoryReport>;
+}
+
+/** Bericht im Speicher: der Freigabe-Hash steht nur hier, nie im Rückgabewert an den Browser. */
+interface MemoryReport extends StoredReport {
+  token_hash: string | null;
 }
 
 /** Ein Datenbestand pro Demo-Besucher (Z14-10); lokal ein gemeinsamer Bestand „local“. */
@@ -67,6 +74,7 @@ function freshDb(userId: string): MemoryDb {
     rooms: new Map(),
     agents: new Map(),
     messages: new Map(),
+    reports: new Map(),
   };
 }
 
@@ -90,6 +98,21 @@ function dbFor(visitorId: string): MemoryDb {
     all.set(visitorId, found);
   }
   return found;
+}
+
+function publicStored(r: MemoryReport): StoredReport {
+  const { token_hash: _hash, ...rest } = r;
+  return { ...rest, report: structuredClone(r.report) };
+}
+
+/** Öffentliche Ansicht (Demo): sucht den Bericht über den Hash des Freigabe-Tokens in allen Beständen. */
+export function findSharedReportInMemory(tokenHash: string): { title: string; report: StoredReport["report"]; created_at: string } | null {
+  for (const d of dbs().values()) {
+    for (const r of d.reports.values()) {
+      if (r.token_hash && r.token_hash === tokenHash) return { title: r.title, report: structuredClone(r.report), created_at: r.created_at };
+    }
+  }
+  return null;
 }
 
 /** Nur für Tests: alle Demo-Bestände verwerfen. */
@@ -202,6 +225,7 @@ export function createMemoryStore(visitorId: string): DataStore {
     d.rooms.delete(roomId);
     for (const [id, a] of d.agents) if (a.room_id === roomId) d.agents.delete(id);
     for (const [id, m] of d.messages) if (m.room_id === roomId) d.messages.delete(id);
+    for (const [id, r] of d.reports) if (r.room_id === roomId) d.reports.delete(id);
   },
 
   async listAgents(roomId) {
@@ -273,6 +297,41 @@ export function createMemoryStore(visitorId: string): DataStore {
       { input: 0, output: 0, cost: 0, replies: 0 },
     );
   },
+  async createReport(input) {
+    if (!db().rooms.has(input.room_id)) throw new Error("Raum nicht gefunden");
+    if (db().reports.size >= 500) throw new Error("Höchstens 500 Berichte pro Konto");
+    const stored: MemoryReport = {
+      id: crypto.randomUUID(),
+      room_id: input.room_id,
+      title: input.title,
+      report: input.report,
+      shared: false,
+      shared_at: null,
+      created_at: new Date().toISOString(),
+      token_hash: null,
+    };
+    db().reports.set(stored.id, stored);
+    return publicStored(stored);
+  },
+  async listReports() {
+    return [...db().reports.values()].sort((a, b) => b.created_at.localeCompare(a.created_at)).map((r) => summaryOf(r));
+  },
+  async getReport(reportId) {
+    const r = db().reports.get(reportId);
+    return r ? publicStored(r) : null;
+  },
+  async deleteReport(reportId) {
+    return db().reports.delete(reportId);
+  },
+  async setReportShare(reportId, tokenHash) {
+    const r = db().reports.get(reportId);
+    if (!r) return false;
+    r.token_hash = tokenHash;
+    r.shared = tokenHash !== null;
+    r.shared_at = tokenHash ? new Date().toISOString() : null;
+    return true;
+  },
+
   async exportAccount() {
     const { custom_openrouter_key, provider_keys, ...profile } = db().profile;
     const rooms = await store.listRooms();
@@ -282,6 +341,7 @@ export function createMemoryStore(visitorId: string): DataStore {
       rooms: await Promise.all(
         rooms.map(async (room) => ({ ...room, agents: await store.listAgents(room.id), messages: await store.listMessages(room.id) })),
       ),
+      reports: [...db().reports.values()].map(publicStored),
     };
   },
   async deleteAccount() {

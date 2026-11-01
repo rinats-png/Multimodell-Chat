@@ -35,6 +35,7 @@ export const GROUP_CHAT_RULES = [
   "Stimme anderen KIs nicht bloß höflich zu, sondern liefere konstruktive Gegenargumente aus deiner Fachrolle heraus.",
   "Sprich andere Teilnehmer direkt mit Namen an, wenn du auf ihre Argumente eingehst.",
   "Antworte in der Sprache, in der der Mensch schreibt.",
+  "Stehen Optionen zur Wahl (A, B, C), nenne am Ende deiner Antwort deine Wertung je Option von 0 bis 10 in einer Zeile, z. B. „Wertung: A 7, B 4, C 2“.",
 ].join("\n- ");
 
 /** Schneidet den Verlauf hart auf die letzten `windowSize` Nachrichten zu. */

@@ -10,6 +10,7 @@ export const PUBLIC_PATHS = [
   "/auth/callback",
   "/impressum",
   "/datenschutz",
+  "/r",
   "/api/auth/",
   "/api/billing/webhook",
 ];

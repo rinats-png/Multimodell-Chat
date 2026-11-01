@@ -6,7 +6,7 @@ import { applySlidingWindow, buildAgentMessages, estimatePromptTokens, stripSpea
 import { logError, securityLog } from "./log";
 import { approxTokens, estimateCostUsd, isPlatformModel, MAX_OUTPUT_TOKENS } from "./models";
 import { PLANS, type PlanLimits } from "./plans";
-import { assertPlatformBudget, isTrialUser, platformBudgetOk } from "./platform-budget";
+import { assertPlatformBudget, bookPlatformSpend, platformBudgetOk } from "./platform-budget";
 import { findMentionedAgent, heuristicRoute, routeNextSpeaker, SUMMARY_MAX_OUTPUT_TOKENS, summarizeDroppedMessages } from "./router";
 import { toPublicProfile } from "./session";
 import { rateStance, stanceTarget } from "./stance";
@@ -36,18 +36,6 @@ const ROUTER_TOKEN_ESTIMATE = 800;
 const STANCE_TOKEN_ESTIMATE = 700;
 /** Zeitbudget einer Runde, nach dem keine weitere KI mehr beginnt (Funktionslimit 120 s). */
 const ROUND_TIME_BUDGET_MS = 90_000;
-
-/**
- * Bucht die geschätzten Kosten eines Aufrufs mit dem Plattform-Key gegen die gemeinsame Obergrenze
- * (lib/platform-budget.ts). Eigene Zugänge und Demo kosten nichts. Ein Fehler beim Buchen beendet die Runde nicht,
- * wird aber protokolliert.
- */
-async function bookPlatformSpend(store: DataStore, profile: UserProfile, access: ResolvedKey, modelId: string, inputTokens: number, outputTokens: number): Promise<void> {
-  if (access.source !== "platform") return;
-  const cost = estimateCostUsd(modelId, inputTokens, outputTokens);
-  if (cost <= 0) return;
-  await store.addPlatformSpend(cost, isTrialUser(profile)).catch((e) => logError("platform.spend", e, { userId: profile.id }));
-}
 
 /** Tarifgrenzen, die der Raum (über die REST-API veränderbar) nie überschreiten darf (BF-28). */
 export function effectiveRoomSettings(room: ChatRoom, limits: PlanLimits) {

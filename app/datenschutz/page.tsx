@@ -13,7 +13,7 @@ export default function DatenschutzPage() {
   const h2 = "font-semibold text-ink";
   return (
     <LegalPage title="Datenschutzerklärung">
-      <p className="text-[13px] text-muted">Stand: 29. Oktober 2026</p>
+      <p className="text-[13px] text-muted">Stand: 1. November 2026</p>
 
       <section>
         <h2 className={h2}>1. Verantwortlicher</h2>
@@ -62,6 +62,15 @@ export default function DatenschutzPage() {
                 <td className="py-2 pr-3">berechtigtes Interesse, Art. 6 Abs. 1 lit. f DSGVO</td>
                 <td className="py-2">Zähler höchstens 1 Stunde; Protokolle 30 Tage</td>
               </tr>
+              <tr className="border-b border-line">
+                <td className="py-2 pr-3">Entscheidungsberichte</td>
+                <td className="py-2 pr-3">
+                  der aus einer Debatte erstellte Bericht (Optionen, Wertungen der KIs, Einwände, nächste Schritte). Teilst du ihn per Link, kann jede
+                  Person mit dem Link den Bericht lesen, nicht die Debatte; gespeichert wird nur ein Hash des Links
+                </td>
+                <td className="py-2 pr-3">Art. 6 Abs. 1 lit. b DSGVO</td>
+                <td className="py-2">bis du den Bericht löschst, den Link widerrufst (sofort ungültig), die Debatte oder dein Konto löschst</td>
+              </tr>
               <tr>
                 <td className="py-2 pr-3">Eigener API-Key (optional)</td>
                 <td className="py-2 pr-3">dein OpenRouter-Key, verschlüsselt gespeichert</td>
@@ -79,7 +88,7 @@ export default function DatenschutzPage() {
           Damit die KI-Agenten antworten können, senden wir bei jeder Antwort einen Ausschnitt deines Debattenverlaufs (die letzten
           Nachrichten laut „Sliding Window“), die System-Prompts der Agenten und ggf. eine Zusammenfassung älterer Nachrichten an
           den Vermittlungsdienst <strong>OpenRouter</strong> (OpenRouter, Inc., USA). OpenRouter leitet die Anfrage an den Anbieter des
-          gewählten Modells weiter (z. B. OpenAI, Anthropic, Google). Wir fordern dabei ausschließlich Anbieter an, die Eingaben nicht
+          gewählten Modells weiter (z. B. OpenAI, Anthropic, Google). Für einen Entscheidungsbericht senden wir den Verlauf der Debatte (gekürzt) auf demselben Weg an ein Modell. Wir fordern dabei ausschließlich Anbieter an, die Eingaben nicht
           speichern oder für Training nutzen (Einstellung „data collection: deny“).
         </p>
         <p className="mt-2">

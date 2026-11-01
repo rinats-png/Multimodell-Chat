@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 import { ArrowUp, ShieldAlert, Square } from "lucide-react";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { agentStyle } from "@/lib/agent-style";
 import { approxTokens } from "@/lib/models";
 import { checkPromptInjection } from "@/lib/prompt-firewall";
@@ -16,6 +16,8 @@ interface ComposerProps {
   onSend: (content: string) => void;
   onAskAgent: (agentId: string) => void;
   onStop: () => void;
+  /** Vorlage, die ins Eingabefeld übernommen werden soll (neue `id` = neue Vorlage). */
+  draft?: { text: string; id: number } | null;
 }
 
 const MODE_HINT: Record<OrchestrationMode, string> = {
@@ -24,13 +26,22 @@ const MODE_HINT: Record<OrchestrationMode, string> = {
   manual: "Nur per @Mention oder Schnell-Button",
 };
 
-export function Composer({ agents, mode, running, onSend, onAskAgent, onStop }: ComposerProps) {
+export function Composer({ agents, mode, running, onSend, onAskAgent, onStop, draft }: ComposerProps) {
   const [value, setValue] = useState("");
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionIndex, setMentionIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const pendingCaret = useRef<number | null>(null);
   const activeAgents = agents.filter((a) => a.is_active);
+
+  // Eine gewählte Vorlage ersetzt den Text, setzt den Cursor ans Ende und fokussiert das Feld.
+  useEffect(() => {
+    if (!draft) return;
+    setValue(draft.text);
+    pendingCaret.current = draft.text.length;
+    requestAnimationFrame(resize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft]);
 
   const firewall = useMemo(() => checkPromptInjection(value), [value]);
   const mentionOptions = useMemo(() => {

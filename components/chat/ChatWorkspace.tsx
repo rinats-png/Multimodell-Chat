@@ -1,10 +1,11 @@
 "use client";
 
 import clsx from "clsx";
-import { Brain, Coins, Eraser, Hand, Info, Menu, MessagesSquare, PanelRight, Receipt, Repeat2, ScanSearch, TriangleAlert, X } from "lucide-react";
+import { Brain, Coins, Eraser, FileText, Hand, Info, Loader2, Menu, MessagesSquare, PanelRight, Receipt, Repeat2, ScanSearch, TriangleAlert, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { applySlidingWindow } from "@/lib/context-builder";
+import { DECISION_TEMPLATES, type DecisionTemplate } from "@/lib/decision-templates";
 import { formatCompact, formatUsd } from "@/lib/format";
 import type { PlanLimits } from "@/lib/plans";
 import type {
@@ -63,14 +64,10 @@ const MODE_OPTIONS = [
   { value: "manual" as const, label: "Manuell", icon: Hand },
 ];
 
-const STARTER_PROMPTS = [
-  "Wir wollen ein B2B-SaaS für Steuerberater bauen. MVP in 6 Wochen – realistisch?",
-  "Monolith oder Microservices für ein Startup mit 3 Entwicklern?",
-  "Wie sollten wir die Preise für eine KI-App kalkulieren, deren Kosten pro Nutzer stark schwanken?",
-];
-
 export function ChatWorkspace(props: ChatWorkspaceProps) {
   const router = useRouter();
+  const [reporting, setReporting] = useState(false);
+  const [draft, setDraft] = useState<{ text: string; id: number } | null>(null);
   const [room, setRoom] = useState(props.initialRoom);
   const [agents, setAgents] = useState(props.initialAgents);
   const [messages, setMessages] = useState(props.initialMessages);
@@ -264,6 +261,24 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
     setRoom((prev) => ({ ...prev, running_summary: "", summarized_message_count: 0 }));
   }
 
+  const agentReplies = messages.filter((m) => m.sender_type === "agent").length;
+
+  /** Entscheidungsbericht (F-21): fasst die Debatte zu Optionen, Wertungen, Einwand und nächsten Schritten zusammen. */
+  async function createReport() {
+    setReporting(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/rooms/${room.id}/report`, { method: "POST" });
+      const data = (await res.json().catch(() => ({}))) as { report?: { id: string }; error?: string };
+      if (!res.ok || !data.report) return setError(data.error ?? "Der Bericht konnte nicht erstellt werden.");
+      router.push(`/report/${data.report.id}`);
+    } catch {
+      setError("Keine Verbindung. Bitte prüfe dein Netz und versuche es erneut.");
+    } finally {
+      setReporting(false);
+    }
+  }
+
   // ---- Render ---------------------------------------------------------------
 
   const activeAgents = agents.filter((a) => a.is_active);
@@ -333,6 +348,15 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
         options={MODE_OPTIONS}
         onChange={(v) => updateRoom({ orchestration_mode: v })}
       />
+      <button
+        onClick={createReport}
+        disabled={running || reporting || agentReplies < 2}
+        title={agentReplies < 2 ? "Der Bericht braucht mindestens zwei Antworten der KIs" : "Aus dieser Debatte einen Entscheidungsbericht erstellen"}
+        className="btn-primary inline-flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-semibold disabled:opacity-50"
+      >
+        {reporting ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <FileText className="size-4" aria-hidden />}
+        {reporting ? "Erstelle …" : "Bericht"}
+      </button>
       <IconButton label="API-Prompt Inspector" onClick={() => setInspector({ agentId: activeAgents[0]?.id ?? agents[0]?.id ?? "" })}>
         <ScanSearch className="size-4" />
       </IconButton>
@@ -374,7 +398,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
           <div ref={scrollRef} role="log" aria-live="polite" aria-label="Verlauf der Debatte" className="flex-1 overflow-y-auto">
             <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6">
               {messages.length === 0 && !running ? (
-                <EmptyState agents={activeAgents} onPick={(p) => orchestrate({ content: p })} />
+                <EmptyState agents={activeAgents} onPick={(t) => setDraft({ text: t.text, id: Date.now() })} />
               ) : (
                 timeline
               )}
@@ -401,6 +425,7 @@ export function ChatWorkspace(props: ChatWorkspaceProps) {
             onSend={(content) => orchestrate({ content })}
             onAskAgent={(agentId) => orchestrate({ agentId })}
             onStop={() => abortRef.current?.abort()}
+            draft={draft}
           />
         </main>
 
@@ -481,34 +506,39 @@ function IconButton(props: {
   );
 }
 
-function EmptyState({ agents, onPick }: { agents: RoomAgent[]; onPick: (prompt: string) => void }) {
+function EmptyState({ agents, onPick }: { agents: RoomAgent[]; onPick: (template: DecisionTemplate) => void }) {
   return (
-    <div className="flex flex-col items-center pt-[6vh] text-center">
+    <div className="flex flex-col items-center pt-[2vh] text-center">
       <div className="relative flex -space-x-2">
         <div className="absolute inset-0 -z-10 scale-150 rounded-full bg-accent/20 blur-2xl" aria-hidden />
         {agents.map((a) => (
           <AgentAvatar key={a.id} name={a.display_name} modelId={a.model_identifier} size="lg" className="ring-4 ring-canvas-2" />
         ))}
       </div>
-      <h2 className="mt-6 font-display text-[26px] font-medium leading-tight tracking-tight sm:text-[30px]">
+      <h2 className="mt-4 font-display text-[26px] font-medium leading-tight tracking-tight sm:text-[30px]">
         <span className="text-gradient">Worüber sollen die KIs debattieren?</span>
       </h2>
       <p className="mt-2 max-w-md text-[14px] text-muted">
         {agents.map((a) => a.display_name).join(", ")} diskutieren mit dir – und miteinander. Jede KI vertritt eine
         eigene Fachrolle und widerspricht, statt nur zuzustimmen.
       </p>
-      <div className="mt-6 grid w-full max-w-2xl gap-2 sm:grid-cols-3">
-        {agents.map((a) => (
-          <div key={a.id} className="glass rounded-2xl p-3.5 text-left">
-            <div className="flex items-center gap-2">
-              <AgentAvatar name={a.display_name} modelId={a.model_identifier} size="sm" />
-              <span className="text-[13px] font-medium">{a.display_name}</span>
-            </div>
-            <p className="mt-1.5 text-[12px] leading-relaxed text-muted">{a.role_title}</p>
-          </div>
-        ))}
+      <div className="mt-4 w-full max-w-2xl text-left">
+        <h3 className="px-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">Mit einer Entscheidung starten</h3>
+        <p className="mt-1 px-1 text-[12.5px] text-muted">Die Vorlage füllt das Eingabefeld. Trage deine Zahlen ein und sende. Danach erstellst du oben den Bericht.</p>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          {DECISION_TEMPLATES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => onPick(t)}
+              className="group flex flex-col rounded-xl border border-line/80 bg-surface/30 px-4 py-2.5 text-left transition-colors hover:border-accent/40 hover:bg-accent/[0.06]"
+            >
+              <span className="text-[13.5px] font-medium text-ink">{t.title}</span>
+              <span className="text-[12px] text-muted">{t.hint}</span>
+            </button>
+          ))}
+        </div>
       </div>
-      <p className="mt-6 flex max-w-2xl items-start gap-2 rounded-xl border border-accent/15 bg-accent/[0.05] px-3 py-2 text-left text-[12.5px] text-ink-2">
+      <p className="mt-5 flex max-w-2xl items-start gap-2 rounded-xl border border-accent/15 bg-accent/[0.05] px-3 py-2 text-left text-[12.5px] text-ink-2">
         <Info className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden />
         <span>
           Alle Antworten stammen von KI-Modellen. Deine Nachrichten gehen zur Beantwortung über OpenRouter an die jeweiligen
@@ -518,18 +548,6 @@ function EmptyState({ agents, onPick }: { agents: RoomAgent[]; onPick: (prompt: 
           </a>
         </span>
       </p>
-      <div className="mt-4 flex w-full max-w-2xl flex-col gap-1.5">
-        {STARTER_PROMPTS.map((p) => (
-          <button
-            key={p}
-            onClick={() => onPick(p)}
-            className="group flex items-center justify-between gap-3 rounded-xl border border-line/80 bg-surface/30 px-4 py-2.5 text-left text-[13px] text-ink-2 transition-colors hover:border-accent/40 hover:bg-accent/[0.06] hover:text-ink"
-          >
-            <span>{p}</span>
-            <span className="text-accent opacity-0 transition-opacity group-hover:opacity-100" aria-hidden>→</span>
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

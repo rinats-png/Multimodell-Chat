@@ -32,6 +32,10 @@ Ein Raster aus Milchglas-Kacheln vor weichen Farbflächen. Die drei KIs sind die
 
 Seiten außerhalb des Chats (Tarif & Verbrauch) nutzen dieselbe Kopf-Kachel und eine große Glas-Kachel (`components/shell/AppShell.tsx`). Auf dem Handy stapeln sich alle Kacheln; geschlossene Menüs sind nicht per Tab erreichbar, Escape schließt sie.
 
+## Entscheidungsbericht (F-21)
+
+Der Bericht ist das weitergebbare Ergebnis einer Debatte (`components/report/ReportView.tsx`): Urteil mit Wertung, Einigkeit und Streuung, die Optionen mit der Wertung jeder KI, Einigkeit und Streit, der stärkste Einwand, Bedingungen, nächste Schritte, günstigster Test, Abbruchkriterien. Dieselbe Ansicht dient dem Besitzer (`/report/[id]`) und der Link-Ansicht (`/r/[token]`). Druckansicht: weißer Grund, dunkle Schrift, ohne Navigation (`@media print`). Im Leerzustand der Debatte stehen sechs Entscheidungsvorlagen vor den Hinweisen.
+
 ## Bewertung Zustimmung/Widerspruch (F-19)
 
 Nach jeder KI-Antwort, die auf eine andere KI folgt, wird bewertet, ob sie zustimmt, widerspricht, weiterführt oder neutral bleibt (`lib/stance.ts`; mit Zugang per Router-Modell, sonst per Schlüsselwörtern). Die Bewertung steht als Chip an der Nachricht („widerspricht ChatGPT“) und in der Seitenkachel. Der Moderator wählt nach einem Widerspruch eine dritte KI. Gespeichert wird nur serverseitig (Migration `0006_stance.sql`).

@@ -1,3 +1,6 @@
+import type { ResolvedKey } from "./ai/provider";
+import { logError } from "./log";
+import { estimateCostUsd } from "./models";
 import type { DataStore } from "./store/types";
 import type { UserProfile } from "./types";
 import { UsageGuardError } from "./usage-guard";
@@ -66,4 +69,22 @@ export async function assertPlatformBudget(store: Pick<DataStore, "getPlatformSp
   if (!(await platformBudgetOk(store, profile))) {
     throw new UsageGuardError("budget_exhausted", BUDGET_EXHAUSTED_MESSAGE, 503);
   }
+}
+
+/**
+ * Bucht die geschätzten Kosten eines Aufrufs mit dem Plattform-Key gegen die gemeinsame Obergrenze.
+ * Eigene Zugänge und Demo kosten nichts. Ein Fehler beim Buchen beendet den Vorgang nicht, wird aber protokolliert.
+ */
+export async function bookPlatformSpend(
+  store: Pick<DataStore, "addPlatformSpend">,
+  profile: Pick<UserProfile, "id" | "subscription_tier">,
+  access: Pick<ResolvedKey, "source">,
+  modelId: string,
+  inputTokens: number,
+  outputTokens: number,
+): Promise<void> {
+  if (access.source !== "platform") return;
+  const cost = estimateCostUsd(modelId, inputTokens, outputTokens);
+  if (cost <= 0) return;
+  await store.addPlatformSpend(cost, isTrialUser(profile)).catch((e) => logError("platform.spend", e, { userId: profile.id }));
 }
