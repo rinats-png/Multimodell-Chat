@@ -1,16 +1,19 @@
 "use client";
 
-import { Check, Copy, Link2, Link2Off, Printer, Trash2 } from "lucide-react";
+import { Check, Copy, FileDown, Link2, Link2Off, Printer, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface ReportActionsProps {
   reportId: string;
   shared: boolean;
+  /** Bericht als Markdown (Format von ENTSCHEIDUNGEN.md aus idea-to-app). */
+  markdown?: string;
+  fileName?: string;
 }
 
 /** Aktionen des Besitzers: Link teilen und widerrufen, drucken (PDF), löschen. Der Link steht nur direkt nach dem Erzeugen zur Verfügung. */
-export function ReportActions({ reportId, shared: initiallyShared }: ReportActionsProps) {
+export function ReportActions({ reportId, shared: initiallyShared, markdown, fileName = "bericht.md" }: ReportActionsProps) {
   const router = useRouter();
   const [shared, setShared] = useState(initiallyShared);
   const [url, setUrl] = useState<string | null>(null);
@@ -56,6 +59,17 @@ export function ReportActions({ reportId, shared: initiallyShared }: ReportActio
     }
   }
 
+  function downloadMarkdown() {
+    if (!markdown) return;
+    const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(href);
+  }
+
   async function remove() {
     if (!confirm("Diesen Bericht samt Freigabe-Link löschen?")) return;
     const res = await call(`/api/reports/${reportId}`, { method: "DELETE" });
@@ -80,6 +94,12 @@ export function ReportActions({ reportId, shared: initiallyShared }: ReportActio
           <Printer className="size-4" aria-hidden />
           Drucken / als PDF speichern
         </button>
+        {markdown && (
+          <button className={btn} onClick={downloadMarkdown} title="Markdown-Datei mit fertigem Eintrag für ENTSCHEIDUNGEN.md (idea-to-app) und dem ganzen Bericht">
+            <FileDown className="size-4" aria-hidden />
+            Als Markdown
+          </button>
+        )}
         <button className={`${btn} ml-auto text-danger`} onClick={remove} disabled={busy}>
           <Trash2 className="size-4" aria-hidden />
           Löschen

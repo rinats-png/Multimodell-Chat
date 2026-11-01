@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { POST as applyCouncil } from "@/app/api/rooms/[roomId]/council/route";
-import { COUNCIL_PRESETS, getCouncilPreset } from "@/lib/council-presets";
+import { COUNCIL_GROUPS, COUNCIL_PRESETS, getCouncilPreset } from "@/lib/council-presets";
 import { isPlatformModel } from "@/lib/models";
 import { checkPromptInjection } from "@/lib/prompt-firewall";
 import { createMemoryStore, memoryStore, resetMemoryDb } from "@/lib/store/memory-store";
@@ -15,7 +15,7 @@ beforeEach(() => resetMemoryDb());
 
 describe("Vorgefertigte Räte", () => {
   it("jeder Rat ist gültig: Grenzen der Agenten-Felder, Katalog-Modelle, eindeutige Namen, Starttext mit Optionen", () => {
-    expect(COUNCIL_PRESETS.length).toBeGreaterThanOrEqual(8);
+    expect(COUNCIL_PRESETS.length).toBeGreaterThanOrEqual(13);
     expect(new Set(COUNCIL_PRESETS.map((p) => p.id)).size).toBe(COUNCIL_PRESETS.length);
     for (const preset of COUNCIL_PRESETS) {
       expect(preset.agents.length).toBeGreaterThanOrEqual(5);
@@ -30,6 +30,13 @@ describe("Vorgefertigte Räte", () => {
       expect(checkPromptInjection(preset.starter).flagged).toBe(false);
       expect(preset.turns).toBeGreaterThanOrEqual(1);
     }
+  });
+
+  it("jeder Rat steht in genau einer Gruppe, jede Gruppe nennt nur vorhandene Räte", () => {
+    const ids = COUNCIL_GROUPS.flatMap((g) => g.presetIds);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect([...ids].sort()).toEqual(COUNCIL_PRESETS.map((p) => p.id).sort());
+    for (const p of COUNCIL_PRESETS) expect(p.description.length).toBeGreaterThan(20);
   });
 
   it("keine Nachbildung echter Personen: weder Namen noch Rollenbeschreibungen nennen bekannte Persönlichkeiten", () => {

@@ -5,7 +5,7 @@ import { Brain, Coins, Eraser, FileText, Hand, Info, Loader2, Menu, MessagesSqua
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { applySlidingWindow } from "@/lib/context-builder";
-import { COUNCIL_PRESETS } from "@/lib/council-presets";
+import { COUNCIL_GROUPS, COUNCIL_PRESETS } from "@/lib/council-presets";
 import { DECISION_TEMPLATES, type DecisionTemplate } from "@/lib/decision-templates";
 import { formatCompact, formatUsd } from "@/lib/format";
 import type { PlanLimits } from "@/lib/plans";
@@ -573,20 +573,30 @@ function EmptyState({ agents, onPick, onPreset, presetBusy }: { agents: RoomAgen
       </p>
       <div className="mt-4 w-full max-w-2xl text-left">
         <h3 className="px-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">Rat wählen</h3>
-        <p className="mt-1 px-1 text-[12.5px] text-muted">Fertige Rollen für typische Richtungen. Die Rollen sind erfundene Denkschulen, keine echten Personen.</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {COUNCIL_PRESETS.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => onPreset(p.id)}
-              disabled={presetBusy !== null}
-              title={`${p.description} Rollen: ${p.agents.map((a) => a.display_name).join(", ")}`}
-              className="rounded-full border border-line/80 bg-surface/30 px-3.5 py-1.5 text-[13px] font-medium text-ink transition-colors hover:border-accent/40 hover:bg-accent/[0.06] disabled:opacity-50"
-            >
-              {presetBusy === p.id ? "Setze ein …" : p.title}
-            </button>
-          ))}
-        </div>
+        <p className="mt-1 px-1 text-[12.5px] text-muted">Fertige Rollen für typische Aufgaben. Die Rollen sind erfundene Denkschulen, keine echten Personen.</p>
+        {COUNCIL_GROUPS.map((group) => (
+          <div key={group.title} className="mt-3">
+            <h4 className="px-1 text-[12.5px] font-semibold text-ink-2">{group.title}</h4>
+            <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
+              {group.presetIds.map((id) => {
+                const p = COUNCIL_PRESETS.find((x) => x.id === id);
+                if (!p) return null;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => onPreset(p.id)}
+                    disabled={presetBusy !== null}
+                    title={`Rollen: ${p.agents.map((a) => a.display_name).join(", ")}`}
+                    className="flex flex-col rounded-xl border border-line/80 bg-surface/30 px-4 py-2.5 text-left transition-colors hover:border-accent/40 hover:bg-accent/[0.06] disabled:opacity-50"
+                  >
+                    <span className="text-[13.5px] font-medium text-ink">{presetBusy === p.id ? "Setze ein …" : p.title}</span>
+                    <span className="text-[12px] text-muted">{p.description}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
       <div className="mt-5 w-full max-w-2xl text-left">
         <h3 className="px-1 text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">Mit einer Entscheidung starten</h3>

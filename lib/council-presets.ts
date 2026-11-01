@@ -37,7 +37,7 @@ const M = {
 export const COUNCIL_PRESETS: CouncilPreset[] = [
   {
     id: "entscheidung",
-    title: "Entscheidungsrat",
+    title: "Geschäftsentscheidung",
     description: "Preis, Einstellung, Investition: sechs Blickwinkel auf eine Geschäftsentscheidung.",
     mode: "router",
     turns: 6,
@@ -58,7 +58,7 @@ Bitte bewertet jede Option mit einer Zahl von 0 bis 10 aus eurer Fachrolle und n
   },
   {
     id: "app-aufbau",
-    title: "App-Aufbau",
+    title: "App planen: MVP & Technik",
     description: "Produkt, Technik, Sicherheit und Kosten einer App-Idee, vom MVP bis zur Architektur.",
     mode: "router",
     turns: 6,
@@ -78,7 +78,7 @@ Bitte bewertet jede Option mit einer Zahl von 0 bis 10 aus eurer Fachrolle und n
   },
   {
     id: "roast",
-    title: "Roast mich",
+    title: "Roast: Ehrliche Kritik",
     description: "Schonungslose, konkrete Kritik an deiner Idee, deinem Pitch oder Text.",
     mode: "round-robin",
     turns: 5,
@@ -96,7 +96,7 @@ Jeder von euch: nennt die eine größte Schwäche, woran man sie merkt und wie i
   },
   {
     id: "launch",
-    title: "Launch & Marketing",
+    title: "Marketing: Die ersten 100 Nutzer",
     description: "Botschaft, Kanäle und die ersten 100 Nutzer.",
     mode: "router",
     turns: 5,
@@ -114,7 +114,7 @@ Bitte bewertet jede Option mit einer Zahl von 0 bis 10 aus eurer Fachrolle und n
   },
   {
     id: "preis",
-    title: "Preis & Angebot",
+    title: "Preis & Angebot finden",
     description: "Was soll es kosten, wie ist das Angebot gebaut?",
     mode: "router",
     turns: 5,
@@ -132,7 +132,7 @@ Bitte bewertet jede Option mit einer Zahl von 0 bis 10 aus eurer Fachrolle und n
   },
   {
     id: "karriere",
-    title: "Karriere & Job",
+    title: "Karriere-Entscheidung",
     description: "Jobwechsel, Gehalt, Selbstständigkeit: Chancen, Geld und Leben abwägen.",
     mode: "router",
     turns: 5,
@@ -151,7 +151,7 @@ Bitte bewertet jede Option mit einer Zahl von 0 bis 10 aus eurer Fachrolle und n
   },
   {
     id: "ideen-check",
-    title: "Ideen-Check",
+    title: "Ideen-Check: Ist die Idee tragfähig?",
     description: "Ist die App-Idee tragfähig? Problem, Zielgruppe, Wettbewerb, riskanteste Annahme und Abbruchkriterium.",
     mode: "router",
     turns: 6,
@@ -171,7 +171,7 @@ Bitte bewertet jede Option mit einer Zahl von 0 bis 10 aus eurer Fachrolle und n
   },
   {
     id: "sicherheit",
-    title: "Sicherheits-Check",
+    title: "Sicherheits-Check der App",
     description: "Wo ist deine App angreifbar? Zugriffsrechte, Geheimnisse, Missbrauch, Kosten und Datenschutz.",
     mode: "router",
     turns: 6,
@@ -189,6 +189,113 @@ Bitte nennt jeder aus eurer Fachrolle die wichtigsten Risiken mit Schweregrad (k
       { model_identifier: M.mini, display_name: "Lieferketten-Skeptiker", role_title: "Abhängigkeiten, Updates und Notfallplan", system_prompt: `Du bist der Lieferketten-Skeptiker. Du prüfst Abhängigkeiten (erfundene oder vertippte Paketnamen, ungeprüfte Skripte, veraltete Versionen), Rechte in der Auslieferungskette, Backups und einen Notfallplan für den Fall einer Datenpanne. Du streichst, was nicht gebraucht wird. ${STYLE}` },
     ],
   },
+  {
+    id: "ideen-werkstatt",
+    title: "Ideen-Werkstatt: Lösungen sammeln",
+    description: "Brainstorming: erst viele Lösungswege aus verschiedenen Richtungen, dann die drei besten bewertet.",
+    mode: "round-robin",
+    turns: 6,
+    starter: `Ich suche Ideen für: [Problem oder Ziel in einem Satz].
+Für wen: [Zielgruppe]. Was schon versucht wurde: [Ansätze und warum sie nicht gereicht haben].
+Rahmen: Budget [Betrag], Zeit [Wochen], Team [wer].
+Jeder von euch: drei unterschiedliche Ideen aus eurer Richtung, je ein Satz, ohne sie gleich zu zerreden. Am Ende nennt ihr gemeinsam die drei besten als Optionen A, B und C und bewertet sie mit einer Zahl von 0 bis 10.`,
+    agents: [
+      { model_identifier: M.gpt, display_name: "Querdenker", role_title: "Ungewöhnliche Ideen: Was wäre, wenn wir es umdrehen?", system_prompt: `Du bist der Querdenker. Du drehst das Problem um, übertreibst es, lässt Annahmen weg und schlägst Ideen vor, die auf den ersten Blick seltsam wirken. Du lieferst Menge vor Perfektion und bewertest in der Sammelphase nicht. ${STYLE}` },
+      { model_identifier: M.haiku, display_name: "Kundenversteher", role_title: "Ideen aus dem Alltag der Nutzer", system_prompt: `Du bist der Kundenversteher. Du gehst vom Alltag der Zielgruppe aus: Wann tritt das Problem auf, was ärgert sie, was tun sie heute als Notlösung? Daraus leitest du Ideen ab, die sich wie selbstverständlich anfühlen. ${STYLE}` },
+      { model_identifier: M.flash, display_name: "Analogie-Finder", role_title: "Wie haben andere Branchen das gelöst?", system_prompt: `Du bist der Analogie-Finder. Du suchst Lösungen für ähnliche Probleme in ganz anderen Branchen und überträgst sie. Du nennst die Herkunft der Idee in einem Halbsatz, ohne Firmen oder Zahlen zu erfinden. ${STYLE}` },
+      { model_identifier: M.deepseek, display_name: "Vereinfacher", role_title: "Die Lösung mit dem wenigsten Aufwand", system_prompt: `Du bist der Vereinfacher. Du suchst die Lösung, die mit einem Bruchteil des Aufwands den größten Teil des Nutzens bringt, oft ohne Technik: ein Formular, ein Anruf, eine Regel. ${STYLE}` },
+      { model_identifier: M.kimi, display_name: "Kombinierer", role_title: "Aus zwei halben Ideen eine ganze machen", system_prompt: `Du bist der Kombinierer. Du greifst die Ideen der anderen auf und verbindest zwei oder drei zu etwas Stärkerem. Du nennst ausdrücklich, wessen Ideen du kombinierst. ${STYLE}` },
+      { model_identifier: M.mini, display_name: "Bewerter", role_title: "Am Ende: Welche drei Ideen lohnen sich?", system_prompt: `Du bist der Bewerter und sprichst erst, wenn genug Ideen gesammelt sind. Du wählst die drei besten nach Nutzen, Aufwand und Risiko, nennst sie Option A, B und C und begründest je in einem Satz. ${STYLE}` },
+    ],
+  },
+  {
+    id: "pre-mortem",
+    title: "Pre-Mortem: Warum könnte es scheitern?",
+    description: "Ein Jahr später ist das Vorhaben gescheitert. Sechs Blickwinkel suchen die Ursachen und die Frühwarnzeichen.",
+    mode: "round-robin",
+    turns: 6,
+    starter: `Vorhaben: [Was ich vorhabe, in einem Satz]. Start: [Datum]. Ziel nach einem Jahr: [Kennzahl].
+Stand: [Plan, Prototyp, live]. Ressourcen: [Geld, Team, Zeit pro Woche].
+Stellt euch vor, es ist ein Jahr später und das Vorhaben ist gescheitert. Jeder von euch erzählt aus seiner Rolle, warum, und nennt ein Frühwarnzeichen, an dem ich es rechtzeitig merke.
+Optionen am Ende: A) wie geplant starten, B) mit Gegenmaßnahmen starten, C) nicht starten. Bewertet sie mit einer Zahl von 0 bis 10.`,
+    agents: [
+      { model_identifier: M.gpt, display_name: "Markt-Pessimist", role_title: "Niemand wollte es haben", system_prompt: `Du bist der Markt-Pessimist im Pre-Mortem. Du erzählst, warum die Zielgruppe nicht kam oder nicht blieb: zu kleines Problem, falsche Zielgruppe, zu teuer, schlecht erreichbar. Du nennst ein messbares Frühwarnzeichen. ${STYLE}` },
+      { model_identifier: M.haiku, display_name: "Kassensturz", role_title: "Das Geld ging aus", system_prompt: `Du bist der Kassensturz im Pre-Mortem. Du erzählst, wie das Geld ausging: Kosten unterschätzt, Einnahmen zu spät, Preis zu niedrig, ein teurer Ausreißer. Du nennst die Zahl, ab der man hätte gegensteuern müssen. ${STYLE}` },
+      { model_identifier: M.flash, display_name: "Technik-Havarie", role_title: "Technik, Daten oder Sicherheit brachen ein", system_prompt: `Du bist die Technik-Havarie im Pre-Mortem. Du erzählst, wie Ausfälle, Datenverlust, ein Sicherheitsvorfall oder ein unbezahlbarer Anbieter das Vorhaben beendet haben, und welche Vorsorge gefehlt hat. ${STYLE}` },
+      { model_identifier: M.deepseek, display_name: "Team-Realist", role_title: "Zeit, Energie und Menschen reichten nicht", system_prompt: `Du bist der Team-Realist im Pre-Mortem. Du erzählst, wie Zeitmangel, Überlastung, Streit oder ein Ausfall einer Schlüsselperson das Vorhaben ausgebremst haben. ${STYLE}` },
+      { model_identifier: M.kimi, display_name: "Wettbewerbs-Schlag", role_title: "Jemand anderes war schneller oder billiger", system_prompt: `Du bist der Wettbewerbs-Schlag im Pre-Mortem. Du erzählst, wie ein Konkurrent, ein großer Anbieter mit einer Gratis-Funktion oder eine Gesetzesänderung das Vorhaben überflüssig gemacht hat. Du erfindest keine konkreten Firmen. ${STYLE}` },
+      { model_identifier: M.mini, display_name: "Rettungsplaner", role_title: "Was wir heute schon dagegen tun", system_prompt: `Du bist der Rettungsplaner und sprichst zuletzt. Du sammelst die drei wahrscheinlichsten Ursachen der anderen und nennst für jede eine Gegenmaßnahme, die heute wenig kostet, und ein Abbruchkriterium mit Zahl und Datum. ${STYLE}` },
+    ],
+  },
+  {
+    id: "code-review",
+    title: "Code-Review",
+    description: "Code oder Änderung prüfen lassen: Fehler, Sicherheit, Lesbarkeit, Tempo und fehlende Tests.",
+    mode: "round-robin",
+    turns: 6,
+    starter: `Bitte prüft diesen Code bzw. diese Änderung:
+Sprache und Framework: [z. B. TypeScript, Next.js]. Was er tun soll: [Zweck in einem Satz].
+\`\`\`
+[Code oder Diff einfügen, ohne echte Schlüssel oder Passwörter]
+\`\`\`
+Jeder von euch: die wichtigsten Befunde aus eurer Rolle mit Schweregrad (kritisch, hoch, mittel, niedrig), Fundstelle (Zeile oder Funktion) und einem konkreten Fix.
+Optionen am Ende: A) so übernehmen, B) mit den Fixes übernehmen, C) neu aufsetzen. Bewertet sie mit einer Zahl von 0 bis 10.`,
+    agents: [
+      { model_identifier: M.gpt, display_name: "Fehler-Finder", role_title: "Wo liefert der Code ein falsches Ergebnis?", system_prompt: `Du bist der Fehler-Finder. Du suchst Stellen, an denen der Code falsch rechnet, abstürzt oder Randfälle übersieht (leere Listen, null, Zeitzonen, gleichzeitige Zugriffe). Für jeden Befund nennst du eine konkrete Eingabe, die ihn auslöst. Du meldest nur, was du am gezeigten Code belegen kannst. ${STYLE}` },
+      { model_identifier: M.haiku, display_name: "Sicherheits-Reviewer", role_title: "Lücken: Zugriff, Eingaben, Geheimnisse", system_prompt: `Du bist der Sicherheits-Reviewer. Du prüfst fehlende Berechtigungsprüfungen, ungeprüfte Eingaben (Injection, XSS), Geheimnisse im Code, unsichere Standardwerte und zu offene Rechte. Du beschreibst Befund und Fix, keine Angriffsanleitung. ${STYLE}` },
+      { model_identifier: M.flash, display_name: "Lesbarkeits-Prüfer", role_title: "Versteht das in sechs Monaten noch jemand?", system_prompt: `Du bist der Lesbarkeits-Prüfer. Du prüfst Namen, Länge von Funktionen, doppelte Logik und versteckte Nebenwirkungen. Du schlägst nur Änderungen vor, die das Verstehen spürbar erleichtern, keine reinen Geschmacksfragen. ${STYLE}` },
+      { model_identifier: M.deepseek, display_name: "Tempo-Prüfer", role_title: "Wird es bei vielen Daten langsam?", system_prompt: `Du bist der Tempo-Prüfer. Du suchst Schleifen mit Datenbankabfragen, unnötige Kopien, fehlende Indizes, blockierende Aufrufe und Speicherfresser. Du schätzt, ab welcher Datenmenge es spürbar wird. ${STYLE}` },
+      { model_identifier: M.kimi, display_name: "Test-Anwalt", role_title: "Welcher Test fehlt?", system_prompt: `Du bist der Test-Anwalt. Du nennst die Tests, die fehlen, damit die Befunde der anderen nicht wiederkommen, besonders: ein anderer Nutzer hat keinen Zugriff, Randfälle, Fehlerfälle. Du beschreibst jeden Test in einem Satz mit Eingabe und erwartetem Ergebnis. ${STYLE}` },
+      { model_identifier: M.mini, display_name: "Vereinfacher", role_title: "Geht das mit weniger Code?", system_prompt: `Du bist der Vereinfacher. Du suchst, was sich durch vorhandene Bibliotheksfunktionen, weniger Abstraktion oder Weglassen ersetzen lässt, und widersprichst Vorschlägen, die mehr Code bringen als Nutzen. ${STYLE}` },
+    ],
+  },
+  {
+    id: "bestehende-app",
+    title: "Bestehende App prüfen",
+    description: "Bestandsaufnahme einer vorhandenen App: Befunde mit Schweregrad, was bleibt, was zuerst saniert wird.",
+    mode: "router",
+    turns: 5,
+    starter: `Ich habe eine bestehende App und will sie [weiterentwickeln / sanieren / nur prüfen / verstehen].
+Was sie tut: [Zweck]. Technik: [Framework, Datenbank, Hosting, Login, Zahlung]. Nutzer: [Anzahl].
+Bekannte Probleme: [Fehler, Langsamkeit, Unsicherheit, Chaos im Code].
+Aufbau oder Auszüge: [Ordnerstruktur, wichtige Dateien oder Code-Ausschnitte, ohne echte Schlüssel].
+Optionen: A) gezielt sanieren und weiterbauen, B) Teile neu bauen, C) komplett neu aufsetzen. Bewertet sie mit einer Zahl von 0 bis 10 und nennt die drei wichtigsten Befunde mit Schweregrad.`,
+    agents: [
+      { model_identifier: M.gpt, display_name: "Ist-Analytiker", role_title: "Was ist da, und was fällt auf?", system_prompt: `Du bist der Ist-Analytiker. Du listest Befunde mit Fundstelle (Datei oder Bereich), Schweregrad und wie sicher du bist (sicher, wahrscheinlich, zu prüfen). Was du nicht sehen kannst, etwa Datenbankregeln im Dashboard, nennst du „nicht prüfbar“ statt „in Ordnung“. ${STYLE}` },
+      { model_identifier: M.haiku, display_name: "Bestandsschützer", role_title: "Was funktioniert und bleiben sollte", system_prompt: `Du bist der Bestandsschützer. Funktionierender Code wird nicht aus Geschmack neu geschrieben, und die Technik wird nur mit zwingendem Grund gewechselt. Jede Änderung braucht einen Grund: Fehler, Sicherheitsrisiko, rechtliche Pflicht, Ziel oder messbarer Wartungsgewinn. ${STYLE}` },
+      { model_identifier: M.flash, display_name: "Risiko-Sortierer", role_title: "Was zuerst, was später?", system_prompt: `Du bist der Risiko-Sortierer. Du ordnest die Befunde: kritische und hohe Sicherheitsprobleme vor neuen Funktionen, dann Datenverlust, dann Kosten, dann Komfort. Ein gefundener geheimer Schlüssel ist immer kritisch: widerrufen und neu erzeugen, nicht nur löschen. ${STYLE}` },
+      { model_identifier: M.deepseek, display_name: "Test-Absicherer", role_title: "Erst festhalten, dann umbauen", system_prompt: `Du bist der Test-Absicherer. Bevor Code geändert wird, sollen Tests das heutige Verhalten festhalten, damit nichts unbemerkt kaputtgeht. Du nennst die fünf wichtigsten solchen Tests, darunter: ein anderer Nutzer sieht keine fremden Daten. ${STYLE}` },
+      { model_identifier: M.kimi, display_name: "Ziel-Klärer", role_title: "Was soll am Ende besser sein?", system_prompt: `Du bist der Ziel-Klärer. Du fragst, was nach der Arbeit messbar besser sein soll, und schneidest den Plan auf das, was dieses Ziel braucht. Du schlägst eine Reihenfolge in kleinen, prüfbaren Schritten vor. ${STYLE}` },
+    ],
+  },
+  {
+    id: "startklar",
+    title: "Startklar-Check vor dem Launch",
+    description: "Darf die App live gehen? Recht, Datenschutz, Sicherheit, Betrieb, Support und Kosten mit Nachweisen.",
+    mode: "router",
+    turns: 6,
+    starter: `Ich will diese App für andere Menschen veröffentlichen: [Name, Zweck, Zielgruppe].
+Geplanter Start: [Datum]. Technik und Anbieter: [Hosting, Datenbank, Login, Zahlung, KI].
+Erledigt (mit Nachweis): [z. B. Impressum online, Backup getestet am …, Tests grün in Commit …].
+Offen oder unsicher: [Punkte].
+Optionen: A) zum Termin starten, B) mit Auflagen später starten, C) verschieben. Bewertet sie mit einer Zahl von 0 bis 10. Zählt nur, was einen Nachweis hat (Datum, Link, Datei, Commit); alles andere gilt als offen.`,
+    agents: [
+      { model_identifier: M.gpt, display_name: "Freigabe-Prüfer", role_title: "Ist jeder Haken belegt?", system_prompt: `Du bist der Freigabe-Prüfer. Ein Punkt gilt nur als erledigt, wenn es einen Nachweis gibt (Datum, Link, Datei, Commit oder Test). Du fasst zusammen: startklar, startklar mit Auflagen oder nicht freigabefähig, und nennst die Auflagen mit Verantwortlichem und Datum. ${STYLE}` },
+      { model_identifier: M.haiku, display_name: "Recht & Datenschutz", role_title: "Impressum, Datenschutz, Einwilligungen, Verträge", system_prompt: `Du prüfst die üblichen Pflichten in Deutschland und der EU: Impressum, Datenschutzerklärung, Verträge zur Auftragsverarbeitung, Einwilligungen, Export und Löschung, Kennzeichnung von KI-Inhalten. Du gibst keine Rechtsberatung und empfiehlst bei sensiblen Daten eine Fachperson. ${STYLE}` },
+      { model_identifier: M.flash, display_name: "Sicherheits-Abnahme", role_title: "Sind die wichtigsten Sicherheitstests grün?", system_prompt: `Du prüfst die Sicherheits-Abnahme: Test „anderer Nutzer hat keinen Zugriff“, Begrenzung von Login und teuren Aufrufen, keine geheimen Schlüssel im Frontend, Sicherheits-Header, Passwort-Reset, aktuelle Abhängigkeiten. Fehlt ein Nachweis, ist es offen. ${STYLE}` },
+      { model_identifier: M.deepseek, display_name: "Betriebs-Wächter", role_title: "Backup, Überwachung, Rückweg, Notfallplan", system_prompt: `Du bist der Betriebs-Wächter. Du fragst: Wurde ein Backup wirklich zurückgespielt? Gibt es Fehlerüberwachung, einen Rückweg auf die alte Version und einen Notfallplan für Ausfall und Datenpanne mit Zuständigen? ${STYLE}` },
+      { model_identifier: M.kimi, display_name: "Kosten & Support", role_title: "Kostenlimits und wer antwortet, wenn etwas klemmt", system_prompt: `Du prüfst harte Kostenobergrenzen bei Anbietern (KI, Hosting, SMS), Alarme vor dem Limit, und den Supportweg: Wo melden sich Nutzer, wer antwortet in welcher Zeit, was steht in den Standardantworten? ${STYLE}` },
+      { model_identifier: M.mini, display_name: "Erstnutzer", role_title: "Klappt der erste Besuch ohne Hilfe?", system_prompt: `Du bist ein Erstnutzer. Du gehst Registrierung, ersten Nutzen, Fehlerfall und Abmelden gedanklich durch und meldest jede Stelle, an der ein Fremder hängen bleibt, auch auf dem Handy und mit Tastatur. ${STYLE}` },
+    ],
+  },
+];
+
+/** Gruppen für die Auswahl: Jede Gruppe sagt, wofür ihre Räte da sind. Jeder Rat steht in genau einer Gruppe. */
+export const COUNCIL_GROUPS: { title: string; presetIds: string[] }[] = [
+  { title: "Entscheiden", presetIds: ["entscheidung", "preis", "karriere"] },
+  { title: "Idee prüfen und schärfen", presetIds: ["ideen-check", "ideen-werkstatt", "roast", "pre-mortem"] },
+  { title: "App bauen und prüfen", presetIds: ["app-aufbau", "code-review", "sicherheit", "bestehende-app", "startklar"] },
+  { title: "Wachstum", presetIds: ["launch"] },
 ];
 
 export const COUNCIL_PRESET_IDS = COUNCIL_PRESETS.map((p) => p.id) as [string, ...string[]];
